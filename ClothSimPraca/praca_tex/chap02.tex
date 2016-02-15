@@ -1,0 +1,243 @@
+\chapter{Algorytmy symulacji tkanin}
+\label{t:teoria}
+
+
+	\section{Analiza istniejących modeli symulacji tkanin}
+	\label{t:teoria:analiza}
+	
+		\subsection{Model masy na sprężynie}
+		\label{t:teoria:analiza:masa}		
+			
+			Pierwszym z~rozważanych w niniejszej pracy modeli symulacji tkanin jest model masy na sprężynie. Rysowana przez API graficzne tkanina jest w postaci siatki wielokątowej. Siatka taka składa się z~punktów w przestrzeni 3D -- wierzchołków. Na potrzeby symulacji przyjęto, że każdy z~tych wierzchołków ma określoną masę i~poddano go działaniu sił, w~wyniku których następuje przemieszczenie. Aby zachować kształt i~odpowiednie dla tkaniny zachowanie się siatki, wierzchołki połączone są sprężynami o~określonych współczynnikach sprężystości oraz tłumienia drgań. 
+			
+			
+			\myownfigure{Schemat modelu masy na sprężynie. Kolorami zaznaczono wszystkie sprężyny biorące udział w obliczeniach położenia wierzchołka A.}{figures/pic_2_1.png}{0.22}{pic_2_1}
+			
+			
+			Rysunek \ref{pic_2_1} przedstawia przykładowy fragment tkaniny opartej o~model masy na sprężynie. Założono dla uproszczenia, iż poszczególne wierzchołki tworzą kształt prostokątów, aczkolwiek w praktyce mogą przyjmować dowolne ustawienia. Ważne jednak dla zachowania poprawnej symulacji jest to, by punkty masy były równomiernie rozłożone na całej powierzchni tkaniny. W omawianym przypadku tak właśnie jest. 
+			
+			Można zaobserwować trzy rodzaje sprężyn, jakie występują w modelu na rysunku 2.1. Kolorem czerwonym zostały oznaczone sprężyny strukturalne, które służą do utrzymania ogólnego kształtu tkaniny. Jednakże one same nie są w stanie zasymulować zachowania tkaniny w~poprawny fizycznie i~wizualnie sposób. Kolorem zielonym narysowane zostały sprężyny odpowiedzialne za wierne oddanie zgięć tkaniny, położone są one wzdłuż diagonalnych krawędzi siatki. Kolorem niebieskim zaznaczono sprężyny, których obecność zapewnia tkaninie odpowiednią elastyczność i~chroni przed nadmiernym jej rozciąganiem. Łączą one nie sąsiednie wierzchołki, lecz następne za sąsiadem, w~tym samym kierunku. Każdy z~rodzajów sprężyn może być opisany innymi współczynnikami sprężystości i~tłumienia drgań, co pozwala na uzyskanie innych zachowań tkaniny w~symulacji.
+			
+			
+			\myownfigure{Siły działające na pojedynczy wierzchołek.}{figures/pic_2_2.png}{0.3}{pic_2_2}
+			
+			
+			Na rysunku \ref{pic_2_2} widać, jakie siły oddziałują na każdy punkt masy -- wierzchołek siatki tkaniny. Siły można zaklasyfikować jako wewnętrzne i zewnętrzne. Z~zewnętrznych wyróżniono siłę grawitacji, opisaną wzorem \cite{cloth-dobre-wzory}:
+			
+			\begin{equation}
+			\mathbf{F_{g}} = m_{i} \cdot \mathbf{g} \ .
+			\end{equation}
+			
+			Kolejna siła zewnętrzna to siła oporu powietrza. Zgodnie z Prawem Stokesa jest ona proporcjonalna do prędkości punktu masy oraz pewnego współczynnika oporu \emph{k} \cite{cloth-dobre-wzory}:
+			
+			\begin{equation}
+			\mathbf{F_{a}} = -k_{a} \cdot \mathbf{v_{i}} \ .
+			\end{equation}
+			
+			Siłami wewnętrznymi działającymi na wierzchołki tkaniny są oczywiście siły sprężystości, wynikające z istnienia omówionych wyżej sprężyn. Do wyznaczenia jej wartości wykorzystuje się Prawo Hooke'a, mówiące, że siła sprężystości oraz jej kierunek i~zwrot są proporcjonalne do wychylenia sprężyny, tj. różnicy odległości między jej aktualną długością, a~długością w~stanie spoczynku \cite{cloth-dobre-wzory}:
+			
+			\begin{equation}
+			\mathbf{F_{se}} = - \sum_{n = 0}^{n < 12} k_{s} (|\mathbf{x_{i}} - \mathbf{x_{j}}| - l_{(i, j)}) \cdot \frac{\mathbf{x_{i}} - \mathbf{x_{j}}}{|\mathbf{x_{i}} - \mathbf{x_{j}}|} \ ,
+			\end{equation}
+			
+			gdzie \(k_{s}\) -- współczynnik sprężystości, \(\mathbf{x_{i}}\) oraz \(\mathbf{x_{j}}\) -- położenia wierzchołków połączonych daną sprężyną, \(l_{(i, j)}\) -- odległość między tymi punktami w~stanie spoczynku.
+			
+			Zgodnie z \cite{receptury}, wprowadzono także siłę tłumienia drgań sprężystych, aby zminimalizować niepotrzebne, nierealistyczne drgania oraz ryzyko wymknięcia się symulacji spod kontroli. Nazywa się to ,,wybuchnięciem'' -- obliczane siły są takie, że pozycje wierzchołków dążą do nieskończoności. Tłumienie przedstawia się następującym wzorem:
+			
+			\begin{equation}
+			\mathbf{F_{sd}} = \sum_{n = 0}^{n < 12} k_{d} (\frac{|\mathbf{x_{i}} - \mathbf{x_{j}}| \cdot |\mathbf{v_{i}} - \mathbf{v_{j}}|}{l_{(i, j)}}) \ ,
+			\end{equation}
+			
+			gdzie oznaczenia są takie same, jak wyżej z~tym, że \(k_{d}\) jest tutaj współczynnikiem tłumienia drgań, \(|\mathbf{v_{i}} - \mathbf{v_{j}}|\) oznacza różnicę prędkości obu wierzchołków, a~działanie \(|\mathbf{x_{i}} - \mathbf{x_{j}}| \cdot |\mathbf{v_{i}} - \mathbf{v_{j}}|\) to iloczyn skalarny wektora różnicy położenia i~wektora różnicy prędkości. Końcowa siła sprężystości jest sumą dwóch powyższych wzorów. Można zapisać ją w~postaci:
+			
+			\begin{equation}
+			\mathbf{F_{s}} = \mathbf{F_{se}} + \mathbf{F_{sd}} \ ,
+			\end{equation}
+			\begin{equation}
+			\mathbf{F_{s}} = \sum_{n = 0}^{n < 12} - k_{s} (|\mathbf{x_{i}} - \mathbf{x_{j}}| - l_{(i, j)}) \cdot \frac{\mathbf{x_{i}} - \mathbf{x_{j}}}{|\mathbf{x_{i}} - \mathbf{x_{j}}|} + k_{d}(\frac{|\mathbf{x_{i}} - \mathbf{x_{j}}| \cdot |\mathbf{v_{i}} - \mathbf{v_{j}}|}{l_{(i, j)}}) \ .
+			\end{equation}
+			
+			W sumie dla każdego wierzchołka rozważono 12 sił sprężystości dla wszystkich przyłączonych do niego sprężyn, siłę grawitacji oraz oporu powietrza. Należy zauważyć, że nie uwzględniono tutaj reakcji na kolizje -- będą one rozwiązane w~późniejszej sekcji algorytmu. Wzór na siłę wypadkową działającą na pojedynczy wierzchołek tkaniny oraz wypadkowe przyspieszenie można zapisać w~postaci:
+			
+			\begin{equation}
+			\mathbf{F} = \mathbf{F}{s} + \mathbf{F}{g} + \mathbf{F}{d}		
+			\end{equation}
+			
+			\begin{equation}
+			\mathbf{a}(t) = \frac{\mathbf{F}}{m_{i}}	
+			\end{equation}
+			
+			W celu wyznaczenia zmiany położenia punktu masy w~danym kroku symulacji, posłużono się, zgodnie z \cite{cloth-dobre-wzory} i \cite{receptury}, całkowaniem Verleta, będącym jedną z~technik całkowania numerycznego nie wprost. Opisane jest ono wzorem:
+			
+			\begin{equation}
+			\mathbf{x}(t + \delta t) = 2\mathbf{x}(t) - \mathbf{x}(t - \delta t) + \mathbf{a}(t) \delta t^{2} \ ,		
+			\end{equation}
+			
+			gdzie \(\mathbf{a(t)}\) jest przyspieszeniem, a~\(\mathbf{x}(t + \delta t)\), \(\mathbf{x}(t)\) i \(\mathbf{x}(t - \delta t)\) oznaczają położenia wierzchołka w~następnym, obecnym oraz poprzednim kroku symulacji. 
+			
+			Całkowanie Verleta jest równie proste obliczeniowo i~implementacjyjnie, jak najzwyklejsza metoda Eulera, a~zapewnia dużo stabilniejsze zachowanie się symulacji i~minimalizację tendencji do ,,wybuchnięcia''. Niejawnie obliczona zostaje tutaj aktualna prędkość wierzchołka, co sprawia, że do symulatora trzeba dostarczyć nie tylko obecną pozycję każdego punktu masy, ale także położenie poprzednie. Zwiększa to koszt pamięciowy symulacji względem innych technik całkowania, lecz zapewnia bardzo szybkie obliczenia i~stabilne ich wyniki.
+		
+		\subsection{Model oparty na pozycji}
+		\label{t:teoria:analiza:poz}
+		
+			Model oparty na pozycji i~model masy na sprężynie mają pewną część wspólną -- jest to obliczanie przesunięć wynikających z~sił grawitacji oraz oporu powietrza za pomocą całkowania Verleta. Także tkanina ma w tym modelu taką samą postać, jak i~w~poprzednim -- zbiór wierzchołków, połączonych krawędziami, tworzących prostokątne kształty. Podejście do symulacji ruchów wynikających ze struktury samej tkaniny jest jednak kompletnie odmienne. Ponadto zaznaczyć należy, że w niniejszej pracy została wykorzystana tylko część aktualnie omawianego modelu, bardziej szczegółowo opisanego w~\cite{posbased}. Prezentowane tu rozwiązanie nie bierze pod uwagę ograniczników zginania oraz całego systemu detekcji kolizji, zaproponowanego w~rozdziale 4 \cite{posbased}.
+			
+			Przesunięcia wynikające z~sił zewnętrznych działających na układ nazywamy tutaj przesunięciami przewidywanymi. Każdy wierzchołek tkaniny opisywany jest, oprócz masy, pozycji i~prędkości, także przez zbiór tzw. ograniczników. Każdy z nich definiowany jest poprzez pewną funkcję \(C_{j} : R^{3n_{j}} \rightarrow R\), zestaw indeksów \(\{ i_{1}, \dots, i_{n_{j}}  \}, i_{k} \in [1, \dots, N] \) i~parametr sztywności \(k \in [0\dots1] \). Ogranicznik może być typu równości, co oznacza, że jego ograniczenie jest spełnione, kiedy \( C_{j}(x_{i_{1}}, \dots, x_{i_{n_{j}}} ) = 0 \). Może być także typu nierówności, i~spełnia je warunek \( C_{j}(x_{i_{1}}, \dots, x_{i_{n_{j}}} ) \geq 0 \). W omawianym przypadku będą rozważane tylko ograniczniki pierwszego typu. Kluczowym elementem jest oczywiście funkcja \(C_{j}\), która określa sposób, w~jaki przewidywana pozycja zostanie poprawiona, od czego ta poprawa zależy -- czyli w~efekcie zachowanie się tkaniny. Funkcja ta może być zupełnie inna, gdy obliczane są ograniczenia przesuwania, a~inna przy ograniczeniach zginania bądź kolizjach. Widać, że dzięki temu model ten charakteryzuje się pewną elastycznością, a~ograniczniki są narzędziem, przy pomocy którego można realizować wiele rozmaitych założeń dotyczących ruchu tkaniny. Przesunięcia wynikające z~nałożonych ograniczników są obliczane po kolei, następnie pozycja przewidywana jest poprawiana do takiej, która spełnia wszystkie warunki, równości bądź nierówności, dla funkcji \(C_{j}\) ograniczników. Proces ten autorzy \cite{posbased} nazywają projekcją. Pod uwagę brana jest także sztywność ogranicznika, czyli procent, w~jakim się go stosuje.
+			
+			\myownfigure{Schemat działania ograniczników między dwoma punktami masy.}{figures/pic_2_3.png}{0.3}{pic_2_3}
+			
+			Podstawowym typem ogranicznika jest ogranicznik rozciągania. To on definiuje ogólny kształt i~odpowiednie zachowanie tkaniny. Jego funkcja ma postać:
+			
+			\begin{equation}
+			C(\mathbf{p_{1}}, \mathbf{p_{2}}) = |\mathbf{p_{1}} - \mathbf{p_{2}}| - d \ .		
+			\end{equation}
+			
+			Gdzie \( \mathbf{p_{1}} \) i \( \mathbf{p_{2}} \) są pozycjami rozpatrywanych wierzchołków, a~\(d\) - początkową odległością między nimi. Na rysunku \ref{pic_2_3} widać efekt projekcji. W~\cite{posbased} wyprowadzone zostają wzory na jej obliczenie, na podstawie funkcji \( C_{j}(x_{i_{1}}, \dots, x_{i_{n_{j}}} ) \):
+			
+			\begin{equation}
+			s = \frac{C_{j}(\mathbf{p_{i_{1}}}, \dots, \mathbf{p_{i_{n_{j}}}} )}{ \sum _{j} w_{j} | \nabla _{\mathbf{p_{j}}} C_{j}(\mathbf{p_{i_{1}}}, \dots, \mathbf{p_{i_{n_{j}}}} ) | ^{2} } \ ,		
+			\end{equation}
+			
+			\begin{equation}
+			\delta \mathbf{p_{i}} = -sw_{i} \nabla _{\mathbf{p_{i}}} C_{j}(\mathbf{p_{i_{1}}}, \dots, \mathbf{p_{i_{n_{j}}}} ) \ .
+			\end{equation}
+			
+			Gdzie \(w_{i}\) jest odwrotnością masy wierzchołka tkaniny. Biorąc pod uwagę, iż przemieszczenie jest do niej wprost proporcjonalne, można łatwo wyobrazić sobie dowód na poprawność tego podejścia -- w~przypadku, gdy masa cząstki jest nieskończona, przesunięcie będzie równe zeru. Kiedy na miejsce funkcji \(C_{j}(x_{i_{1}}, \dots, x_{i_{n_{j}}} ) \) wstawi się \(C(\mathbf{p_{1}}, \mathbf{p_{2}}) = |\mathbf{p_{1}} - \mathbf{p_{2}}| - d\), otrzymane zostaną po przekształceniach następujące wzory: 
+			
+			\begin{equation}
+			\delta \mathbf{p_{1}} = - \frac{w_{1}}{w_{1} + w{2}} (|\mathbf{p_{1}} - \mathbf{p_{2}}| - d) \frac{\mathbf{p_{1}} - \mathbf{p_{2}}}{|\mathbf{p_{1}} - \mathbf{p_{2}}|} \ ,
+			\end{equation}
+			
+			\begin{equation}
+			\delta \mathbf{p_{2}} = \frac{w_{2}}{w_{1} + w{2}} (|\mathbf{p_{1}} - \mathbf{p_{2}}| - d) \frac{\mathbf{p_{1}} - \mathbf{p_{2}}}{|\mathbf{p_{1}} - \mathbf{p_{2}}|} \ .
+			\end{equation}
+			
+			Da się zauważyć, że wzory (2.13) i (2.14) są bardzo podobne do wzoru (2.3). Tak samo, jak w modelu masy na sprężynie, ,,siła'' ogranicznika zależy od różnicy aktualnej odległości pomiędzy punktami masy i~odległości spoczynkowej. Rolę współczynnika sprężystości pełni tutaj parametr sztywności, przez który pomnożono na koniec przesunięcie będące wynikiem projekcji. Dla \(k\) równego 0 ogranicznik nie będzie w ogóle brany pod uwagę, a~dla równego 1 -- punkt nigdy nie zmieni swojej początkowej pozycji.
+			
+			W rozważanym przypadku nie zastosowano ograniczników zginania, użyto także innej metody detekcji kolizji. Autorzy \cite{posbased} używają ograniczników rozciągania biorąc pod uwagę tylko wierzchołki leżące w~sąsiedztwie danego punktu. Okazuje się, że podobny do użycia ograniczników zginania efekt można osiągnąć zwiększając zbiór rozpatrywanych wierzchołków o~te leżące jedną pozycję w siatce dalej - tak jak sprężyny oznaczone kolorem niebieskim na rysunku \ref{pic_2_1}. Przykładowo, ograniczając elastyczność przemieszczania wierzchołka \(A\) względem \(C\) ograniczamy przecież tak naprawdę możliwość zginania się trójkątów \(ABD\) i~\(BCD\) na wspólnej krawędzi \(BD\). Nie jest to tak dokładna metoda jak ograniczniki zginania, gdzie regulujemy kąt pomiędzy trójkątami, lecz mimo to daje ona poprawny wizualny efekt, jak pokazane zostanie w rozdziale 5. Jest też szybsza do obliczenia przez procesor, jako że sam wzór jest prostszy.
+		
+		\subsection{Porównanie powyższych metod}
+		\label{t:teoria:analiza:porownanie}
+		
+			Podsumowując przedstawienie zastosowanych metod symulacji tkaniny, należy zauważyć, że każda z nich ma swoje plusy i~minusy. Największą zaletą modelu masy na sprężynie jest z~pewnością prostota i~łatwość implementacji. Nietrudno wyobrazić sobie tkaninę, jako zbiór wierzchołków połączonych elastycznymi sprężynami, których siły sprężystości są wyliczane przy pomocy prostych praw fizyki. Trochę gorzej jest w przypadku drugiej omawianej metody -- tutaj zrozumienie zasady działania modelu wymaga wgłębienia się w~wyprowadzenia wzorów matematycznych. Jednakże sama implementacja okazuje się równie prosta, ilość kodu jaką programista musi napisać, jest tak naprawdę podobna.
+			
+			Z pewnością największą zaletą modelu opartego na pozycji jest przewaga wydajnościowa. Wynika ona z~braku konieczności użycia całkowania numerycznego. Zachowanie tkaniny nie jest określane przez zbiór sił sprężystości, a~ograniczników, od razu modyfikujących pozycję. Całkować trzeba co najwyżej chcąc obliczyć siły zewnętrzne. Pozwala to na duże oszczędności obliczeniowe. W~przypadku modelu masy na sprężynie nie można uniknąć już tych obliczeń dla każdej ze sprężyn. W~celu uzyskania dokładniejszych wyników należy zastosować bardziej skomplikowane metody całkowania. Prowadzi to do spadku wydajności.
+			
+			Wyłania się tutaj także kolejna zaleta metody numer dwa. Numeryczne obliczanie przemieszczenia punktu masy wiąże się z~ryzykiem utraty stabilności symulacji i~jej ,,wybuchnięciem''. Przez większość czasu może ona pracować bezawaryjnie, dopóki nie zajdą pewne szczególne okoliczności, kiedy to wymyka się spod kontroli. Przykładem jest znaczna, skokowa zmiana parametru \( \delta t \) we wzorze (2.9) Doprowadzi ona do błędnego obliczenia wartości sił we wszystkich sprężynach -- będzie ona za duża, co z~kolei spowoduje niekontrolowane drgania, a~w~konsekwencji -- ,,wybuch''. W modelu opartym na pozycji korekcja przemieszczenia nie jest obliczana numerycznie i~gwarantuje to dużą stabilność działania tej metody.
+			
+			Jak widać, druga rozważana metoda wydaje się mieć przewagę nad pierwszą. Model oparty na pozycji daje nam bezpieczną i~wydajną obliczeniowo symulację, dlatego jest stosowany w wiodących na rynku, komercyjnych silnikach fizycznych. Jednakże model masy na sprężynie dużo łatwiej zrozumieć początkującemu programiście, a~do prostych zastosowań o~stałych parametrach nadaje się on równie dobrze.
+		
+		\subsection{Detekcja kolizji}
+		\label{t:teoria:analiza:kolizje}
+		
+			Kluczowym aspektem symulacji tkaniny jest wykrywanie kolizji i~rozwiązywanie ich, czyli przemieszczanie wierzchołków tak, by obiekty się nie przenikały. Zwiększa to wrażenie autentyczności, realizmu symulacji z~punktu widzenia użytkownika. Do uzyskania odpowiedniego efektu musimy jednak zadbać także o~stabilność algorytmu rozwiązywania kolizji, chociażby po to, aby uniknąć znanego chyba wszystkim użytkownikom wirtualnych symulacji i~gier efektu ,,podrygiwania''. Obliczenia mogą pochłonąć tu bardzo dużo czasu procesora, dlatego kluczowy jest dobór odpowiednio wydajnego algorytmu, szczególnie, że w niniejszej pracy rozważa się implementację symulacji na urządzeniu mobilnym. Dlatego właśnie w~tej kwestii uwagę poświęcono najprostszym rozwiązaniom.
+		
+			\subsubsection{Kolizje zewnętrzne}
+			\label{t:teoria:analiza:kolizje:zewn}
+			
+				Poprzez kolizje zewnętrzne rozumiemy kolizje wierzchołków tkaniny z~innymi obiektami sceny, np. podłogą pomieszczenia. Wykrywanie ich oraz generowanie odpowiedniej reakcji jest absolutnie niezbędne do zasymulowania jakiejkolwiek interakcji z resztą wirtualnego świata. W~tym celu zastosowano sfery okalające, zwane dalej BS od angielskiego \emph{Bounding Sphere} oraz prostopadłościany okalające, prostopadłe do osi układu współrzędnych, zwane dalej AABB od angielskiego \emph{Axis-Aligned Bounding Box}.\newpage
+				
+				\myownfigure{Przykład kolizji sfer okalających.}{figures/pic_2_4.png}{0.3}{pic_2_4}		%R1, R2, d
+				
+				Sfery okalające są najprostszą w implementacji i~najszybszą obliczeniowo metodą detekcji kolizji. Na rysunku \ref{pic_2_4} widać, jak wygląda przykładowy układ dwóch BS, oraz w~jaki sposób ustawiona może być BS względem obiektu. Wykrycie przecięcia się polega na porównaniu sumy długości promieni \(R_{1}\) i~\(R_{2}\) obu sfer z~odległością pomiędzy ich środkami \(d\). Jeżeli
+				
+				\begin{equation}
+				R_{1} + R_{2} < d \ ,
+				\end{equation}
+				
+				to znaczy, że doszło do kolizji i~sferę, która przemieszczając się, do niej doprowadziła, należy odpowiednio przesunąć tak, by się one nie przecinały. Mowa tutaj o~tzw. rozwiązaniu kolizji. Dokonano tego w prosty sposób \cite{wzory_sfera}:
+				
+				\begin{equation}
+				\mathbf{p}_{i} = \mathbf{p}_{i} + (\frac{\mathbf{p}_{C1} - \mathbf{p}_{C2}}{|\mathbf{p}_{C1} - \mathbf{p}_{C2}|})(R_{1} + R_{2} - d) \ .
+				\end{equation}
+				
+				Jak można się domyślić, wadą sfer okalających jest ich niska dokładność -- obiekty idealnie kuliste rzadko występują w~świecie rzeczywistym. Na potrzeby symulowania świata otaczającego tkaninę w niniejszej pracy jednak takie rozwiązanie w~zupełności wystarcza. Przyjęto, że każdy wierzchołek posiada swoją własną BS, o~pozycji środka identycznej z~pozycją punktu oraz o~promieniu równym pewnemu procentowi najkrótszej odległości między dwoma wierzchołkami, mniejszemu niż jej połowa. W każdym kroku symulacji każdy z~nich zostaje sprawdzony, czy nie zaszła kolizja z którymś, bądź wieloma, obiektami sceny. Jeśli tak, poprawia się jego położenie. 
+				
+				Jest to rozwiązanie szybkie, jednak ma jedną istotną wadę - BS nie pokrywają całej powierzchni siatki tkaniny, a tylko obszary w okolicach wierzchołków. Kolizje na środkach trójkątów nie są sprawdzane, co może doprowadzić do przenikania obiektów przez tkaninę przy niskiej jej rozdzielczości. Założono jednak, że jest to rozwiązanie wystarczające -- nie obciążamy urządzenia mobilnego nadmiarem obliczeń związanych z detekcją kolizji. Poza tym gęstość siatki potrzebna do odwzorowania realistycznego wyglądu tkaniny jest na tyle duża, by szczeliny pomiędzy BS były na tyle małe, aby sensownie zminimalizować ryzyko wystąpienia przenikania.
+				
+				\myownfigure{Przykład kolizji BS z prostopadłościanem AABB.}{figures/pic_2_5.png}{0.35}{pic_2_5}		%dwa boksy p1min, p1max, p2min, p2max
+				
+				Obiekty zewnętrzne znajdujące się w świecie symulacji mogą posiadać dwa rodzaje detektorów kolizji. Są albo sferami okalającymi, w którym to przypadku do wykrycia przecięć zastosowane zostają opisane powyżej wzory (2.15) i (2.16), albo AABB -- prostopadłościany, których położenie i~rozmiary są wyznaczane przez dwa punkty w przestrzeni: minimum \(\mathbf{p}_{i_{min}}\) oraz maksimum \(\mathbf{p}_{i_{max}}\). W jaki sposób figury są tworzone na podstawie tych dwóch pozycji -- widać na rysunku \ref{pic_2_5}. Można zauważyć, że ten sposób interpretacji dwóch wymienionych wyżej danych skutkuje niską zajętością pamięciową (tylko dwa wektory trójwymiarowe reprezentują AABB) oraz prostotą wzorów wykrycia przecięcia, a~co za tym idzie -- szybkością obliczeń tychże. Ewidentną wadą jest jednak znowu niska dokładność -- fakt, że kolejne ścianki prostopadłościanu zawsze będą prostopadłe do kolejnych osi układu współrzędnych. Utrudnia to odwzorowanie dokładnych kolizji np. dla obiektów pochyłych. Detekcja i~rozwiązanie przecięć pomiędzy AABB i BS następuje według nieco innych zasad, niż w~przypadku dwóch BS \cite{wzory_sfera, wzory_sfera_box}:
+				
+				\begin{equation}
+				\mathbf{k}_{i} =  min(max(\mathbf{p}_{C1}, \mathbf{p}_{i_{min}}), \mathbf{p}_{i_{max}})  \ .
+				\end{equation}
+				
+				\begin{equation}
+				\mathbf{p}_{i} = \mathbf{p}_{i} + \frac{\mathbf{p}_{C1} - \mathbf{k}_{i}}{|\mathbf{p}_{C1} - \mathbf{k}_{i}|}(R1 - |\mathbf{k}_{i} - \mathbf{p}_{C1}|) \ .
+				\end{equation}
+				
+				% tutaj coś dopisać
+				
+				Punkt \( \mathbf{k}_i \) obliczany wzorem (2.17) jest widoczny na rysunku \ref{pic_2_5}, zaznaczony na czerwono. Wektor reakcji na kolizję otrzymano następnie dzięki odjęciu pozycji sfery i~punktu \( \mathbf{k}_i \) (zielony wektor) oraz odpowiedniej zmianie jego długości. Ta ostatnia została dokonana poprzez kolejno: normalizację i~pomnożenie przez różnicę promienia sfery okalającej i~długości wektora \(\mathbf{k}_{i} - \mathbf{p}_{C1}\). Działanie to obrazuje wzór (2.18), a~wynik oznaczono na rysunku \ref{pic_2_5} wektorem w~kolorze magenta.
+			
+			\subsubsection{Kolizje wewnętrzne}
+			\label{t:teoria:analiza:kolizje:wewn}
+			
+				\myownfigure{Ułożenie sfer kolizyjnych w~wierzchołkach tkaniny.}{figures/pic_2_6.png}{0.4}{pic_2_6}		% schemat sfer kolizyjnych dla siatki
+				
+				Podczas bardziej dynamicznych i gwałtownych ruchów symulowanej siatki, może dochodzić do przenikania się przez siebie jej fragmentów. Rozwiązując kolizje wewnętrzne, postarano się wyeliminować ten niepożądany artefakt wizualny. Na rysunku \ref{pic_2_6} widać, jak wygląda mechanizm dla pojedynczego wierzchołka. W~sekcji \ref{t:teoria:analiza:kolizje:zewn} ustalono, że wszystkie punkty masy posiadają swoją własną sferę okalającą. Tutaj dalej z~tego faktu skorzystano, po prostu rozwiązując kolizje BS każdego wierzchołka z BS jego ośmiu sąsiadów położonych w najbliższym otoczeniu. Zapewnia to redukcję minimalnych przecięć w bezpośrednim sąsiedztwie punktów masy, które pojawiałyby się już przy swobodnym ruchu tkaniny, z~oddziałującymi tylko siłami grawitacji i~oporu powietrza.
+				
+				Zastosowany mechanizm z~oczywistych względów nie jest doskonały. Nie zabezpiecza przed przenikaniem się w sytuacji, gdy np. róg tkaniny przemieści się przez jej środek. Jednakże zarówno bardziej wyrafinowane metody detekcji przecięć, jak i~sprawdzanie kolizji BS -- BS na zasadzie ,,każdy z~każdym'' wiążą się z~bardzo dużym narzutem obliczeniowym, wielokrotnie większym niż przesuwanie wierzchołków będące efektem działania modelu symulacji. W związku z~tym na potrzeby niniejszej pracy została użyta bardzo prosta, acz niedoskonała, opisana powyżej technika. Biorąc pod uwagę, iż tkanina zawieszona jest na stałe za dwa, nie poruszające się, górne narożniki, prawdopodobieństwo wystąpienia przecięcia nie jest duże. Założono więc, że sprawdzanie kolizji tylko w najbliższym otoczeniu każdego z~wierzchołków okaże się wystarczające wizualnie.
+			
+	\section{Obliczenia GPGPU a symulacja tkanin}
+	\label{t:teoria:gpu}
+	
+		\subsection{Definicja GPGPU}
+		\label{t:teoria:gpu:gpgpu}
+		
+		Pierwsze układy GPU -- \emph{Graphics Processing Unit} -- zwane też kartami graficznymi, pojawiły się już w~latach siedemdziesiątych XX wieku \cite{gpu_wiki}. Od początku były to wyspecjalizowane urządzenia peryferyjne służące do wyświetlania grafiki, początkowo 2D, później, w miarę ewolucji, 3D. Przez bardzo długi czas pracowały one w~układzie zamkniętym -- programista dostarczał tylko określone dane, potrzebne do narysowania obiektu, np. bufory pozycji i~indeksów wierzchołków, a GPU rysowało je w~taki sposób, w~jaki zostało zaprogramowane w~fabryce. Twórca gry bądź wizualizacji graficznej, nie miał kompletnie wpływu na przebieg procesu rysowania, ani na to, jakie dokładnie obliczenia zostaną wykonane. 
+		
+		Zmieniło się to na początku XXI wieku, wraz z~premierą układu NVIDIA GeForce 3 \cite{gpu_wiki}. Wprowadził on otwarty, programowalny potok renderingu. Pisząc tzw. vertex i~pixel shadery, programista od tego momentu mógł kontrolować sposób, w~jaki rysowanie przebiegało, mając możliwość ulepszenia starych, wysłużonych technik. 
+		
+		Chcąc sprostać zapotrzebowaniu na coraz to bardziej realistyczną grafikę, producenci z~biegiem lat szybko zwiększali moc obliczeniową kart graficznych. Były one jednak cały czas urządzeniami przeznaczonymi ściśle do generowania grafiki. Aby wykorzystać ich potęgę do innych celów niż rendering, należało dopasować pisane programy do API graficznego, co bardzo utrudniało proces ich powstawania. Dopiero wejście na rynek technologii takich, jak NVIDIA CUDA bądź OpenCL zapewniło dostęp do wszystkich funkcji GPU z~wykorzystaniem danej platformy, niezwiązanej z renderingiem i~niewymagającej jego znajomości. Obliczenia ogólnego przeznaczenia, najczęściej wykonywane za pomocą wymienionych wyżej API, nazywa się właśnie GPGPU -- \emph{General Purpose computing on~Graphics Processing Units}. Ogólnie można powiedzieć, że każdy język, czy technologia, która pozwala na pobranie wynikowych danych programu uruchamianego na GPU daje możliwość wykorzystania go do GPGPU \cite{gpu_wiki}. Mają one zastosowanie w wielu dziedzinach, chociażby w modelowaniu matematycznym, statystyce, medycynie bądź silnikach i~symulacjach fizycznych -- chociażby właśnie modelowania tkaniny. 
+	
+		\subsection{Architektura i programowanie GPU}
+		\label{t:teoria:gpu:architektura}
+		
+		\myownextfigure{Typowa architektura GPU}{figures/pic_2_7.png}{0.3}{pic_2_7}		% schemat GPU
+		% kiedy i po co GPU, dzisiejsze zastosowania, GPGPU, równoległość obliczeń, podział na SM, SP, wątki, dzisiejsze wydajności
+		
+		\footnotetext{https://www.google.pl/search?q=gpu+architecture\&tbm=isch\&biw=1920\&bih=955}
+		GPU jest układem złożonym z~wielu jednostek obliczeniowych, pracujących ze sobą równolegle. Zrównoleglenie obliczeń wynika z~charakterystyki pierwotnego zastosowania GPU, czyli renderingu grafiki. Obliczenia na każdym wierzchołku, bądź fragmencie obrazu są zazwyczaj niezależne od siebie i~takie same dla każdego z nich. Można więc dla tychże elementów identyczny ciąg instrukcji wykonywać równolegle, dostarczając do niego inne dane. GPU jest sztandarowym przykładem wdrożenia architektury SIMD (\emph{Single Instruction, Multiple Data} \cite{simd}). Jak się szybko okazało, ten model przetwarzania znalazł zastosowanie nie tylko przy rysowaniu trójkątów, ale też w~wielu innych dziedzinach, często niezwiązanych z~grami czy wizualizacjami.
+		
+		Na rysunku \ref{pic_2_7} widać budowę przykładowego układu, jednakową dla większości tego typu urządzeń. Nadrzędną jednostką, z której składa się GPU jest multiprocesor strumieniowy (SM -- \emph{Streaming Multiprocessor}), będący samodzielną jednostką obliczeniową, aczkolwiek dzielący część pamięci z~innymi SM. Przykładowo karta grafiki NVIDIA GeForce 9800 GTX ma osiem SM. Każdy z nich dzieli się na procesory strumieniowe (SP -- \emph{Streaming Processor}), w~danym przypadku jest ich w sumie 128 na całym GPU. SP są tak skonstruowane, by móc przetwarzać jak najwięcej operacji równolegle. W technologiach stricte GPGPU programista zależnie od potrzeb może uruchomić konkretną liczbę SP, na każdym zaprzęgając do pracy ustaloną z~góry liczbę wątków, nieprzekraczającą jednak maksymalnej wartości, zależnej od modelu urządzenia \cite{cuda}.
+		
+		\myextcitefigure{Schemat tzw. gridu w technologii CUDA}{\cite{cuda}.}{figures/pic_2_8.png}{0.45}{pic_2_8}		% schemat gridu CUDA'owego
+		
+		Jednakże zazwyczaj nie ma bezpośredniej kontroli nad elementami warstwy fizycznej wymienionymi wyżej. Przykładowo, CUDA zapewnia programiście warstwę logiczną podziału na jednostki przetwarzające (zwane tu blokami) i~wątkami. Widać to na rysunku \ref{pic_2_8}. W przypadku OpenCL sytuacja wygląda podobnie. Programista może oznaczyć, jak chce podzielić zadania, jednak przypisanie ich do konkretnych procesorów leży już w gestii samego API i~sterownika. Na GPU stworzonym w architekturze Fermi istnieje możliwość zdefiniowania w sumie \(65\ 535 \times 65\ 535 \times 1536\) wątków pracujących współbieżnie \cite{cuda}.\newpage
+		
+		\myownfigure{Potok renderingu i transformacyjne sprzężenie zwrotne.}{figures/pic_2_9.png}{0.4}{pic_2_9}		% jak to działa w api graficznym
+		
+		Chcąc korzystać z~API graficznego do obliczeń GPGPU, programista zostaje skazany na pisanie programów w~natywnym języku shaderów, najczęściej HLSL (dla API DirectX) lub GLSL (dla API OpenGL). Te wysokopoziomowe są bardzo podobne do zwykłego C, więc opanowanie ich nie powinno nastręczać problemów, jednakże wymagają wiedzy na temat przebiegu procesu renderingu. Kontrola nad przydziałem i~liczbą jednostek przetwarzających także wygląda w inaczej. Jedyną możliwością jej zdefiniowania jest ustalenie danej, konkretnej liczby wierzchołków przesyłanych w~buforze do GPU, które, w~zależności od potrzeb, mogą być z~logicznego punktu widzenia faktycznymi wierzchołkami, bądź po prostu zbiorami danych o~z~góry ustalonej strukturze. Rysunek 2.9 obrazuje proces przetwarzania danych zaszytych w wierzchołkach. Twórcy API graficznych od pewnego momentu starają się także umożliwić i~ułatwić obliczenia GPGPU za ich pomocą, udostępniając takie funkcje, jak np. transformacyjne sprzężenie zwrotne, czy bufory teksturowe w OpenGL \cite{receptury}. \newpage
+		
+		\subsection{Porównanie GPU i CPU pod kątem architektury i zastosowań}
+		\label{t:teoria:gpu:porownanie}
+		
+		\myownextfigure{Porównanie budowy CPU i GPU}{figures/pic_2_10.png}{0.35}{pic_2_10}		% proste schematy GPU i CPU obok
+		\footnotetext{http://blog.goldenhelix.com/mthiesen/video-graphics-and-genomics-a-real-game-changer/}
+		
+		Rysunek \ref{pic_2_10} przedstawia uproszczone schematy architektury CPU i~GPU, co doskonale obrazuje różnice między nimi, a~także pozwala wywnioskować zastosowania. W~rozdziale \ref{t:teoria:gpu:architektura} podano, że GPU jest urządzeniem zbudowanym z~wielu procesorów pracujących równolegle, natomiast CPU składa się z~niewielkiej liczby jednostek obliczeniowych (w~dzisiejszych czasach 4~to standardowa liczba dla zapotrzebowań osobistych), jednakże dużo szybszych. Procesory CPU są dużo bardziej zaawansowane technologiczne, wyposażone w~większą liczbę zaawansowanych instrukcji oraz algorytmów przyspieszających ich działanie w~specjalnych sytuacjach. Przykładem może być predykcja wyboru instrukcji warunkowych, znacznie skracająca czas obliczeń bloków \texttt{if-else} \cite{branch_prediction_wiki}. Z kolei w~GPU ta technologia jest dużo uboższa. Wynika z tego, że sekwencyjny kod z~dużą liczbą rozgałęzień szybciej działa na CPU, a~GPU nadaje się lepiej do obliczeń równoległych, w~których warunków należy unikać. 
+		\newpage
+		
+		\myextfigure{Różnica rozwoju wydajności CPU i GPU na przestrzeni ostatnich lat}{figures/pic_2_11.png}{0.5}{pic_2_11}		% 2 wykresy - przewaga GPU nad CPU w danych obliczeniach i odwrotnie
+		\footnotetext{https://algconsultings.wordpress.com/2011/02/28/can-we-afford-to-have-a-supercomputer}
+		
+		Na rysunku \ref{pic_2_11} widać, że na przestrzeni ostatnich lat teoretyczna wydajność kart graficznych, liczona w gigaflopach na sekundę, wzrosła znacznie w~stosunku do procesorów. Można zaobserwować kolejny rozstrzał między tymi platformami, CPU nie robi większej różnicy precyzja liczb, na których wykonywane jest przetwarzanie. Natomiast GPU zoptymalizowana jest pod kątem obliczeń na zmiennych typu \texttt{float} -- pojedynczej precyzji. Prawdopodobnie po raz kolejny widać skutki najczęstszego stosowania GPU do renderingu grafiki trójwymiarowej, gdzie pojedyncza precyzja jest wystarczająca.
+		
+		CPU zapewnia także dużo potężniejszy i~bardziej złożony system komunikacji między pracującymi wątkami oraz większą liczbę struktur synchronizacyjnych. W przypadku GPU synchronizacja opiera się głównie o~bariery pamięciowe, pozwalające wstrzymać wątki, dopóki inne nie dotrą do tego samego miejsca kodu, jednakże tylko w ograniczonym zakresie, np. na poziomie bloku, oraz o operacje atomowe \cite{cuda}. Trudno uzyskać także specjalizację wątków do określonych zadań, jako, że ten sam program, zwany \emph{kernelem}, jest uruchamiany na nich wszystkich w~jednym momencie. To, nad czym programista ma kontrolę, to ich liczba oraz początkowy zbiór danych.
+		
+		Największym problemem CPU jest to, że osiągnęły one szczyt swoich możliwości w~kwestii szybkości taktowania zegara. Nie jest możliwe dalsze jej zwiększanie bez gwałtownego wzrostu ilości produkowanego ciepła. Wymaga to zaawansowanych rozwiązań chłodzących i~dla zwykłego zjadacza chleba staje się nieosiągalne finansowo. W kontraście, procesory GPU cały czas pracują z~relatywnie niskimi częstotliwościami, a~ich rozwój polega w skrócie na dokładaniu kolejnych jednostek przetwarzających i~zmniejszaniu zapotrzebowania na energię.
+		
+		\subsection{Zastosowanie GPU w symulacji tkanin}
+		\label{t:teoria:gpu:zalety}
+		
+		Siłą rzeczy narzuca się pytanie, zadane w~kontekście niniejszej pracy -- co lepiej nadaje się do obliczeń związanych z~symulacją tkaniny? CPU czy GPU? Odpowiedź zdaje się być w~miarę oczywista. Rozważany układ jest zbiorem wierzchołków, do których przyłączona jest pewna z~góry określona ilość sprężyn bądź ograniczników. Każdy z~nich jest oddzielnym bytem i~dla każdego wykonujemy tak naprawdę te same obliczenia (tzn. ten sam ciąg instrukcji). Sensownym pomysłem w takiej sytuacji wydaje się przeprowadzenie ich równolegle. 
+		
+		Można podejść do tego na dwa sposoby. Pierwszym jest przyjęcie punktu masy tkaniny jako ,,jednostki obliczeniowej'' i~rozwiązanie sił bądź przesunięć dla każdej z przyłączonych do niego sprężyn. Jak jednak widać na rysunku \ref{pic_2_1}, wierzchołki współdzielą sprężyny, tzn. wartość siły dla AB będzie taka sama jak dla BA, tylko nada się jej przeciwny zwrot. Przedstawione powyżej podejście doprowadzi do redundancji obliczeń. Drugi sposób zakłada policzenie wpierw sił dla wszystkich sprężyn, a~następnie dopiero zmodyfikowanie pozycji wierzchołków na ich podstawie. Wadą tego rozwiązania jest konieczność uruchamiania dwóch różnych programów na GPU i~spowolnienie programu poprzez nieuchronny powrót sterowania do CPU pomiędzy obliczeniami, ewentualnie konieczność synchronizacji dostępu do danej komórki pamięci przechowującej pozycję danego wierzchołka, jako, że jedna sprężyna wpływa na dwa punkty masy. W związku z~tym w niniejszej pracy zdecydowano się na metodę pierwszą.
+		
+		W przypadku chęci stworzenia implementacji symulacji na CPU, należałoby sekwencyjnie wykonywać wszystkie obliczenia na kolejnych wierzchołkach, kolejno w pętli. W najlepszym przypadku można podzielić przetwarzanie na wątki, jednak maksymalnie i~tak byłoby dostępnych niewiele jednostek przetwarzających. W GPU jest ich dużo więcej, oprócz tego urządzenie z definicji przystosowano do obliczeń równoległych, co pozwala uzyskać maksymalną wydajność. Jedyną sytuacją, w której CPU mogłoby mieć przewagę, jest detekcja dużej liczby kolizji, z~racji konieczności użycia tutaj instrukcji warunkowych, a~jak wiemy, GPU nie najlepiej sobie z nimi radzi.
+		
+		\myextcitefigure{Porównanie wydajności implementacji CPU i GPU}{\cite{deformable}.}{figures/pic_2_12.png}{0.395}{pic_2_12}		% wykres - porównanie GPU i CPU dla tkanin
+		
+		Autorzy \cite{deformable} wykonali porównanie szybkości przetwarzania symulacji tkaniny osobno dla CPU i~GPU. Widać tutaj miażdżącą przewagę karty graficznej nad procesorem w~kwestii wydajności, co pozwala wnioskować o sensowności zastosowania GPU do rozwiązania omawianego problemu.

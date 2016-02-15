@@ -1,0 +1,17 @@
+*.toc
+*.gz
+*.pdf
+*.out
+*.lot
+*.lol
+*.lof
+*.loa
+*.aux
+*.deps
+*.ipch
+ClothSim/ClothSim/ClothSim/ClothSim.iOS.Application/ClothSim.iOS/Images.xcassets/
+*.o
+*.incremental
+ClothSim/ClothSim/ClothSim/ClothSim.Android.Packaging/ARM/
+*.sdf
+ClothSim/ClothSim/ClothSim.PC/PC Release/

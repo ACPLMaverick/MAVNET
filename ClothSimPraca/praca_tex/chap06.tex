@@ -1,0 +1,240 @@
+\chapter{Wyniki testów symulatora}
+\label{t:wyniki}
+
+	\section{Czas wykonania}
+	\label{t:wyniki:czas_wykonania}
+
+		Czas wykonania jest rozumiany jako czas potrzebny na przetworzenie jednego pełnego kroku symulacji tkaniny. Wyrażony został w~milisekundach. To najważniejsze kryterium porównawcze, gdyż mówi o tym, jak bardzo obliczenia obciążają sprzęt, jak duży procent całości pracy silnika stanowią i~w efekcie -- czy działanie symulatora cechuje płynność. 
+		
+		Wpływ na czas wykonania ma ilość przetwarzanych danych, czyli gęstość siatki tkaniny, oraz wybrana implementacja. Zależności te przedstawiono w~formie tabel oraz wykresów, osobno dla każdej metody i~implementacji. Liczbę wierzchołków można w~aplikacji łatwo modyfikować, zmieniając liczbę krawędzi poziomych i~pionowych. Przyjęto zakres od siatki posiadającej \(10 \times 10 \) wszystkich krawędzi (100 wierzchołków) do \( 120 \times 120 \) (14400 wierzchołków), z~krokiem co 10 krawędzi poziomych i~pionowych.
+		
+		Warto wspomnieć, że do zachowania pełnej płynności obrazu na ekranie należy rysować jedną jego klatkę przynajmniej 30 razy na sekundę. Oznacza to, iż czas wykonania symulacji nie może być większy niż ok. 33 ms. Najbardziej satysfakcjonującym wynikiem byłoby osiągnięcie go niższego niż ok. 16 ms, co odpowiada 60 klatkom na sekundę -- to zazwyczaj maksymalna szybkość renderingu przy włączonej synchronizacji pionowej obrazu. Założono, że pozostałe obliczenia związane z~pracą silnika symulacji są pomijalnie krótkie.
+		
+		Przyjęto następujące oznaczenia:
+		
+		\begin{enumerate}
+			\item C -- liczba wszystkich wierzchołków.
+			\item MS-GPU-A -- Model masy na sprężynie, implementacja GPU, platforma Android.
+			\item PB-GPU-A -- Model oparty na pozycji, implementacja GPU, platforma Android.
+			\item MS-GPU-W -- Model masy na sprężynie, implementacja GPU, platforma Windows.
+			\item PB-GPU-W -- Model oparty na pozycji, implementacja GPU, platforma Windows.
+			\item MS-CPU-A -- Model masy na sprężynie, implementacja CPU, platforma Android.
+			\item PB-CPU-A -- Model oparty na pozycji, implementacja CPU, platforma Android.
+			\item MS-CPUx4-A -- Model masy na sprężynie, implementacja CPU (4 wątki robocze), platforma Android.
+			\item PB-CPUx4-A -- Model oparty na pozycji, implementacja CPU (4 wątki robocze), platforma Android.
+		\end{enumerate}
+		
+		\begin{figure}[H]
+			\begin{tikzpicture}
+				\begin{axis}[
+				xlabel=C,
+				ylabel=$t_{x}$,
+				y SI prefix=milli,
+				y unit=s,
+				width=15cm,
+				height=11cm,
+				grid=major,
+				legend style={at={(0.025, 0.76)}, anchor=west}
+				]
+				\addplot[orange, very thick] table [y=$t_{MS-GPU-A}$, x=C]{chart_6_1_a.dat};
+				\addlegendentry{$t_{MS-GPU-A}$}
+				\addplot[red, very thick] table [y=$t_{PB-GPU-A}$, x=C]{chart_6_1_a.dat};
+				\addlegendentry{$t_{PB-GPU-A}$}
+				\addplot[purple, very thick] table [y=$t_{PB-GPU-W}$, x=C]{chart_6_1_a.dat};
+				\addlegendentry{$t_{PB-GPU-W}$}
+				\addplot[yellow, dashed, thick] table [y=$t_{MS-GPU-W}$, x=C]{chart_6_1_a.dat};
+				\addlegendentry{$t_{MS-GPU-W}$}
+				\addplot[blue, very thick] table [y=$t_{MS-CPU-A}$, x=C]{chart_6_1_b.dat};
+				\addlegendentry{$t_{MS-CPU-A}$}
+				\addplot[cyan, very thick] table [y=$t_{PB-CPU-A}$, x=C]{chart_6_1_b.dat};
+				\addlegendentry{$t_{PB-CPU-A}$}
+				\addplot[green, very thick] table [y=$t_{MS-CPUx4-A}$, x=C]{chart_6_1_b.dat};
+				\addlegendentry{$t_{MS-CPUx4-A}$}
+				\addplot[olive, very thick] table [y=$t_{PB-CPUx4-A}$, x=C]{chart_6_1_b.dat};
+				\addlegendentry{$t_{PB-CPUx4-A}$}
+				\end{axis}
+			\end{tikzpicture}
+			\caption[Wykres zależności czasu wykonania od liczby wierzchołków.]{Wykres zależności czasu wykonania od liczby wierzchołków. Źródło: opracowanie własne.}
+			\label{wykr_6_1}
+		\end{figure}
+		
+				
+				\begin{sidewaystable}
+					\pgfplotstabletypeset
+					[
+					columns/$t_{MS-GPU-A}$/.style={fixed,fixed zerofill,precision=4},
+					columns/$t_{PB-GPU-A}$/.style={fixed,fixed zerofill,precision=4},
+					columns/$t_{MS-GPU-W}$/.style={fixed,fixed zerofill,precision=4},
+					columns/$t_{PB-GPU-W}$/.style={fixed,fixed zerofill,precision=4},
+					columns/$t_{MS-CPU-A}$/.style={fixed,fixed zerofill,precision=4},
+					columns/$t_{PB-CPU-A}$/.style={fixed,fixed zerofill,precision=4},
+					columns/$t_{MS-CPUx4-A}$/.style={fixed,fixed zerofill,precision=4},
+					columns/$t_{PB-CPUx4-A}$/.style={fixed,fixed zerofill,precision=4},
+					every head row/.append style={before row={%
+							\caption{Czas wykonania dla różnych gęstości siatki.}%
+							\label{tab_6_1}\\\toprule}
+					}
+					]
+					{chart_6_1.dat}
+				\end{sidewaystable}
+		\newpage
+		Wykres pokazuje dużą przewagę wydajnościową metod implementowanych na GPU. W~przypadku Androida, czas obliczeń jest niemalże stały, niezależnie od liczby wierzchołków tkaniny. Drobne wahania wynikają głównie z~błędu pomiaru (rzędu kilku ms). Niewielki wzrost czasu przetwarzania w~końcowej fazie testów może wynikać nie tyle z~samego narzutu obliczeniowego, ile z~rosnącej temperatury urządzenia i~związanego z tym stopniowego obniżania wydajności przez system operacyjny. 
+		
+		Niemożność uzyskania czasu obliczeń niższego niż ok. 12--15 ms wynika prawdopodobnie z~faktu wymuszenia synchronizacji pionowej przez implementację transformacyjnego sprzężenia zwrotnego w sterowniku karty graficznej Adreno. Jak można się było spodziewać, wersję GPU na platformie PC cechuje dużo większa wydajność. W~omawianym przypadku różnica jest niemal 300-krotna. Co ciekawe, problem z~synchronizacją pionową tu nie występuje, choć czas przetwarzania także utrzymuje się na stałym poziomie. 
+		
+		Osobną kwestią są implementacje na CPU. Można zauważyć, iż czas przetwarzania rośnie liniowo wraz z~liczbą wierzchołków i~bardzo szybko osiąga wartości, które uniemożliwiają generowanie płynnego obrazu. Jedynie dla niskiej gęstości siatki uzyskano przewagę nad GPU, z~racji wspomnianego wcześniej problemu. Widać także, że spadek wydajności dla implementacji z~użyciem 4 wątków roboczych jest ok. dwukrotnie mniejszy niż w~przypadku podejścia sekwencyjnego.
+		
+		W przypadku GPU nie zarejestrowano znaczących różnic w czasie wykonania pomiędzy metodami symulacji, aczkolwiek na CPU model oparty na pozycji osiągał dla dużych liczb wierzchołków minimalnie lepsze wyniki niż jego rywal.
+		
+		%\subsection{Model masy na sprężynie -- GPU -- Android}
+		%\label{t:wyniki:czas_wykonania:ms_gpu_andro}
+		
+		
+		%\subsection{Model oparty na pozycji -- GPU -- Android}
+		%\label{t:wyniki:czas_wykonania:pb_gpu_andro}
+		
+		
+	%	\subsection{Model masy na sprężynie -- GPU -- Windows}
+	%	\label{t:wyniki:czas_wykonania:ms_gpu_pc}
+		
+		
+	%	\subsection{Model oparty na pozycji -- GPU -- Windows}
+	%	\label{t:wyniki:czas_wykonania:pb_gpu_pc}
+		
+		
+	%	\subsection{Model masy na sprężynie -- CPU -- Android}
+	%	\label{t:wyniki:czas_wykonania:ms_cpu_andro}
+		
+		
+	%	\subsection{Model oparty na pozycji -- CPU -- Android}
+	%	\label{t:wyniki:czas_wykonania:pb_cpu_andro}
+		
+		
+	%	\subsection{Model masy na sprężynie -- CPU (4 wątki) -- Android}
+	%	\label{t:wyniki:czas_wykonania:ms_cpux4_andro}
+		
+		
+	%	\subsection{Model oparty na pozycji -- CPU (4 wątki) -- Android}
+	%	\label{t:wyniki:czas_wykonania:pb_cpux4_andro}
+		
+	
+	\section{Stabilność}
+	\label{t:wyniki:stabilnosc}
+	
+		Drugim najważniejszym problemem symulacji jest jej niestabilność, rozumiana jako skłonność do wpadania siatki tkaniny w~niekontrolowane drgania, co w~efekcie może prowadzić do ,,eksplozji''. Nawet jeśli się tak nie stanie, ciągłe ruchy układu skutkują nierealistycznym efektem wizualnym. Zjawisko to jest więc bardzo niepożądane i~często zmusza do restartu symulatora.
+		
+		Trudno określić, które dokładnie parametry mają wpływ na stabilność tkaniny. Z~pewnością najważniejszym z~nich jest sztywność -- większe siły sprężystości bądź większy udział ograniczników mogą prowadzić do powstawania anomalii w~procesie symulacji. Dla modelu masy na sprężynie znaczenie w~redukcji drgań ma także współczynnik ich tłumienia. Nie bez wpływu pozostają też takie zmienne, jak gęstość siatki, masa czy siła grawitacji.
+		
+		Na potrzeby testów wybrano jeden z~położonych w środku tkaniny wierzchołków oraz zbadano jego drgania w stanie spoczynku, tj. średnią różnicę pomiędzy położeniem obecnym a~poprzednim, w~każdym kroku symulacji. Pomiarów dokonano dla różnych współczynników sztywności, a następnie przedstawiono tę zależność w~postaci tabel i~wykresu. Przy każdej metodzie zostały zbadane dwa przypadki, uwzględniające inne masy, siły grawitacji, współczynniki tłumienia oraz gęstości siatki. Stan spoczynku określono jako stan, w którym tkanina opadła swobodnie z~pozycji poziomej do pionowej, zawieszonej w~dwóch punktach, i~przestała się poruszać. Warto przypomnieć, że dla modelu opartego na pozycji parametr sztywności (\(s\)) został odpowiednio przeskalowany tak, by mieścił się w wymaganym zakresie [0, 1] i niósł ze sobą podobny efekt, co jego odpowiednik w~modelu masy na sprężynie. Platformą testową jest mobilna wersja aplikacji, z~implementacją na GPU.
+		%\newline
+		
+		Pomiar pierwszy -- sztywność: [50, 600], krok 50; masa: 0.2 \(kg\); grawitacja: 1 \(\frac{m}{s^2}\); współczynnik tłumienia: -0.5; gęstość siatki: 625 wierzchołków.
+		
+		Pomiar drugi -- sztywność: [50, 600], krok 50; masa: 0.7 \(kg\); grawitacja: 2 \(\frac{m}{s^2}\); współczynnik tłumienia: -10; gęstość siatki: 6400 wierzchołków.
+		%\newline
+		
+		Drgania (\(d_{x}\)) podano w mikrometrach. Kolejne testy oznaczono zgodnie ze wzorem: \(A-n\), gdzie \(A\) -- rodzaj zastosowanego modelu symulacji (MS -- masy na sprężynie, PB -- oparty na pozycji), \(n\) -- numer pomiaru.
+		\newline
+		
+		\pgfplotstabletypeset
+		[
+		every head row/.append style={before row={%
+				\caption{Drgania w zależności od współczynnika sztywności.}%
+				\label{tab_6_2}\\\toprule}}
+		]
+		{chart_6_2.dat}
+		
+		\begin{figure}[H]
+			\begin{tikzpicture}
+				\begin{axis}[
+				xlabel=s,
+				ylabel=$d_{x}$,
+				y SI prefix=micro,
+				y unit=m,
+				width=14cm,
+				height=10cm,
+				grid=major,
+				legend style={at={(0.025, 0.84)}, anchor=west},
+				every axis y label/.style={
+					at={(-0.12, 0.5)}, rotate=90,
+					anchor=east}
+				]
+				\addplot[orange, very thick] table [y=$d_{MS-01}$, x=s]{chart_6_2.dat};
+				\addlegendentry{$d_{MS-01}$}
+				\addplot[green, very thick] table [y=$d_{PB-01}$, x=s]{chart_6_2.dat};
+				\addlegendentry{$d_{PB-01}$}
+				\addplot[red, very thick] table [y=$d_{MS-02}$, x=s]{chart_6_2.dat};
+				\addlegendentry{$d_{MS-02}$}
+				\addplot[olive, very thick] table [y=$d_{PB-02}$, x=s]{chart_6_2.dat};
+				\addlegendentry{$d_{PB-02}$}
+				\end{axis}
+			\end{tikzpicture}
+		\caption[Wykres zależności drgań od współczynnika sztywności.]{Wykres zależności drgań od współczynnika sztywności. Źródło: opracowanie własne.}
+		\label{wykr_6_2}
+		\end{figure}
+
+		\myownfigure{Niestabilności występujące w obu modelach symulacji.}{figures/pic_6_1.png}{0.38}{pic_6_1}
+		\newpage
+		
+		Główna różnica pomiędzy modelami masy na sprężynie i~opartym na pozycji ukazuje się właśnie tutaj. Widać, że w~pierwszym przypadku, dla pierwszej próby, z~początku zarejestrowano najniższą ze wszystkich oscylację drgań, jednak rośnie ona szybko wraz ze wzrostem parametru sztywności, dla najwyższej jego wartości doprowadzając nawet do ,,wybuchu'' symulacji. Jeśli chodzi o~drugie podejście, można zaobserwować duże oscylacje praktycznie niezależnie od elastyczności tkaniny, co pozwala wnioskować, iż zagęszczanie siatki także ma niebagatelny wpływ na drgania. Były one obecne praktycznie przez cały czas symulacji, widać je na rysunku \ref{pic_6_1} (po lewej). Ciągle poruszające się drobne zniekształcenia bardzo negatywnie wpływają na odbiór wizualny i~w~jakichkolwiek zastosowaniach praktycznych byłyby nie do zaakceptowania.
+		
+		Testy udowodniły, iż model oparty na pozycji cechuje wyjątkowa stabilność -- oscylacje są czasem nieznacznie większe niż u~rywala, jednakże w~obu próbach utrzymywały się na stałym poziomie, niezależnie od zwiększania parametru sztywności czy liczby wierzchołków. Drugi test ukazał jednak, że dla małej elastyczności i~gęstej siatki, tkanina zaczyna wchodzić w~niekontrolowane kolizje z samą sobą. Jest ona na tyle sztywna, by przy odpowiednim ułożeniu cząstek masy doprowadzić do ,,zawiśnięcia samej na sobie'' i~unieruchomieniu się w~powietrzu, de facto ignorując siłę grawitacji. Efekt ten można zaobserwować w~prawej części rysunku \ref{pic_6_1}. Takie zachowanie tkaniny także jest nie do zaakceptowania w warunkach praktycznych, jednak należy zaznaczyć, iż nie dochodzi tu do ,,wybuchu'', a~niestabilności nie mają charakteru drobnych, szybkich drgań, a raczej niekontrolowanego powolnego falowania. Spadek mierzonych oscylacji w~przypadku współczynnika sztywności większego niż 450 w~drugiej próbie da się wytłumaczyć sytuacją widoczną na rysunku \ref{pic_6_1} (po prawej). Silne falowanie miało miejsce głównie w~części siatki oznaczonej czerwonym prostokątem, a~obszar środkowy, z~którego pobrana została próbka, pozostawał we względnym spoczynku.
+		\newpage
+	%	\subsection{Model masy na sprężynie}
+	%	\label{t:wyniki:stabilnosc:ms}
+		
+		
+	%	\subsection{Model oparty na pozycji}
+	%	\label{t:wyniki:stabilnosc:pb}
+		
+		
+	\section{Efekt wizualny}
+	\label{t:wyniki:efektwiz}
+		
+		Ostatnie kryterium oceny to po prostu stopień, w jakim zachowanie i~wygląd symulowanej tkaniny odzwierciedla rzeczywistość. Wyznacznik ten jest całkowicie subiektywny, jednak na pewno można zauważyć wprost proporcjonalną zależność pomiędzy jakością a~gęstością siatki. Mała liczba wierzchołków fizycznie nie pozwala na wygenerowanie realistycznych zmarszczek ani zagięć, tak charakterystycznych elementów animacji tkanin. Dla każdego modelu symulacji zaprezentowane zostaną zrzuty ekranu pokazujące zależność ,,efektu wizualnego'' od różnych parametrów, a~w~szczególności -- gęstości siatki. Platformą testową jest mobilna wersja aplikacji.
+		
+		Na zrzutach ekranu wchodzących w~skład rysunku \ref{pic_6_2} przedstawiono wygląd tkaniny symulowanej modelem masy na sprężynie. Zgodnie z~ruchem wskazówek zegara, począwszy od lewego górnego obrazka przyjęto następujące parametry:
+		
+		\begin{enumerate}
+			\item Siatka \(10 \times 10\) krawędzi, współczynnik sztywności 200, współczynnik tłumienia -0.5, przyspieszenie grawitacyjne 5 \( \frac{m}{s^2} \), masa 0.8 \(kg\);
+			\item Siatka \(40 \times 40\) krawędzi, współczynnik sztywności 500, współczynnik tłumienia -3.3, przyspieszenie grawitacyjne 1 \( \frac{m}{s^2} \), masa 0.9 \(kg\);
+			\item Siatka \(80 \times 80\) krawędzi, współczynnik sztywności 500, współczynnik tłumienia -3.3, przyspieszenie grawitacyjne 0.5 \( \frac{m}{s^2} \), masa 0.5 \(kg\);
+			\item Siatka \(120 \times 120\) krawędzi, współczynnik sztywności 700, współczynnik tłumienia -10, przyspieszenie grawitacyjne 0.5 \( \frac{m}{s^2} \), masa 0.5 \(kg\).
+		\end{enumerate}
+		
+		Natomiast na rysunku \ref{pic_6_3} pokazano efekt wizualny dla modelu opartego na pozycji:
+		
+		\begin{enumerate}
+			\item Siatka \(10 \times 10\) krawędzi, współczynnik sztywności 50, przyspieszenie grawitacyjne 5 \( \frac{m}{s^2} \), masa 2 \(kg\);
+			\item Siatka \(40 \times 40\) krawędzi, współczynnik sztywności 100, przyspieszenie grawitacyjne 5 \( \frac{m}{s^2} \), masa 0.1 \(kg\);
+			\item Siatka \(80 \times 80\) krawędzi, współczynnik sztywności 200, przyspieszenie grawitacyjne 5 \( \frac{m}{s^2} \), masa 0.1 \(kg\);
+			\item Siatka \(120 \times 120\) krawędzi, współczynnik sztywności 300, przyspieszenie grawitacyjne 0.5 \( \frac{m}{s^2} \), masa 0.1 \(kg\).
+		\end{enumerate}
+		\newpage
+		% kolizje z boksem
+			
+		\myownfigure{Wygląd tkaniny dla różnych parametrów (model masy na sprężynie).}{figures/pic_6_2.png}{0.38}{pic_6_2}
+		
+		\myownfigure{Wygląd tkaniny dla różnych parametrów (model oparty na pozycji).}{figures/pic_6_3.png}{0.38}{pic_6_3}
+		\pagebreak
+		
+		% podobieństwa między modelami, różnice między modelami, co się dzieje dla małej ilości krawędzi, co się dzieje dla dużej ilości krawędzi, kolizje z boksem, kolizje z samym sobą
+		
+		Jak może się wydawać z~pobieżnych oględzin zrzutów ekranu, rozbieżności w~wyglądzie tkaniny symulowanej różnymi modelami nie są duże. Faktem jest, iż dla małej liczby krawędzi tkanina wygląda i~zachowuje się niemal tak samo. Zmarszczki i~kształt ułożenia na obiekcie wyglądają tym lepiej i~bardziej realistycznie, im gęstsza jest siatka, zarówno w pierwszej, jak i~w~drugiej metodzie. 
+		
+		Podobieństwa kończą się jednak w momencie porównania parametrów, jakich użyto do uzyskania podobnych efektów -- są zupełnie inne. Niewątpliwie model oparty na pozycji generuje sztywniejszą tkaninę niż jego rywal. Czasem skutkuje to omówionymi wyżej błędami, lecz nie występują tu mikrodrgania widoczne na prawym dolnym zrzucie ekranu rysunku \ref{pic_6_2}. Duże znaczenie ma także szybkość samej animacji tkaniny -- powinna ona opadać i~reagować na interakcje z~poruszającymi się obiektami tak szybko, jak w~rzeczywistości. Mimo swoich anomalii oraz trudności w uzyskaniu odpowiednio elastycznego modelu, dla gęstszych siatek metoda masy na sprężynie daje lepsze rezultaty wizualne. Z~drugiej strony, metodę opartą na pozycji cechuje dużo łatwiejsza regulacja elastyczności i~większa stabilność, jednak mogą się tu pojawić problemy z~ustaleniem odpowiedniej szybkości animacji. Założono stałość parametru \(\delta t \) przesyłanego do symulatora. W~obu metodach dobranie parametrów dla uzyskania pożądanego zachowania jest tym łatwiejsze, im mniej wierzchołków posiada siatka.
+		
+		W~przypadku małej liczby krawędzi można zaobserwować niedokładne wykrywanie kolizji pomiędzy tkaniną a~prostopadłościanem (rysunek \ref{pic_6_2}, oba górne zrzuty ekranu). Nie jest to jednak regułą, jako że problem pojawia się też dla gęstszych siatek (rysunek \ref{pic_6_3}, lewy dolny obrazek). Tutaj jednak winę ponosi także brak implementacji siły tarcia, co sprawia, że wierzchołki prześlizgują się po prostych ściankach obiektu, rozciągając tkaninę i~tworząc coraz większe otwory w miejscu przebicia. Dla sfery okalającej, ze względu na jej obły kształt, problemy przebicia nie występują. Wyjątkiem są szybko poruszające się obiekty, które mogą zwyczajnie przeskoczyć przez tkaninę, w~jednym kroku obliczeń znajdując się przed nią, a~w~następnym -- już za. Należałoby zastosować ciągłą metodę wykrywania kolizji, bardziej skomplikowaną matematycznie, lecz usuwającą takie zjawiska.
+		
+		\myownfigure{Wygląd tkaniny po przeniknięciu przez prostopadłościan (model oparty na pozycji).}{figures/pic_6_4.png}{0.38}{pic_6_4}
+		
+		Co gorsza, w~przypadku prostopadłościanu ześlizgiwanie się wierzchołków może stopniowo prowadzić także do kompletnego przeniknięcia tkaniny przez obiekt kolizyjny, poprzez powolne przenikanie przez niego ściąganych w dół kolejnych punktów masy. Efekt tego widać na rysunku \ref{pic_6_4}. Zdecydowanie sytuację poprawiłoby wprowadzenie siły tarcia bądź dokładniejszej metody detekcji kolizji, gdzie brane pod uwagę byłyby trójkąty siatki, a~nie tylko same wierzchołki.
+		
+		Zieloną ramką oznaczono fragment tkaniny, gdzie wystąpił błąd rozwiązywania kolizji wewnętrznych. Widać, że przeniknął on przez inną część modelu i~zawinął się w drugą stronę. Stało się tak z~powodu bardzo uproszczonej techniki sprawdzania tych kolizji, biorącej pod uwagę tylko cztery sąsiednie wierzchołki. Najprostszym rozwiązaniem problemu byłoby zwiększenie ich liczby, jednak wiąże się to z~większym kosztem obliczeniowym. Wyjściem jest także zastosowanie innej metody detekcji kolizji, o~której mowa w~poprzednim akapicie.
+			
+	%	\subsection{Model masy na sprężynie}
+	%	\label{t:wyniki:efektwiz:ms}
+			
+			
+	%	\subsection{Model oparty na pozycji}
+	%	\label{t:wyniki:efektwiz:pb}

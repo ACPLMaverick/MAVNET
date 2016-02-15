@@ -1,0 +1,56 @@
+1. Wstęp
+	1.1 Aktualność tematu, ogólny jego opis, zastosowania, problemy i potrzeby
+	1.2 Cel i zakres pracy
+	1.3 Streszczenie poszczególnych rozdziałów
+
+
+2. Część teoretyczna
+	2.1 Analiza istniejących metod i rozwiązań symulacji tkanin
+		2.1.1 Masa na sprężynie
+		2.2.2 Metoda pozycyjna
+		2.2.3 Porównanie dwóch powyższych metod
+		2.2.4 Inne
+		2.2.5 Techniki detekcji kolizji
+
+	2.2	Omówienie zastosowania GPU w symulacji tkanin
+		2.2.1 Przedstawienie architektury GPU
+		2.2.2 Porównianie GPU i CPU pod kątem architektury i zastosowań
+		2.2.3 Przedstawienie wad i zalet zastosowania GPU do rozwiązania symulacji tkaniny  
+
+3. Omówienie wykorzystywanych technologii sprzętowych i programowych	// mało!
+	2.3 Analiza możliwości urządzeń mobilnych
+		2.3.1 Przedstawienie popularnych konfiguracji sprzętowych i ich wydajności
+		2.3.2 Przedstawienie użytej konfiguracji sprzętowej - LG Nexus 4
+		2.3.3 Porównanie konfiguracji sprzętowych PC i smartfona oraz ich przewidywanych wydajności
+
+	2.4 Analiza wybranych technologii i narzędzi
+		2.4.1 OpenGL ES 3.0
+		2.4.2 GLSL
+		2.4.3 OpenCL - a konkretnie czemu nie on
+		2.4.4 Android NDK
+		2.4.5 Visual Studio 2015 Community + Cross-platform Development Kit
+
+
+4. Część praktyczna
+	3.1 Ogólna architektura aplikacji
+	3.1 Budowa i działanie silnika graficznego dla symulacji
+	3.2 Budowa i działanie symulatora tkaniny
+
+5. Wyniki testów symulatora dla różnych parametrów tkaniny 
+		3.3.1 Masa na sprężynie - GPU - Android
+			3.3.1.1 Czas wykonania
+			3.3.1.2 Użycie pamięci
+			3.3.1.3 Stabilność
+			3.3.1.4 Efekt wizualny
+		3.3.2 Metoda pozycyjna - GPU - Android
+		3.3.3 Masa na sprężynie - CPU - Android
+		3.3.4 Metoda pozycyjna - CPU - Android
+		3.3.5 Masa na sprężynie - GPU - PC
+		3.3.6 Metoda pozycyjna - GPU - PC
+
+6. Wnioski
+	4.1 Porównanie obu metod
+	4.2 Porównanie implementacji CPU i GPU
+	4.3 Porównanie implementacji GPU Androida i GPU PC
+	4.4 Wpływ symulacji tkaniny na całość działania silnika graficznego
+	4.5 Podsumowanie

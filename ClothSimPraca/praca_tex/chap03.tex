@@ -1,0 +1,118 @@
+\chapter{Wykorzystane technologie}
+\label{t:technologie}
+
+
+	\section{Analiza możliwości urządzeń mobilnych}
+	\label{t:technologie:mobilne}
+	
+		\subsection{Sensowność wykorzystania urządzeń mobilnych w symulacji tkanin}
+		\label{t:technologie:mobilne:dlaczego}
+		
+		% niższa wydajność ALE unikalne możliwości interakcji i wszechobecna dostępność, wykorzystanie w grach 3D (rozwój tychże) i aplikacjach branży tekstylnej (włókienniczej) oraz odzieżowej, niższa wydajność wiążąca się z niższą jakością, wykorzystanie GPU by ją podnieść
+		
+		W związku z faktem, iż niniejsza praca zajmuje się symulacją tkaniny na urządzeniach mobilnych, naturalnie nasuwa się pytanie o~sens realizacji tego typu obliczeń z~użyciem smartfonu bądź tabletu. Prawdą jest, że rozwiązanie zagadnienia związane jest ze sporym zapotrzebowaniem na moc obliczeniową, zwiększającym się proporcjonalnie do oczekiwanej dokładności rozwiązania, a~konkretnie -- do gęstości siatki tkaniny. Z~drugiej strony, urządzenia mobilne, w~przeciwieństwie do platformy PC, szczytowymi osiągnięciami technologii pod względem wydajności nigdy nie były -- raczej starano się tu osiągnąć kompromis między sensowną mocą obliczeniową a~niskim zużyciem energii. Jednakże smartfony i~inne tego rodzaju urządzenia cechują się dostępnością dla użytkownika praktycznie zawsze, co nie do końca może być powiedziane o~PC, oraz unikalnymi metodami interakcji, takimi jak ekran dotykowy, bądź akcelerometr.
+		
+		Mimo oczywistych wad, także i~na platformach mobilnych symulacja tkanin znajduje zastosowanie. Jako pierwszy i~najważniejszy przykład należy wskazać rynek gier i~wizualizacji 3D. Dawno minęły już czasy, gdy najpopularniejszą grą na telefonach komórkowych był kultowy, dwuwymiarowy ,,\emph{Snake}''. Obecnie spora część rynku koncentruje się na złożonych grach trójwymiarowych, z~coraz ładniejszą grafiką, na potrzeby których tworzy się coraz bardziej zaawansowane silniki graficzne i~korzysta z najnowszych technologii. Podobnie, jak na platformie PC, także i~tutaj możliwe, a~nawet pożądane jest użycie symulacji tkanin do m.in. realistycznej animacji elementów stroju bohaterów, flag powiewających na wietrze oraz innych przedmiotów tekstylnych.
+		
+		Obecnie wielu producentów i~sprzedawców z różnych branż decyduje się na stworzenie i~wypuszczenie na rynek własnej, wyspecjalizowanej aplikacji dla urządzeń mobilnych, pozwalającej w prosty, przyjazny sposób przeglądać oferty, oglądać towary i~dokonywać zakupów. Zdecydowanie zwiększa to przychody danej firmy. Branżą, która mogłaby skorzystać na zastosowaniu symulacji tkanin w~swoich aplikacjach jest oczywiście branża włókiennicza i~odzieżowa. Przykładem może być chociażby stworzenie ,,wirtualnej przymierzalni'' \cite{tryon}, przy pomocy której klient byłby w stanie ,,ubrać się'' w każdy wybrany element odzieży. Aplikacja pozwoliłaby mu chociażby na obejrzenie go ze wszystkich stron, sprawdzenie elastyczności i~zachowania w różnych pozach. A to wszystko na ekranie tabletu, dostępne w~każdym możliwym miejscu. 
+		
+		Oczywistym jest, że niższa wydajność urządzeń mobilnych wiąże się z~niższą jakością symulacji. Warto jednak pamiętać, iż wyświetlacze urządzeń mobilnych z~reguły są mniejsze od monitorów komputerowych. Co za tym idzie -- można zastosować siatkę tkaniny o~mniejszej gęstości i~wykonywać mniej dokładne obliczenia np. detekcji kolizji bez dużego spadku jakości wizualnej. Ten fakt, oraz omówiona wcześniej mnogość zastosowań sprawiają, że symulacja tkanin na urządzeniach mobilnych zdaje się jak najbardziej mieć sens. W rozdziałach \ref{t:wyniki} i~\ref{t:wnioski} zostanie wykazane, w~jakim stopniu.
+	
+		\subsection{Konfiguracja sprzętowa urządzeń mobilnych i porównanie z konfiguracją PC}
+		\label{t:technologie:mobilne:konfiguracja}
+		
+		% architektura CPU, szybkości CPU, ilość core'ów, architektura GPU, ilosć SM, API GPU i GPGPU, ilość pamięci op., 
+		
+		Jak już wyżej wspomniano, wydajność konfiguracji sprzętowej urządzeń mobilnych to drobny ułamek wydajności komputerów klasy PC. Warto dokładniej zwrócić uwagę, jaka jest między tymi platformami różnica i~z~jakie ograniczenia można napotkać, tworząc symulację tkanin na tej pierwszej. Porównanie zostanie dokonane na przykładzie urządzenia testowego -- smartfona LG Nexus 4 E960. Dane techniczne zaczerpnięto z~\cite{specs}, \cite{specs_adreno}, \cite{specs_gtx750} i \cite{specs_gtxtitan}. 
+		
+		Urządzenie oparto o mikrokontroler APQ8064 Snapdragon S4 Pro. Serce układu to czterordzeniowy procesor Krait o~taktowaniu 1.5 GHz i~architekturze ARMv7-A. Szybkość zegara jest przeszło dwa razy mniejsza niż w~przeciętnym odpowiedniku PC. Można stąd wnioskować, że wydajność okaże się dwukrotnie mniejsza, jednak diabeł tkwi w szczegółach. Dzisiejsze procesory architektury x86 dysponują szerokim wachlarzem specjalnych instrukcji, takich jak SSE czy AVX, bardzo przyspieszających operacje wektorowe, typu SIMD. Jedynym ich odpowiednikiem w omawianym układzie są instrukcje NEON, dużo mniej wydajne. A~zatem, zgodnie z~\cite{versus}, procesor Krait cechuje ponad dziesięciokrotnie mniejsza wydajność niż jego przykładowego odpowiednika z~komputera klasy PC -- Intel Core i7-4770.
+		
+		Układ Snapdragon jest także wyposażony w dedykowane GPU, specjalnie na potrzeby renderingu grafiki 2D i~3D. To Adreno 320, cechujące się taktowaniem zegara 400 MHz i~w~sumie 64 procesorami strumieniowymi. Karta graficzna osiąga wydajność ok. 60 GFLOPS\footnote{\emph{Floating-point Operations Per Second} -- liczba operacji na liczbach zmiennoprzecinkowych w~czasie 1 sekundy.}. Przykładem porównawczym może być średniej klasy GPU komputerów stacjonarnych sprzed kilku lat, GeForce GTX 750. Jego zegar to 1020 MHz, ma ono 512 SP, a~wydajnościowo plasuje się trochę ponad 1 TFLOPS. Jedno z~najpotężniejszych GPU obecnie, GeForce GTX Titan, cechuje z kolei 3072 procesorów strumieniowych i~ok. 6 TFLOPS. Pod uwagę wzięto oczywiście obliczenia na liczbach zmiennoprzecinkowych pojedynczej precyzji. Widać więc, że mobilne GPU wydajnościowo stanowią zaledwie ułamek ich ,,pełnowymiarowych'' odpowiedników.
+		
+		Ważną kwestią jest też dostępność i~obsługa odpowiednich technologii, a~w~szczególności API graficznych i~GPGPU. Tutaj na szczęście sytuacja ma się dużo lepiej. Adreno 320 wspiera zaawansowane już całkiem OpenGL ES 3.0 \cite{specs_adreno}. Patrząc na sprawę pod kątem symulacji tkanin, brakuje tylko obsługi OpenGL ES 3.2, który wprowadził bardzo przydatne w omawianym problemie bufory teksturowe. Mimo to jednak API graficzne spełnia wymagania niniejszej pracy. Oczywiście z~ogólnego punktu widzenia, brakuje wielu nowych rozwiązań, wprowadzonych w najnowszych ,,dużych'' wersjach OpenGL. Do obliczeń GPGPU wspierane są technologie OpenCL 1.1, będący open-source'owym odpowiednikiem CUDA, oraz RenderScript. W~tej pracy jednak okazało się niemożliwe użycie żadnego z nich. Obsługa OpenCL została wycofana na urządzeniach Google, w~tym na Nexusie 4, z~powodów marketingowych, a~konkretnie, z~powodu promowania drugiej wymienionej technologii \footnote{http://www.anandtech.com/show/7191/android-43-update-for-nexus-10-and-4-removes-unofficial\allowbreak-opencl-drivers}. Tej z~kolei nie można było użyć z~racji tego, iż API nie pozwala jawnie wybrać i~ustalić, czy obliczenia będą dokonywane na GPU, czy na CPU \footnote{http://stackoverflow.com/questions/18753935/forcing-renderscript-to-run-on-cpu-or-gpu-atleast\allowbreak-for-performance-tuning-purpos}.
+		
+		\subsection{Unikalne możliwości platform mobilnych w interakcji użytkownika z~tkaniną}
+		\label{t:technologie:mobilne:interakcja}
+		
+		% ekran dotykowy, akcelerometr
+		
+		Urządzenia mobilne cechuje jedna ważna przewaga nad komputerami PC -- charakterystyczny tylko dla nich interfejs. Sztandarowym przykładem jest oczywiście ekran dotykowy. W~rozważanej kwestii, z~jego pomocą użytkownik może ruchami palca po ekranie przemieszczać i~rozciągać tkaninę. Pozwala to na nadanie jej ruchu w~odpowiednią stronę, sprawdzanie elastyczności oraz dokładne, precyzyjne ustawienie w~wirtualnym świecie poprzez sprowokowanie kolizji z~obiektami otoczenia. Przydatne może być szczególnie w~omawianym wcześniej przypadku wykorzystania symulacji do aplikacji typu ,,przymierzalnia''. Klient jest w~stanie realistycznie założyć oglądany element ubioru na swój awatar i~dokładnie go dopasować. 
+		
+		Kolejnym charakterystycznym dla platformy mobilnej urządzeniem wejścia jest akcelerometr. Najważniejszy przykład jego wykorzystania to możliwość zmiany kierunku siły grawitacji działającej na symulowany układ poprzez obracanie telefonu w~odpowiednim kierunku. Użytkownik będzie miał wrażenie obracania układem, a~siła grawitacji pozostanie stała i~skierowana w dół względem niego. Stwarza to kolejne możliwości zmiany położenia tkaniny, dokładnego jej układania i~odwzorowania realizmu świata wirtualnego.
+
+	
+	\section{Wybrane technologie i narzędzia}
+	\label{t:technologie:narzedzia}
+	
+		\subsection{Android NDK}
+		\label{t:technologie:narzedzia:ndk}
+		
+		% jedyne sensowne rozwiązanie jesli sie chce wycisnąć 100% wydajności z aplikacji, odradzany przez dokumentację, % C++ !	
+		
+		Wiodącym językiem programowania na platformie Android jest język Java. Wykorzystujące go Android SDK posiada bardzo szeroką dokumentację i~pomoc techniczną. Można na jego temat znaleźć wiele publikacji, a~w~przypadku, gdy początkujący programista ma z~nim jakieś trudności, w~Internecie na pewno znajdzie rozwiązanie. Istnieje jednak jeden duży problem -- Java nie jest językiem natywnym i~uruchamia się na maszynie wirtualnej. Przez to nie nadaje się do aplikacji, w~których kluczowa jest wydajność, takich jak na przykład symulacja fizyczna tkanin.
+		
+		Jest to powód, dla którego cały projekt został napisany w~języku C++. Umożliwiło to wykorzystanie Android NDK\footnote{Native Development Kit, \href{http://developer.android.com/tools/sdk/ndk/index.html}{http://developer.android.com/tools/sdk/ndk/index.html}}, czyli zbioru większości funkcji Androida, dostępnych z~poziomu C bądź C++. Kod ten zostaje połączony z~inicjalizacyjnym kodem Javy przy pomocy technologii JNI\footnote{Java Native Interface, \href{http://docs.oracle.com/javase/7/docs/technotes/guides/jni/}{http://docs.oracle.com/javase/7/docs/technotes/guides/jni/}}, będącej swoistym pomostem pomiędzy dwoma platformami. Cykl życia aplikacji kontrolowany z~poziomu C++ jest niemalże identyczny, jak w przypadku języka Java, opiera się na zdarzeniach wywoływanych przez system operacyjny. W~ten sposób zarządza się m.in. inicjalizacją i~zwalnianiem pamięci oraz sygnałami przychodzącymi z~urządzeń wejściowych, takich jak ekran dotykowy czy akcelerometr. Za pomocą plików konfiguracyjnych i~tzw. \emph{Android Manifest} kontrolowane są wszelkie opcje konfiguracyjne dotyczące aplikacji. Można tam ustalić np. jej nazwę, widoczność elementów interfejsu systemu oraz to, czy aplikacja sama potrafi obsłużyć zmianę orientacji ekranu, czy należy ją wtedy zresetować.
+		
+		Jedna z~implementacji symulacji zakłada przetwarzanie jej wielowątkowo na CPU. Jako, że Android wywodzi się z~rodziny UNIX-ów, istnieje możliwość wywołania funkcji biblioteki \emph{pthread} z poziomu natywnego kodu C++. Umożliwia ona łatwe i~przejrzyste uruchamianie nowych wątków, zarządzanie nimi oraz ich synchronizację. W wersji na platformę Windows skorzystano z darmowej implementacji biblioteki \emph{pthreads-win32}\footnote{https://www.sourceware.org/pthreads-win32/}.
+	
+		\subsection{OpenGL}
+		\label{t:technologie:narzedzia:ogl}
+		
+		% różnice między nimi i brak paru ważnych rzeczy!
+		
+		Stworzenie samej symulacji tkanin nie ma sensu, jeśli nie jest się w stanie pokazać jej działania. Konieczne więc było stworzenie silnika wizualizującego wygląd i~zachowanie tkaniny. OpenGL to darmowe API graficzne, czyli zestaw bibliotek służących do komunikacji z GPU i~w efekcie -- rysowania grafiki 2D i~3D. Najważniejsza cecha tej technologii to jej dostępność na praktycznie wszystkich platformach. Właśnie z~tego powodu została ona użyta w niniejszej pracy, jako że jest obsługiwana zarówno na smartfonach z systemem Android, jak i~na komputerach PC z Windows. W pierwszym przypadku wykorzystano wersję OpenGL ES 3.0, będącą okrojoną i~przystosowaną do użytku na platformach mobilnych oraz innych systemach wbudowanych. Na PC użyto standardowego OpenGL 3.3. Nie są to najnowsze edycje OpenGL, jednak oferują już programowalny potok renderingu i~systemy wspierające GPGPU, takie jak transformacyjne sprzężenie zwrotne. Uznano je więc za wystarczające do zrealizowania niniejszej pracy.
+		
+		Jak można przeczytać w~\cite{oglspec}, OpenGL wymaga także API pomocniczego, zarządzającego tworzeniem okien, do których rysowana jest grafika, przydzielaniem kontekstów graficznych, wymaganych by cokolwiek dało się wyrenderować, oraz innymi zasobami. W przypadku programu na platformie Android, użyte zostało tu EGL -- specjalne API do systemów mobilnych i~wbudowanych, dzieła twórców OpenGL, dostępne razem z OpenGL ES. W~wersji ,,pecetowej'' wykorzystano darmowe API GLFW\footnote{http://www.glfw.org/} oraz GLEW\footnote{http://glew.sourceforge.net/}.
+		
+		Ważną kwestią w tworzeniu zarówno symulacji fizycznych, jak i~samego silnika graficznego jest odpowiednia baza matematyczna. W niniejszej pracy użyta została darmowa biblioteka GLM\footnote{http://glm.g-truc.net/0.9.7/index.html}, zalecana jako nieodłączny element programowania w OpenGL. Zapewnia ona dostęp do wielu wygodnych i~przydatnych funkcji oraz struktur matematycznych, ułatwiających szczególnie obliczenia na wektorach oraz macierzach, kluczowe w grafice 3D. GLM w swoim założeniu ma jak najbardziej przypominać składnię i~semantykę związanego z OpenGL języka programów cieniujących -- GLSL, o~którym więcej w podrozdziale \ref{t:technologie:narzedzia:ogl:glsl}.
+		
+		Do wczytywania i przetwarzania tekstur wykorzystano także darmową bibliotekę SOIL2\footnote{https://bitbucket.org/SpartanJ/soil2}. Tekstury są w programie niezbędne, z racji tego, iż jedno z założeń to wyświetlanie elementów interfejsu użytkownika -- przycisków i tekstu. SOIL2 pozwala na łatwe i szybkie załadowanie tekstury w jednym z wielu obsługiwanych formatów, a następnie utworzenie odpowiedniego obiektu OpenGL. Biblioteka jest częścią domeny publicznej i została dołączona do kodu źródłowego aplikacji, z powodu potrzeby skompilowania jej dla architektury ARM.
+		
+			\subsubsection{OpenGL ES 3.0 kontra OpenGL 3.3}
+			\label{t:technologie:narzedzia:ogl:vs}
+			
+			Według \cite{oglspec}, każda wersja OpenGL ES to podzbiór funkcji pewnej ,,dużej'' wersji OpenGL. W przypadku użytego tutaj Nexusa 4, obsługiwana jest edycja ES 3.0, a~jej odpowiednikiem na większych platformach -- wersja 3.3. Właśnie dlatego ta ostatnia posłużyła do stworzenia ,,pecetowego'' modelu symulacji tkanin. Dzięki temu można było zapewnić jak największą kompatybilność i~łatwość przeniesienia z~jednej platformy na drugą.
+			
+			Filozofią przyświecającą deweloperom przy tworzeniu edycji OpenGL ES jest przede wszystkim to, by każda czynność, którą można zrobić przy pomocy API, była osiągalna tylko w jeden, konkretny sposób. Idąc tym tropem, ujednolicono wiele funkcji i~usunięto te, które się dublowały, bądź w dalszej perspektywie dawały identyczne efekty. Dzięki temu API stało się bardziej przejrzyste oraz łatwiej się z~niego korzysta. Warto zaznaczyć, że użyteczność nie zmniejszyła się względem wersji API 3.3, a po prostu ,,zrobiono porządek''.
+			
+			\subsubsection{GLSL}
+			\label{t:technologie:narzedzia:ogl:glsl}
+			
+			% zalety - zintegrowany z API graficznym, ogólnodostępny, szybki; wady - konieczność dostosowania GPGPU do API graficznego, mało funkcjonalności wspierających GPGPU na OpenGL ES
+			
+			GLSL jest językiem specjalistycznym dla API OpenGL, przy pomocy którego pisane są programy cieniujące, czyli tzw. \emph{shadery}. W niniejszej pracy wykorzystany został do stworzenia podstawowego, prostego modelu cieniowania opartego o~wzory Phonga-Blinna. Z racji opisanego w~podrozdziale \ref{t:technologie:mobilne:konfiguracja} braku innych sensownych technologii na wybranej platformie sprzętowej, użyto go także do napisania obliczeń symulacji tkanin na GPU, tj. wyliczenia przesunięć wierzchołków, rozwiązania kolizji zewnętrznych i~wewnętrznych oraz przeliczenia wektorów normalnych.
+			
+			Niewątpliwą zaletą GLSL jest jego integracja z API graficznym i~brak konieczności dołączania dodatkowych bibliotek. Chcąc prowadzić specjalistyczne obliczenia dla tkaniny, można korzystać z tych samych buforów wierzchołków, których używa się do jej rysowania. Bardzo łatwo uniknąć jest niepotrzebnego kopiowania danych. Co za tym idzie -- GLSL jest optymalnym pod względem wydajności rozwiązaniem. Wart wspomnienia jest także fakt jego dostępności, można z~niego skorzystać wszędzie tam, gdzie możliwe jest uruchomienie biblioteki OpenGL w wersji obsługującej programowalny potok renderingu. 
+			
+			GLSL ma jednak kilka wad, które dają o~sobie znać w momencie, gdy zachodzi potrzeba wykorzystania go do obliczeń GPGPU. Obojętnie, jaki problem trzeba rozwiązać, trzeba dostosować dane oraz algorytmy do struktur danych potoku renderingu i~do funkcji API graficznego. W~rozważanym przypadku nie jest to jednak duży problem. Gorszą bolączką jest tak naprawdę niewielkie wsparcie dla GPGPU w OpenGL ES 3.0, omówione zostanie ono w~następnym podrozdziale. Warto wspomnieć, że najnowsze wersje API mają już pełną obsługę obliczeń GPGPU, czego przejawem jest chociażby obecność \emph{Compute Shaderów}, czyli programów ogólnego przeznaczenia uruchamianych na GPU.
+			
+			\subsubsection{Bufory teksturowe i bufory jednorodne}
+			\label{t:technologie:narzedzia:bufory}
+			
+			Dużym minusem urządzenia testowego jest brak obsługi OpenGL ES 3.2, w którym dodane zostały bufory teksturowe (ang. \emph{texture buffers}). Zostały one wykorzystane do zaimplementowania prostej symulacji tkanin w~\cite{receptury}, co dowodzi ich kluczowej przydatności. Wykonując obliczenia na każdym wierzchołku, należy mieć dostęp do pozycji wierzchołków sąsiednich, aby obliczyć odległości między nimi a~tym aktualnym. Prowadzi to do konieczności posiadania dostępu do bufora pozycji obecnych oraz~poprzednich wszystkich wierzchołków przez każdy uruchomiony na GPU kernel.
+			
+			Można tego dokonać idealnie wykorzystując bufory teksturowe, będące \emph{de facto} jednowymiarową teksturą, której zbiór danych da się ustalić jako jakikolwiek istniejący na karcie graficznej bufor. Jeden bufor teksturowy może pomieścić co najmniej 128 MiB, zależnie od pamięci konkretnego GPU \cite{opengl_wiki}. Zapewnia też bardzo szybki swobodny odczyt danych \cite{buffers}. 
+			
+			Zamiast tego konieczne było użyć innej techniki, a mianowicie tzw. \emph{Uniform Buffer Objects}, co można przetłumaczyć jako bufory jednorodne. Wykorzystywane są one do łączenia danych trafiających do programów cieniujących w jeden ciągły blok i~dają możliwość szybkiego wykorzystania tego bloku w~wielu programach \cite{opengl_wiki}. Ich zastosowanie jest, jak widać, trochę inne niż to, o~które w rozwiązaniu omawianego problemu chodzi, jednak w~efekcie spełniają podobną rolę, jak bufory teksturowe. Należy się jednak liczyć z~faktem, że maksymalna ich wielkość to tylko 64 KB danych, co ogranicza maksymalną możliwą gęstość siatki tkaniny. Odczyt jest tu także dużo wolniejszy, niż w~pierwszym przypadku \cite{buffers}.
+			
+			\subsubsection{Transformacyjne sprzężenie zwrotne}
+			\label{t:technologie:narzedzia:transformfeedback}
+			
+			O mechanizmie OpenGL zwanym \emph{Transform Feedback}, czyli transformacyjnym sprzężeniu zwrotnym, wspomniano już w~rozdziale \ref{t:teoria:gpu:architektura}. Znajdujący się tam rysunek \ref{pic_2_9} przedstawia m.in. ogólną zasadę działania tej technologii. Jak wiadomo, dane w potoku renderingu koniec końców trafiają do bufora ramki, bądź tylnego bufora i~są po drodze przetwarzane w kilku różnych etapach. Aby w~ogóle móc dokonywać obliczeń GPGPU korzystając z~API graficznego, trzeba mieć możliwość odczytu danych wyjściowych. Następnie albo zostaje uznane, że są to pożądane wyniki obliczeń, albo podaje się je znowu na wejście potoku do ponownego przetworzenia. 
+			
+			Taką możliwość udostępnia właśnie transformacyjne sprzężenie zwrotne. Dane trafiają do shadera wierzchołków, gdzie program cieniujący wykonuje na nich ciąg operacji. Następnie zamiast zostać podane do rasteryzera, zapisywane są do ustalonego wcześniej, specjalnego bufora, oznaczonego jako bufor sprzężenia zwrotnego. Po zakończeniu działania \emph{Transform Feedbacku} jest on dostępny tak samo, jak każdy inny bufor w~OpenGL. Opisywana symulacja tkanin to idealny przykład zastosowania tego rozwiązania, jako, że takie same obliczenia wykonywane są w każdym kroku, a~następnie po prostu zamienia się miejscami bufory wejściowe i~wyjściowe. 
+		
+		%\subsection{CUDA}		% nie, bo projekt PC-towy trzeba przerobić idealnie tak jak jest androidowy zrobiony
+		%\label{t:technologie:narzedzia:cuda}
+		
+		\subsection{Visual Studio 2015 Community + Cross-platform Development Kit}
+		\label{t:technologie:narzedzia:vs}
+		
+		% nowość, pełna intergracja z VS, zero Javy (też i wada), alternatywa - płatny Xamarin
+		
+		W pracy, jako środowisko programistyczne, wykorzystano najnowszą edycję Microsoft Visual Studio w~darmowej wersji Community. Wybór został dokonany ze względu na jego wszechstronność i~możliwości. Nowością w wydaniu 2015 jest pakiet Cross-platform Development Kit. Umożliwia on budowanie programów na platformy mobilne, takie jak Android lub iOS. Dotychczas było to wspierane tylko w~Eclipse, bądź Android Studio, będącym jego specjalistyczną edycją dla programowania na tę platformę. Nowy pakiet Microsoftu pozwala na tworzenie aplikacji w natywnym języku C++, z użyciem opisanych w~podrozdziale \ref{t:technologie:narzedzia:ndk} bibliotek. Zapewnia także integrację z systemem operacyjnym, co jest dużym ułatwieniem dla początkujących programistów, którzy nie muszą się zajmować zawiłościami inicjalizacji natywnego kodu. 
+		
+		Wiąże się z~tym jednak poważne ograniczenie -- oznacza to bowiem, że nie ma dostępu do części aplikacji w Javie tworzonej tu automatycznie. Język ten jest w ogóle nieobsługiwany przez Visual Studio, ale teoretycznie wszystkie potrzebne zasoby, np. referencję do menedżera assetów\footnote{Zasobów dodatkowych, potrzebnych do działania aplikacji, np. tekstur, dźwięków, siatek geometrycznych, itp.}, dostaje się bezpośrednio przy starcie programu. Jeżeli jakieś rozwiązanie wymaga bardziej zaawansowanej komunikacji między Javą a C++ -- nie można z~niego skorzystać.
+		
+		Microsoft pomyślał też i~o~tym, wprowadzając pakiet Xamarin. Daje on możliwość pisania ,,wysokopoziomowej'' części kodu przeznaczonego na platformy mobilne w~C\#. Jednakże jest to już opcja płatna, a~edycja darmowa wprowadza duże ograniczenia odnośnie budowanych aplikacji, ograniczając chociażby rozmiar pliku wykonywalnego do 128 kiB i~uniemożliwiając łączenie go z bibliotekami tworzonymi w~innych językach, jak C/C++ lub Java.
+		

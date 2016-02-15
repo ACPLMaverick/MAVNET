@@ -1,0 +1,10 @@
+Pomysły do inżynierki:
+
+- animacja tkaniny na GPU Nexusa 4, proste, interaktywne demo technologiczne, plugin do unity?
+- animacja ubrania postaci na CUDA, zmarszczki na ubraniach? hybrydowa technika (szkieletowo + fizycznie)? teselacja?
+
+mass-spring model
+rozdzieranie się tkanin?
+podejście fizyczne / geometryczne
+używanie uv'ek do obliczenia napięcia i deformacji
+niejawne wsteczne całkowanie Eulera (?)
