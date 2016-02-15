@@ -15,3 +15,5 @@ ClothSim/ClothSim/ClothSim/ClothSim.iOS.Application/ClothSim.iOS/Images.xcassets
 ClothSim/ClothSim/ClothSim/ClothSim.Android.Packaging/ARM/
 *.sdf
 ClothSim/ClothSim/ClothSim.PC/PC Release/
+LittleGame/LittleGame/Debug/vc140.idb
+LittleGame/LittleGame/Debug/
