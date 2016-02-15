@@ -3,28 +3,25 @@
 #include "stdafx.h"
 #include "Singleton.h"
 #include "Resource.h"
+#include "SystemSettings.h"
 
 class System : public Singleton<System>
 {
 protected:
 
-#pragma region Constants
+#pragma region SettingsSystem
 
-	const std::wstring WINDOW_TITLE = L"LittleGame";
+	SystemSettings m_settings;
 
 #pragma endregion
 
 #pragma region Variables
 
-	HINSTANCE m_hInstance;
-	LPWSTR m_lpCmdLine; 
-	int m_nCmdShow;
-	HWND m_hwnd;
-
 	bool m_active = true;
 	bool m_running = true;
 
 #pragma endregion
+
 
 	inline void InitWindow(
 		_In_ HINSTANCE hInstance,
@@ -47,5 +44,7 @@ public:
 	void Run();
 	void Pause();
 	void Stop();
+
+	SystemSettings* GetSystemSettings();
 };
 

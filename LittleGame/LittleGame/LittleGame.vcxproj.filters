@@ -8,6 +8,9 @@
     <Filter Include="Core">
       <UniqueIdentifier>{1bc4eeb4-801b-4ee3-9af0-6f5ec2611bdc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Rendering">
+      <UniqueIdentifier>{c5ebe7d0-0580-4234-8013-ef378837b857}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -31,6 +34,26 @@
     <ClInclude Include="Singleton.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="SystemSettings.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h" />
+    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="MeshSprite.h" />
+    <ClInclude Include="Transform.h" />
+    <ClInclude Include="Material.h" />
+    <ClInclude Include="Component.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObject.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="System.cpp">
@@ -44,6 +67,26 @@
     </ClCompile>
     <ClCompile Include="Singleton.cpp">
       <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="SystemSettings.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="MeshSprite.cpp" />
+    <ClCompile Include="Transform.cpp" />
+    <ClCompile Include="Material.cpp" />
+    <ClCompile Include="Component.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObject.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Rendering</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
