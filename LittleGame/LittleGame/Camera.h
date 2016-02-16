@@ -2,10 +2,12 @@
 
 // a virtual camera
 
+#include "GameObject.h"
+
 #include <vector>
 #include <d3dx9math.h>
 
-class Camera
+class Camera : public GameObject
 {
 protected:
 
@@ -28,12 +30,9 @@ protected:
 
 	D3DXVECTOR3 m_position = D3DXVECTOR3(0.0f, 0.0f, 10.0f);
 	D3DXVECTOR3 m_target = D3DXVECTOR3(0.0f, 0.0f, 0.0f);;
-	D3DXVECTOR3 m_up = D3DXVECTOR3(0.0f, 1.0f, 10.0f);
+	D3DXVECTOR3 m_up = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
 	D3DXVECTOR3 m_direction = D3DXVECTOR3(0.0f, 0.0f, -1.0f);
 	D3DXVECTOR3 m_right = D3DXVECTOR3(1.0f, 0.0f, 0.0f);
-
-	uint32_t m_uID;
-	std::string m_name;
 
 #pragma endregion
 
@@ -51,34 +50,32 @@ public:
 
 	void Initialize(
 		uint32_t uid,
-		const std::string* name,
 		float_t width,
 		float_t height,
 		float_t fov,
 		float_t cn,
 		float_t cf,
-		bool ortho = false
+		bool ortho = false,
+		const std::string* name = nullptr
 		);
 	void Initialize(
 		const D3DXVECTOR3* pos,
 		const D3DXVECTOR3* tgt,
 		const D3DXVECTOR3* up,
 		uint32_t uid,
-		const std::string* name,
 		float_t width,
 		float_t height,
 		float_t fov,
 		float_t cn,
 		float_t cf,
-		bool ortho = false
+		bool ortho = false,
+		const std::string* name = nullptr
 		);
 	void Shutdown();
 	virtual void Update();
 
 #pragma region Accessors
 
-	uint32_t GetUID() { return m_uID; }
-	const std::string* GetName() { return &m_name; }
 	float_t GetWidth() { return m_width; }
 	float_t GetHeight() { return m_height; }
 	float_t GetFov() { return m_fov; }

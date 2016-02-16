@@ -11,8 +11,8 @@ private:
 
 #pragma region DeviceRelated
 
-	LPDIRECT3D9 d3d;
-	LPDIRECT3DDEVICE9 d3dDevice;
+	LPDIRECT3D9 m_d3d;
+	LPDIRECT3DDEVICE9 m_d3dDevice;
 
 #pragma endregion
 
@@ -29,5 +29,12 @@ public:
 	void Initialize();
 	void Shutdown();
 	void Run();
+
+#pragma region Accessors
+
+	LPDIRECT3D9 const GetDirect3D() { return m_d3d; }
+	LPDIRECT3DDEVICE9 const GetDirect3DDevice() { return m_d3dDevice; }
+
+#pragma endregion
 };
 

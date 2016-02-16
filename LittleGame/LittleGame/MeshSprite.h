@@ -2,8 +2,10 @@
 
 #include "Mesh.h"
 
-class MeshSprite : Mesh
+class MeshSprite : public Mesh
 {
+protected:
+	virtual void InitializeVertexData();
 public:
 	MeshSprite();
 	~MeshSprite();

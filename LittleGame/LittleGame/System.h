@@ -3,7 +3,10 @@
 #include "stdafx.h"
 #include "Singleton.h"
 #include "Resource.h"
-#include "SystemSettings.h"
+
+#include <vector>
+
+class Scene;
 
 class System : public Singleton<System>
 {
@@ -22,6 +25,12 @@ protected:
 
 #pragma endregion
 
+#pragma region Collections
+
+	std::vector<Scene*> m_scenes;
+	uint32_t m_currentScene = 0;
+
+#pragma endregion
 
 	inline void InitWindow(
 		_In_ HINSTANCE hInstance,
@@ -45,6 +54,12 @@ public:
 	void Pause();
 	void Stop();
 
-	SystemSettings* GetSystemSettings();
+#pragma region Accessors
+
+	SystemSettings* GetSystemSettings() { return &m_settings; }
+	Scene* GetCurrentScene() { return m_scenes[m_currentScene]; }
+	std::vector<Scene*>* const GetSceneCollection() { return &m_scenes; }
+
+#pragma endregion
 };
 

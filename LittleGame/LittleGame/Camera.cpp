@@ -11,10 +11,15 @@ Camera::~Camera()
 {
 }
 
-void Camera::Initialize(uint32_t uid, const std::string* name, float_t width, float_t height, float_t fov, float_t cn, float_t cf, bool ortho)
+void Camera::Initialize(uint32_t uid,
+	float_t width,
+	float_t height,
+	float_t fov,
+	float_t cn,
+	float_t cf,
+	bool ortho,
+	const std::string* name)
 {
-	m_uID = uid;
-	m_name = *name;
 	m_width = width;
 	m_height = height;
 	m_fov = fov;
@@ -25,16 +30,27 @@ void Camera::Initialize(uint32_t uid, const std::string* name, float_t width, fl
 	UpdateViewMatrixAndVectorData();
 	UpdateProjMatrix();
 	UpdateViewProjMatrix();
+
+	GameObject::Initialize(uid, name);
 }
 
-void Camera::Initialize(const D3DXVECTOR3 * pos, const D3DXVECTOR3 * tgt, const D3DXVECTOR3 * up, uint32_t uid,
-	const std::string* name, float_t width, float_t height, float_t fov, float_t cn, float_t cf, bool ortho)
+void Camera::Initialize(const D3DXVECTOR3* pos,
+	const D3DXVECTOR3* tgt,
+	const D3DXVECTOR3* up,
+	uint32_t uid,
+	float_t width,
+	float_t height,
+	float_t fov,
+	float_t cn,
+	float_t cf,
+	bool ortho,
+	const std::string* name)
 {
 	m_position = *pos;
 	m_target = *tgt;
 	m_up = *up;
 
-	Initialize(uid, name, width, height, fov, cn, cf, ortho);
+	Initialize(uid, width, height, fov, cn, cf, ortho, name);
 }
 
 void Camera::Shutdown()
@@ -61,6 +77,8 @@ inline void Camera::UpdateViewMatrixAndVectorData()
 	D3DXVec3Cross(&m_right, &m_direction, &m_up);
 	D3DXVec3Normalize(&m_right, &m_right);
 
+	//D3DXMatrixIdentity(&m_view);	// !!!!!!!!
+
 	UpdateViewProjMatrix();
 }
 
@@ -68,11 +86,15 @@ inline void Camera::UpdateProjMatrix()
 {
 	if (m_ortho)
 	{
-		D3DXMatrixOrthoLH(&m_proj, m_width, m_height, m_near, m_far);
+		float divisor = 0.007f;
+		D3DXMatrixOrthoLH(&m_proj, m_width * divisor, m_height * divisor, m_near, m_far);
 	}
 	else
 	{
 		D3DXMatrixPerspectiveFovLH(&m_proj, m_fov, (m_width / m_height), m_near, m_far);
 	}
+
+	//D3DXMatrixIdentity(&m_proj);	// !!!!!!!!
+
 	UpdateViewProjMatrix();
 }

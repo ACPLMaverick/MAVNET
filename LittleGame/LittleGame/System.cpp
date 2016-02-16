@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "System.h"
 #include "Renderer.h"
+#include "SceneTest.h"
 
 System::System()
 {
@@ -26,6 +27,11 @@ void System::Initialize(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow)
 
 	// initialize managers
 	Renderer::GetInstance()->Initialize();
+
+	// initialize scenes
+	m_scenes.push_back(new SceneTest());
+	std::string sName = "SceneTest";
+	m_scenes[0]->Initialize(0, &sName);
 }
 
 void System::Shutdown()
@@ -44,6 +50,9 @@ void System::Run()
 	{
 		RunMessages();
 
+		// update scene instances
+		m_scenes[m_currentScene]->Update();
+
 		// render one frame
 		Renderer::GetInstance()->Run();
 	}
@@ -56,11 +65,6 @@ void System::Pause()
 void System::Stop()
 {
 	m_running = false;
-}
-
-SystemSettings * System::GetSystemSettings()
-{
-	return &m_settings;
 }
 
 void System::InitWindow(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow)

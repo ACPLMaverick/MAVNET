@@ -14,8 +14,7 @@ public:
 	Component();
 	~Component();
 
-	virtual void Initialize(uint32_t uid, GameObject* obj);
-	virtual void Initialize(uint32_t uid, GameObject* obj, std::string* name);
+	virtual void Initialize(uint32_t uid, GameObject* obj, std::string* name = nullptr);
 	virtual void Shutdown();
 	virtual void Update() = 0;
 	virtual void Draw() = 0;

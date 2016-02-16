@@ -11,6 +11,12 @@
     <Filter Include="Rendering">
       <UniqueIdentifier>{c5ebe7d0-0580-4234-8013-ef378837b857}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core\Scenes">
+      <UniqueIdentifier>{2c953ba4-1c79-49b0-8a3c-18e298bab42c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering\Meshes">
+      <UniqueIdentifier>{9d7a9810-35bd-4999-a0a7-a6b3a49cd7f7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -40,10 +46,6 @@
     <ClInclude Include="Renderer.h">
       <Filter>Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="Mesh.h" />
-    <ClInclude Include="MeshSprite.h" />
-    <ClInclude Include="Transform.h" />
-    <ClInclude Include="Material.h" />
     <ClInclude Include="Component.h">
       <Filter>Core</Filter>
     </ClInclude>
@@ -55,6 +57,21 @@
     </ClInclude>
     <ClInclude Include="Scene.h">
       <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshSprite.h">
+      <Filter>Rendering\Meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneTest.h">
+      <Filter>Core\Scenes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -76,10 +93,6 @@
     <ClCompile Include="Renderer.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="Mesh.cpp" />
-    <ClCompile Include="MeshSprite.cpp" />
-    <ClCompile Include="Transform.cpp" />
-    <ClCompile Include="Material.cpp" />
     <ClCompile Include="Component.cpp">
       <Filter>Core</Filter>
     </ClCompile>
@@ -91,6 +104,21 @@
     </ClCompile>
     <ClCompile Include="Scene.cpp">
       <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshSprite.cpp">
+      <Filter>Rendering\Meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneTest.cpp">
+      <Filter>Core\Scenes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

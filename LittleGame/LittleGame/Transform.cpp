@@ -11,8 +11,8 @@ Transform::~Transform()
 {
 }
 
-void Transform::Initialize(uint32_t uid, GameObject * obj, std::string * name, const D3DXVECTOR3 * position, 
-	const D3DXVECTOR3 * rotation, const D3DXVECTOR3 * scale, ParentMode mode)
+void Transform::Initialize(uint32_t uid, GameObject* obj, const D3DXVECTOR3* position, const D3DXVECTOR3* rotation, const D3DXVECTOR3* scale,
+	ParentMode mode, std::string* name)
 {
 	m_position = *position;
 	m_rotation = *rotation;

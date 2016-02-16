@@ -2,6 +2,7 @@
 #include "Renderer.h"
 #include "System.h"
 #include "SystemSettings.h"
+#include "Scene.h"
 
 Renderer::Renderer()
 {
@@ -23,32 +24,36 @@ void Renderer::Initialize()
 	d3dParams.SwapEffect = D3DSWAPEFFECT_DISCARD;
 	d3dParams.hDeviceWindow = settings->GetWindowPtr();
 	
-	d3d = Direct3DCreate9(D3D_SDK_VERSION);
-	d3d->CreateDevice(
+	m_d3d = Direct3DCreate9(D3D_SDK_VERSION);
+	m_d3d->CreateDevice(
 		D3DADAPTER_DEFAULT,
 		D3DDEVTYPE_HAL,
 		settings->GetWindowPtr(),
 		D3DCREATE_SOFTWARE_VERTEXPROCESSING,
 		&d3dParams,
-		&d3dDevice
+		&m_d3dDevice
 		);
+
+	m_d3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+	m_d3dDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
 }
 
 void Renderer::Shutdown()
 {
-	d3dDevice->Release();
-	d3d->Release();
+	m_d3dDevice->Release();
+	m_d3d->Release();
 }
 
 void Renderer::Run()
 {
-	d3dDevice->Clear(0, NULL, D3DCLEAR_TARGET, C_CLEAR_COLOR, 1.0f, 0);
+	m_d3dDevice->Clear(0, NULL, D3DCLEAR_TARGET, C_CLEAR_COLOR, 1.0f, 0);
 
-	d3dDevice->BeginScene();
+	m_d3dDevice->BeginScene();
 
 	// rendering
+	System::GetInstance()->GetCurrentScene()->Draw();
 
-	d3dDevice->EndScene();
+	m_d3dDevice->EndScene();
 
-	d3dDevice->Present(NULL, NULL, NULL, NULL);
+	m_d3dDevice->Present(NULL, NULL, NULL, NULL);
 }
