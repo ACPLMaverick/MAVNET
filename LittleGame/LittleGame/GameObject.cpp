@@ -35,6 +35,43 @@ void GameObject::Shutdown()
 
 void GameObject::Update()
 {
+	if (m_flagChildrenToAdd)
+	{
+		m_flagChildrenToAdd = false;
+		for (std::vector<GameObject*>::iterator it = m_childrenToAdd.begin(); it != m_childrenToAdd.end(); ++it)
+		{
+			m_children.push_back(*it);
+		}
+		m_childrenToAdd.clear();
+	}
+	if (m_flagChildrenToRemove)
+	{
+		m_flagChildrenToRemove = false;
+		for (std::vector<std::vector<GameObject*>::iterator>::iterator it = m_childrenToRemove.begin(); it != m_childrenToRemove.end(); ++it)
+		{
+			m_children.erase(*it);
+		}
+		m_childrenToRemove.clear();
+	}
+	if (m_flagComponentsToAdd)
+	{
+		m_flagComponentsToAdd = false;
+		for (std::vector<Component*>::iterator it = m_componentsToAdd.begin(); it != m_componentsToAdd.end(); ++it)
+		{
+			m_components.push_back(*it);
+		}
+		m_componentsToAdd.clear();
+	}
+	if (m_flagComponentsToRemove)
+	{
+		m_flagComponentsToRemove = false;
+		for (std::vector<std::vector<Component*>::iterator>::iterator it = m_componentsToRemove.begin(); it != m_componentsToRemove.end(); ++it)
+		{
+			m_components.erase(*it);
+		}
+		m_componentsToRemove.clear();
+	}
+
 	for (std::vector<GameObject*>::iterator it = m_children.begin(); it != m_children.end(); ++it)
 	{
 		(*it)->Update();
@@ -59,7 +96,7 @@ void GameObject::Draw()
 	}
 }
 
-const Component * GameObject::GetComponent(uint32_t id)
+Component * const GameObject::GetComponent(uint32_t id)
 {
 	for (std::vector<Component*>::iterator it = m_components.begin(); it != m_components.end(); ++it)
 	{
@@ -72,7 +109,7 @@ const Component * GameObject::GetComponent(uint32_t id)
 	return nullptr;
 }
 
-const Component * GameObject::GetComponent(const std::string * name)
+Component * const GameObject::GetComponent(const std::string * name)
 {
 	for (std::vector<Component*>::iterator it = m_components.begin(); it != m_components.end(); ++it)
 	{
@@ -85,7 +122,7 @@ const Component * GameObject::GetComponent(const std::string * name)
 	return nullptr;
 }
 
-const GameObject * GameObject::GetChild(uint32_t id)
+GameObject * const GameObject::GetChild(uint32_t id)
 {
 	for (std::vector<GameObject*>::iterator it = m_children.begin(); it != m_children.end(); ++it)
 	{
@@ -98,7 +135,7 @@ const GameObject * GameObject::GetChild(uint32_t id)
 	return nullptr;
 }
 
-const GameObject * GameObject::GetChild(const std::string * name)
+GameObject * const GameObject::GetChild(const std::string * name)
 {
 	for (std::vector<GameObject*>::iterator it = m_children.begin(); it != m_children.end(); ++it)
 	{
@@ -111,12 +148,12 @@ const GameObject * GameObject::GetChild(const std::string * name)
 	return nullptr;
 }
 
-const GameObject * GameObject::GetParent()
+GameObject* const GameObject::GetParent()
 {
 	return m_parent;
 }
 
-const Transform * GameObject::GetTransform()
+Transform * const GameObject::GetTransform()
 {
 	return m_transform;
 }
@@ -128,12 +165,14 @@ void GameObject::AddComponent(Component * const component)
 		m_transform = (Transform*)component;
 	}
 
-	m_components.push_back(component);
+	m_componentsToAdd.push_back(component);
+	m_flagComponentsToAdd = true;
 }
 
 void GameObject::AddChild(GameObject * const child)
 {
-	m_children.push_back(child);
+	m_childrenToAdd.push_back(child);
+	m_flagChildrenToAdd = true;
 }
 
 void GameObject::SetParent(GameObject * const parent)
@@ -141,90 +180,90 @@ void GameObject::SetParent(GameObject * const parent)
 	m_parent = parent;
 }
 
-const Component * GameObject::RemoveComponent(uint32_t id)
+Component * const GameObject::RemoveComponent(uint32_t id)
 {
 	for (std::vector<Component*>::iterator it = m_components.begin(); it != m_components.end(); ++it)
 	{
 		if ((*it)->GetUID() == id)
 		{
-			Component* tmp = (*it);
-			m_components.erase(it);
-			return tmp;
+			m_componentsToRemove.push_back(it);
+			m_flagComponentsToRemove = true;
+			return *it;
 		}
 	}
 
 	return nullptr;
 }
 
-const Component * GameObject::RemoveComponent(const std::string * name)
+Component * const GameObject::RemoveComponent(const std::string * name)
 {
 	for (std::vector<Component*>::iterator it = m_components.begin(); it != m_components.end(); ++it)
 	{
 		if (*(*it)->GetName() == *name)
 		{
-			Component* tmp = (*it);
-			m_components.erase(it);
-			return tmp;
+			m_componentsToRemove.push_back(it);
+			m_flagComponentsToRemove = true;
+			return *it;
 		}
 	}
 
 	return nullptr;
 }
 
-const Component * GameObject::RemoveComponent(const Component * ptr)
+Component * const GameObject::RemoveComponent(const Component * ptr)
 {
 	for (std::vector<Component*>::iterator it = m_components.begin(); it != m_components.end(); ++it)
 	{
 		if ((*it) == ptr)
 		{
-			Component* tmp = (*it);
-			m_components.erase(it);
-			return tmp;
+			m_componentsToRemove.push_back(it);
+			m_flagComponentsToRemove = true;
+			return *it;
 		}
 	}
 
 	return nullptr;
 }
 
-const GameObject * GameObject::RemoveChild(uint32_t id)
+GameObject * const GameObject::RemoveChild(uint32_t id)
 {
 	for (std::vector<GameObject*>::iterator it = m_children.begin(); it != m_children.end(); ++it)
 	{
 		if ((*it)->GetUID() == id)
 		{
-			GameObject* tmp = (*it);
-			m_children.erase(it);
-			return tmp;
+			m_childrenToRemove.push_back(it);
+			m_flagChildrenToRemove = true;
+			return *it;
 		}
 	}
 
 	return nullptr;
 }
 
-const GameObject * GameObject::RemoveChild(const std::string * name)
+GameObject * const GameObject::RemoveChild(const std::string * name)
 {
 	for (std::vector<GameObject*>::iterator it = m_children.begin(); it != m_children.end(); ++it)
 	{
 		if (*(*it)->GetName() == *name)
 		{
-			GameObject* tmp = (*it);
-			m_children.erase(it);
-			return tmp;
+			m_childrenToRemove.push_back(it);
+			m_flagChildrenToRemove = true;
+			return *it;
 		}
 	}
 
 	return nullptr;
 }
 
-const GameObject * GameObject::RemoveChild(const GameObject * ptr)
+GameObject * const GameObject::RemoveChild(const GameObject * ptr)
 {
 	for (std::vector<GameObject*>::iterator it = m_children.begin(); it != m_children.end(); ++it)
 	{
 		if ((*it) == ptr)
 		{
-			GameObject* tmp = (*it);
-			m_children.erase(it);
-			return tmp;
+			m_childrenToRemove.push_back(it);
+			m_flagChildrenToRemove = true;
+			return *it;
 		}
 	}
 

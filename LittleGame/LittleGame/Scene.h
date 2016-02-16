@@ -26,6 +26,11 @@ protected:
 	uint32_t m_uID = (uint32_t)-1;
 	uint32_t m_currentCamera = 0;
 
+	std::vector<GameObject*> m_gameObjectsToAdd;
+	std::vector<std::vector<GameObject*>::iterator> m_gameObjectsToRemove;
+	bool m_flagToAddGameObject = false;
+	bool m_flagToRemoveGameObject = false;
+
 #pragma endregion
 
 #pragma region MethodsInternal
@@ -50,10 +55,20 @@ public:
 
 	uint32_t GetUID() { return m_uID; }
 	const std::string* GetName() { return &m_name; }
-	const Camera* GetCurrentCamera() { return (m_cameras.size() > 0 ? m_cameras[m_currentCamera] : nullptr); }
+	Camera* const GetCurrentCamera() { return (m_cameras.size() > 0 ? m_cameras[m_currentCamera] : nullptr); }
 
-	const GameObject* GetGameObject(uint32_t uid);
-	const GameObject* GetGameObject(std::string* name);
+	GameObject* const GetGameObject(uint32_t uid);
+	GameObject* const GetGameObject(std::string* name);
+	Camera* const GetCamera(uint32_t uid);
+	Camera* const GetCamera(std::string* name);
+
+	void AddGameObject(GameObject* const gameObject);
+	void AddCamera(Camera* const camera);
+
+	GameObject* const RemoveGameObject(uint32_t uid);
+	GameObject* const RemoveGameObject(std::string* name);
+	Camera* const RemoveCamera(uint32_t uid);
+	Camera* const RemoveCamera(std::string* name);
 
 #pragma endregion
 };

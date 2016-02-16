@@ -22,6 +22,19 @@ private:
 
 #pragma endregion
 
+#pragma region CollectionModification
+
+	std::vector<Component*> m_componentsToAdd;
+	std::vector<std::vector<Component*>::iterator> m_componentsToRemove;
+	std::vector<GameObject*> m_childrenToAdd;
+	std::vector<std::vector<GameObject*>::iterator> m_childrenToRemove;
+	bool m_flagComponentsToAdd = false;
+	bool m_flagComponentsToRemove = false;
+	bool m_flagChildrenToAdd = false;
+	bool m_flagChildrenToRemove = false;
+
+#pragma endregion
+
 #pragma region MyData
 
 	uint32_t m_uID = (uint32_t)-1;
@@ -40,24 +53,24 @@ public:
 
 #pragma region AccessorsCollections
 
-	const Component* GetComponent(uint32_t id);
-	const Component* GetComponent(const std::string* name);
-	const GameObject* GetChild(uint32_t id);
-	const GameObject* GetChild(const std::string* name);
-	const GameObject* GetParent();
-	const Transform* GetTransform();
+	Component* const GetComponent(uint32_t id);
+	Component* const GetComponent(const std::string* name);
+	GameObject* const GetChild(uint32_t id);
+	GameObject* const GetChild(const std::string* name);
+	GameObject* const GetParent();
+	Transform* const GetTransform();
 
 	void AddComponent(Component* const component);
 	void AddChild(GameObject* const child);
 	
 	void SetParent(GameObject* const parent);
 
-	const Component* RemoveComponent(uint32_t id);
-	const Component* RemoveComponent(const std::string* name);
-	const Component* RemoveComponent(const Component* ptr);
-	const GameObject* RemoveChild(uint32_t id);
-	const GameObject* RemoveChild(const std::string* name);
-	const GameObject* RemoveChild(const GameObject* ptr);
+	Component* const RemoveComponent(uint32_t id);
+	Component* const RemoveComponent(const std::string* name);
+	Component* const RemoveComponent(const Component* ptr);
+	GameObject* const RemoveChild(uint32_t id);
+	GameObject* const RemoveChild(const std::string* name);
+	GameObject* const RemoveChild(const GameObject* ptr);
 
 #pragma endregion
 

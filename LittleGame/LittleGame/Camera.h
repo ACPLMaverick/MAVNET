@@ -22,15 +22,18 @@ protected:
 
 #pragma region Data
 
+	D3DXMATRIX m_viewProj;
+	D3DXMATRIX m_view;
+	D3DXMATRIX m_proj;
+
 	D3DXVECTOR3 m_position = D3DXVECTOR3(0.0f, 0.0f, 10.0f);
 	D3DXVECTOR3 m_target = D3DXVECTOR3(0.0f, 0.0f, 0.0f);;
 	D3DXVECTOR3 m_up = D3DXVECTOR3(0.0f, 1.0f, 10.0f);
 	D3DXVECTOR3 m_direction = D3DXVECTOR3(0.0f, 0.0f, -1.0f);
 	D3DXVECTOR3 m_right = D3DXVECTOR3(1.0f, 0.0f, 0.0f);
 
-	D3DXMATRIX m_viewProj;
-	D3DXMATRIX m_view;
-	D3DXMATRIX m_proj;
+	uint32_t m_uID;
+	std::string m_name;
 
 #pragma endregion
 
@@ -47,6 +50,8 @@ public:
 	~Camera();
 
 	void Initialize(
+		uint32_t uid,
+		const std::string* name,
 		float_t width,
 		float_t height,
 		float_t fov,
@@ -58,6 +63,8 @@ public:
 		const D3DXVECTOR3* pos,
 		const D3DXVECTOR3* tgt,
 		const D3DXVECTOR3* up,
+		uint32_t uid,
+		const std::string* name,
 		float_t width,
 		float_t height,
 		float_t fov,
@@ -70,6 +77,8 @@ public:
 
 #pragma region Accessors
 
+	uint32_t GetUID() { return m_uID; }
+	const std::string* GetName() { return &m_name; }
 	float_t GetWidth() { return m_width; }
 	float_t GetHeight() { return m_height; }
 	float_t GetFov() { return m_fov; }

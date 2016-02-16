@@ -11,8 +11,10 @@ Camera::~Camera()
 {
 }
 
-void Camera::Initialize(float_t width, float_t height, float_t fov, float_t cn, float_t cf, bool ortho)
+void Camera::Initialize(uint32_t uid, const std::string* name, float_t width, float_t height, float_t fov, float_t cn, float_t cf, bool ortho)
 {
+	m_uID = uid;
+	m_name = *name;
 	m_width = width;
 	m_height = height;
 	m_fov = fov;
@@ -25,13 +27,14 @@ void Camera::Initialize(float_t width, float_t height, float_t fov, float_t cn, 
 	UpdateViewProjMatrix();
 }
 
-void Camera::Initialize(const D3DXVECTOR3 * pos, const D3DXVECTOR3 * tgt, const D3DXVECTOR3 * up, float_t width, float_t height, float_t fov, float_t cn, float_t cf, bool ortho)
+void Camera::Initialize(const D3DXVECTOR3 * pos, const D3DXVECTOR3 * tgt, const D3DXVECTOR3 * up, uint32_t uid,
+	const std::string* name, float_t width, float_t height, float_t fov, float_t cn, float_t cf, bool ortho)
 {
 	m_position = *pos;
 	m_target = *tgt;
 	m_up = *up;
 
-	Initialize(width, height, fov, cn, cf, ortho);
+	Initialize(uid, name, width, height, fov, cn, cf, ortho);
 }
 
 void Camera::Shutdown()
