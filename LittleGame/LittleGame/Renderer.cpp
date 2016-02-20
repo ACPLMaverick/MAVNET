@@ -35,7 +35,6 @@ void Renderer::Initialize()
 		);
 
 	m_d3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-	m_d3dDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
 }
 
 void Renderer::Shutdown()

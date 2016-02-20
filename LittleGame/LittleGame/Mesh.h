@@ -59,7 +59,7 @@ class Mesh : public Component
 protected:
 
 	VertexData m_vertexData;
-	Material* m_material;
+	Material* m_material = nullptr;
 
 	virtual void InitializeVertexData() = 0;
 public:
@@ -71,5 +71,14 @@ public:
 	virtual void Shutdown();
 	virtual void Draw();
 	virtual void Update();
+
+#pragma region Accessors
+
+	Material* const GetMaterial() { return m_material; }
+
+	void SetMaterial(Material* const mat) { m_material = mat; }
+
+#pragma endregion
+
 };
 

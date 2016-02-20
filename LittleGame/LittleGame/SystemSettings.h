@@ -36,47 +36,6 @@
 
 #endif
 
-// Platform-specific names
-/*
-#ifdef LG_RENDERER_DX9
-
-#define LG_Renderer_SPECIFIC RendererDX9
-#define LG_Mesh_SPECIFIC MeshDX9
-#define LG_InputManager_SPECIFIC InputManagerDX9
-#define LG_SoundManager_SPECIFIC SoundManagerDX9
-
-#elif LG_RENDERER_DX11
-
-#define LG_Renderer_SPECIFIC RendererDX11
-#define LG_Mesh_SPECIFIC MeshDX11
-#define LG_InputManager_SPECIFIC InputManagerDX11
-#define LG_SoundManager_SPECIFIC SoundManagerDX11
-
-#elif LG_RENDERER_OGL_WIN
-
-#define LG_Renderer_SPECIFIC RendererOGL_WIN
-#define LG_Mesh_SPECIFIC MeshOGL_WIN
-#define LG_InputManager_SPECIFIC InputManagerOGL_WIN
-#define LG_SoundManager_SPECIFIC SoundManagerOGL_WIN
-
-#elif LG_RENDERER_OGL_LNX
-
-#define LG_Renderer_SPECIFIC RendererOGL_LNX
-#define LG_Mesh_SPECIFIC MeshOGL_LNX
-#define LG_InputManager_SPECIFIC InputManagerOGL_LNX
-#define LG_SoundManager_SPECIFIC SoundManagerOGL_LNX
-
-#elif LG_RENDERER_OGL_ES
-
-#define LG_Renderer_SPECIFIC RendererOGL_ES
-#define LG_Mesh_SPECIFIC MeshOGL_ES
-#define LG_InputManager_SPECIFIC InputManagerOGL_ES
-#define LG_SoundManager_SPECIFIC SoundManagerOGL_ES
-
-#endif
-*/
-
-
 //////////////////
 
 // Other defines

@@ -2,7 +2,7 @@
 
 #include "stdafx.h"
 #include "Singleton.h"
-#include "Resource.h"
+#include "WindowsResource.h"
 
 #include <vector>
 
@@ -10,6 +10,7 @@ class Scene;
 
 class System : public Singleton<System>
 {
+	friend class Singleton<System>;
 protected:
 
 #pragma region SettingsSystem
@@ -32,6 +33,8 @@ protected:
 
 #pragma endregion
 
+	System();
+
 	inline void InitWindow(
 		_In_ HINSTANCE hInstance,
 		_In_ LPWSTR    lpCmdLine,
@@ -42,7 +45,6 @@ protected:
 
 public:
 
-	System();
 	~System();
 
 	void Initialize(

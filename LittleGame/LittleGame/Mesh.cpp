@@ -6,7 +6,11 @@
 #include "System.h"
 #include "Scene.h"
 #include "Camera.h"
+#include "Material.h"
 
+#include <DxErr.h>
+#pragma comment(lib, "dxerr.lib")
+#pragma comment(lib, "legacy_stdio_definitions.lib")
 Mesh::Mesh()
 {
 }
@@ -61,17 +65,18 @@ void Mesh::Shutdown()
 void Mesh::Draw()
 {
 	// material pre-draw operations
+	// IFS WILL BE REMOVED!!!
+	if (m_material != nullptr)
+		m_material->PreDraw(this);
 
 	// mesh draw operations
 
 	LPDIRECT3DDEVICE9 dev = Renderer::GetInstance()->GetDirect3DDevice();
-
+	/*
 	D3DXMATRIX transform;
 	D3DXMATRIX v;
 	D3DXMATRIX p;
 	D3DXMatrixIdentity(&transform);
-
-	dev->SetFVF(D3DFVF_SPRITE);
 
 	if (m_obj->GetTransform() != nullptr)
 	{
@@ -86,15 +91,23 @@ void Mesh::Draw()
 		dev->SetTransform(D3DTS_VIEW, &v);
 		dev->SetTransform(D3DTS_PROJECTION, &p);
 	}
-
-	dev->SetStreamSource(0, m_vertexData.m_vertexBuffer, 0, sizeof(VertexSprite));
-	dev->SetIndices(m_vertexData.m_indexBuffer);
-	dev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0,
+	*/
+	HRESULT r = dev->SetFVF(D3DFVF_SPRITE);
+	r = dev->SetStreamSource(0, m_vertexData.m_vertexBuffer, 0, sizeof(VertexSprite));
+	r = dev->SetIndices(m_vertexData.m_indexBuffer);
+	r = dev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0,
 		m_vertexData.m_vertexArray.size(), 0, m_vertexData.m_indexArray.size() / 3);
+	//std::wstring err = DXGetErrorDescription(r);
 
 	// material post-draw operations
+	// IFS WILL BE REMOVED!!!
+	if (m_material != nullptr)
+		m_material->PostDraw(this);
 }
 
 void Mesh::Update()
 {
+	// IFS WILL BE REMOVED!!!
+	if(m_material != nullptr)
+		m_material->Update();
 }

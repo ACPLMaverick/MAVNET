@@ -1,0 +1,14 @@
+IN CASE I FORGOT
+Multi-platform architecture overview
+	For PLATFORM-SPECIFIC (flags defined in SystemSettings.h) classes :
+		- SpecificObjectFactory returns new objects via functions; new objects are of system-specific implementations, but are returned via base-class pointer, so in code, we only operate on abstract types, not caring about certain implementation.
+		- In other system-specific classes one can cast returned pointer to the system-specific type, because we are 100% sure which implementation is selected.
+		- Mesh and other classes that need to be derived on more levels aggregate special funcionality objects that take care of needed functions (i.e. filling vertex buffers). 
+		- It is also necessary to implement abstract vertex data structure that can be managed platform-independently. 
+	For PLATFORM-SPECIFIC singletons:
+		- General (abstract) singleton is required to derive from generic SpecificSingleton<T> class (which is a child class of Singleton<T>) and implement ReturnedInstance method. In this method, via switch, it is defined which platform-specific object will be created on GetInstance call.
+		Or it simply can be a virtual function in Singleton<T> class.
+	Math and other project-wide utilities:
+		This needs to be encapsulated into platform-independent static class. One can use typedefs and defines to some limited extent as well.
+
+	To determine which renderer is selected, enum should be used instead of defines. For platform-selection it has to be defines, as it is obligatory to build different versions independently.

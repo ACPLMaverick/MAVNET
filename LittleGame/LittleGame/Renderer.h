@@ -7,6 +7,7 @@
 
 class Renderer : public Singleton<Renderer>
 {
+	friend class Singleton<Renderer>;
 private:
 
 #pragma region DeviceRelated
@@ -22,8 +23,9 @@ private:
 
 #pragma endregion
 
-public:
 	Renderer();
+
+public:
 	~Renderer();
 
 	void Initialize();

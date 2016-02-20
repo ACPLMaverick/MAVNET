@@ -4,6 +4,10 @@
 #include "Transform.h"
 #include "Camera.h"
 #include "MeshSprite.h"
+#include "Material.h"
+#include "Texture.h"
+#include "Effect.h"
+#include "ResourceManager.h"
 
 #include <d3dx9math.h>
 
@@ -37,6 +41,10 @@ void SceneTest::InitializeScene()
 	MeshSprite* testMesh = new MeshSprite();
 	testMesh->Initialize(3, testObject);
 	testObject->AddMesh(testMesh);
+
+	std::string neMaterial = "LE_EMPTY_WHITE";
+	Material* mat = ResourceManager::GetInstance()->GetMaterial(&neMaterial);
+	testMesh->SetMaterial(mat);
 
 	m_gameObjects.push_back(testObject);
 

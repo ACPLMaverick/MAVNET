@@ -17,6 +17,9 @@
     <Filter Include="Rendering\Meshes">
       <UniqueIdentifier>{9d7a9810-35bd-4999-a0a7-a6b3a49cd7f7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Rendering\Effects">
+      <UniqueIdentifier>{c9b58432-7cf2-409e-b1de-08f802c509c1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -26,9 +29,6 @@
       <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="LittleGame.h">
-      <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource.h">
       <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
@@ -72,6 +72,18 @@
     </ClInclude>
     <ClInclude Include="SceneTest.h">
       <Filter>Core\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h" />
+    <ClInclude Include="Effect.h" />
+    <ClInclude Include="ResourceManager.h" />
+    <ClInclude Include="WindowsResource.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="IdentificationManager.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="GameResource.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -119,6 +131,15 @@
     </ClCompile>
     <ClCompile Include="SceneTest.cpp">
       <Filter>Core\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="Effect.cpp" />
+    <ClCompile Include="ResourceManager.cpp" />
+    <ClCompile Include="IdentificationManager.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="GameResource.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

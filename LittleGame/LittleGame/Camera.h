@@ -11,6 +11,12 @@ class Camera : public GameObject
 {
 protected:
 
+#pragma region Constants
+
+	const float PROJ_ORTHO_XY_MPLIER = 0.007f;
+
+#pragma endregion
+
 #pragma region Params
 
 	float_t m_width;

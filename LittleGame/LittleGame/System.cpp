@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "System.h"
 #include "Renderer.h"
+#include "ResourceManager.h"
+#include "IdentificationManager.h"
 #include "SceneTest.h"
 
 System::System()
@@ -27,6 +29,8 @@ void System::Initialize(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow)
 
 	// initialize managers
 	Renderer::GetInstance()->Initialize();
+	IdentificationManager::GetInstance()->Initialize();
+	ResourceManager::GetInstance()->Initialize();
 
 	// initialize scenes
 	m_scenes.push_back(new SceneTest());
@@ -37,7 +41,13 @@ void System::Initialize(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow)
 void System::Shutdown()
 {
 	// shutdown managers
+	ResourceManager::GetInstance()->Shutdown();
+	IdentificationManager::GetInstance()->Shutdown();
 	Renderer::GetInstance()->Shutdown();
+
+	ResourceManager::DestroyInstance();
+	IdentificationManager::DestroyInstance();
+	Renderer::DestroyInstance();
 
 	UnregisterClass((m_settings.s_windowTitle.c_str()), m_settings.m_hInstance);
 	DestroyWindow(m_settings.m_hwnd);
