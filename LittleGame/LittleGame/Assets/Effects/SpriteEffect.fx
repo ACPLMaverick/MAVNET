@@ -68,6 +68,6 @@ technique Main
     pass Pass0
     {          
         VertexShader = compile vs_1_1 MainVS();
-        PixelShader  = compile ps_2_0 MainPS(); 
+        PixelShader  = compile ps_1_1 MainPS(); 
     }
 }
