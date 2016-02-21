@@ -39,38 +39,6 @@ void Material::Shutdown()
 	// nothing
 }
 
-void Material::PreDraw(Mesh* msh)
-{
-	ID3DXEffect* ef = m_effect->GetDX9Effect();
-
-	ef->Begin(NULL, NULL);
-	ef->BeginPass(0);
-
-	D3DXHANDLE hMat = ef->GetParameterByName(NULL, "MatWorldViewProj");
-	D3DXHANDLE hDiffMap = ef->GetParameterByName(NULL, "DiffuseMap");
-	D3DXHANDLE hDiffCol = ef->GetParameterByName(NULL, "DiffuseColor");
-	D3DXHANDLE hAmbCol = ef->GetParameterByName(NULL, "AmbientColor");
-
-	D3DXMATRIX transform = *msh->GetMyGameObject()->GetTransform()->GetWorld();
-	transform *= *System::GetInstance()->GetCurrentScene()->GetCurrentCamera()->GetViewProj();
-
-	D3DXCOLOR ambient = D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f);
-
-	ef->SetMatrix(hMat, &transform);
-	ef->SetTexture(hDiffMap, m_diffuseMap->GetDX9Texture());
-	ef->SetFloatArray(hDiffCol, (float*)&m_diffuseColor, 4);
-	ef->SetFloatArray(hAmbCol, (float*)&ambient, 4);
-
-	ef->CommitChanges();
-}
-
-void Material::PostDraw(Mesh* msh)
-{
-	ID3DXEffect* ef = m_effect->GetDX9Effect();
-	ef->EndPass();
-	ef->End();
-}
-
 void Material::Update()
 {
 }

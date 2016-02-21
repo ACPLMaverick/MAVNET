@@ -4,6 +4,7 @@
 #include "ResourceManager.h"
 #include "IdentificationManager.h"
 #include "SceneTest.h"
+#include "InputManager.h"
 
 System::System()
 {
@@ -31,6 +32,7 @@ void System::Initialize(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow)
 	Renderer::GetInstance()->Initialize();
 	IdentificationManager::GetInstance()->Initialize();
 	ResourceManager::GetInstance()->Initialize();
+	InputManager::GetInstance()->Initialize();
 
 	// initialize scenes
 	m_scenes.push_back(new SceneTest());
@@ -41,10 +43,12 @@ void System::Initialize(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow)
 void System::Shutdown()
 {
 	// shutdown managers
+	InputManager::GetInstance()->Shutdown();
 	ResourceManager::GetInstance()->Shutdown();
 	IdentificationManager::GetInstance()->Shutdown();
 	Renderer::GetInstance()->Shutdown();
 
+	InputManager::DestroyInstance();
 	ResourceManager::DestroyInstance();
 	IdentificationManager::DestroyInstance();
 	Renderer::DestroyInstance();
@@ -59,6 +63,9 @@ void System::Run()
 	while (m_running)
 	{
 		RunMessages();
+
+		// update input
+		InputManager::GetInstance()->Update();
 
 		// update scene instances
 		m_scenes[m_currentScene]->Update();

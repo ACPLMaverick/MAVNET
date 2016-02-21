@@ -153,11 +153,13 @@
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="GameResource.h" />
     <ClInclude Include="IdentificationManager.h" />
+    <ClInclude Include="InputManager.h" />
     <ClInclude Include="LittleGame.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshSprite.h" />
     <ClInclude Include="Renderer.h" />
+    <ClInclude Include="TestInputController.h" />
     <ClInclude Include="WindowsResource.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="Scene.h" />
@@ -177,6 +179,7 @@
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GameResource.cpp" />
     <ClCompile Include="IdentificationManager.cpp" />
+    <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="LittleGame.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="Mesh.cpp" />
@@ -194,6 +197,7 @@
     </ClCompile>
     <ClCompile Include="System.cpp" />
     <ClCompile Include="SystemSettings.cpp" />
+    <ClCompile Include="TestInputController.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Transform.cpp" />
   </ItemGroup>
@@ -203,6 +207,14 @@
   <ItemGroup>
     <Image Include="LittleGame.ico" />
     <Image Include="small.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Assets\Effects\SpriteEffect.fx">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">2.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">2.0</ShaderModel>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

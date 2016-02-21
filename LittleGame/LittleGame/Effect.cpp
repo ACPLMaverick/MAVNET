@@ -26,7 +26,7 @@ void Effect::Initialize(const std::string * filePath, const std::string * name)
 		filePathW.c_str(),
 		NULL,
 		NULL,
-		D3DXSHADER_FORCE_VS_SOFTWARE_NOOPT | D3DXSHADER_ENABLE_BACKWARDS_COMPATIBILITY,
+		D3DXSHADER_OPTIMIZATION_LEVEL3 | D3DXSHADER_ENABLE_BACKWARDS_COMPATIBILITY,
 		NULL,
 		&m_effect,
 		//&errors

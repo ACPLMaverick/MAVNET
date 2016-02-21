@@ -8,6 +8,7 @@
 #include "Texture.h"
 #include "Effect.h"
 #include "ResourceManager.h"
+#include "TestInputController.h"
 
 #include <d3dx9math.h>
 
@@ -45,6 +46,10 @@ void SceneTest::InitializeScene()
 	std::string neMaterial = "LE_EMPTY_WHITE";
 	Material* mat = ResourceManager::GetInstance()->GetMaterial(&neMaterial);
 	testMesh->SetMaterial(mat);
+
+	TestInputController* tic = new TestInputController();
+	tic->Initialize(4, testObject);
+	testObject->AddComponent(tic);
 
 	m_gameObjects.push_back(testObject);
 

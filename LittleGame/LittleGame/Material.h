@@ -45,8 +45,6 @@ public:
 	// loading from file will have to be incorporated here
 	virtual void Initialize(uint32_t manualHash = 0, const std::string* filePath = nullptr, const std::string* name = nullptr);
 	virtual void Shutdown();
-	virtual void PreDraw(Mesh* msh);
-	virtual void PostDraw(Mesh* msh);
 	virtual void Update();
 
 #pragma region Accessors

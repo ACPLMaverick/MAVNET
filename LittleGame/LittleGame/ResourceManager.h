@@ -17,6 +17,18 @@ class ResourceManager :
 	friend class Singleton<ResourceManager>;
 protected:
 
+#pragma region Collections
+
+	std::map<uint32_t, Material*> c_materials;
+	std::map<uint32_t, Effect*> c_effects;
+	std::map<uint32_t, Texture*> c_textures;
+
+#pragma endregion
+
+	ResourceManager();
+
+public:
+
 #pragma region Constants
 
 	const std::string ASSET_PATH = "./Assets/";
@@ -36,17 +48,6 @@ protected:
 
 #pragma endregion
 
-#pragma region Collections
-
-	std::map<uint32_t, Material*> c_materials;
-	std::map<uint32_t, Effect*> c_effects;
-	std::map<uint32_t, Texture*> c_textures;
-
-#pragma endregion
-
-	ResourceManager();
-
-public:
 #pragma region Enums
 
 	enum FileMode

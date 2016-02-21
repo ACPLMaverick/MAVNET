@@ -23,7 +23,7 @@ void ResourceManager::Initialize()
 	// empty material
 	std::string nEEffect = "SpriteEffect";
 	std::string nETexture = "LE_WHITE";
-	D3DXCOLOR nETexColor = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
+	D3DXCOLOR nETexColor = D3DXCOLOR(0.2f, 0.5f, 0.8f, 1.0f);
 	std::string neMaterial = "LE_EMPTY_WHITE";
 	std::string neMaterialFakePath = ASSET_PATH + MATERIALS_PATH + neMaterial + MAT_SUFFIX;
 	Effect* sprite = GetEffect(&nEEffect);

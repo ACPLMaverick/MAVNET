@@ -7,6 +7,8 @@
 #include "Scene.h"
 #include "Camera.h"
 #include "Material.h"
+#include "Effect.h"
+#include "Texture.h"
 
 #include <DxErr.h>
 #pragma comment(lib, "dxerr.lib")
@@ -67,7 +69,29 @@ void Mesh::Draw()
 	// material pre-draw operations
 	// IFS WILL BE REMOVED!!!
 	if (m_material != nullptr)
-		m_material->PreDraw(this);
+	{
+		ID3DXEffect* ef = m_material->GetEffect()->GetDX9Effect();
+
+		ef->Begin(NULL, NULL);
+		ef->BeginPass(0);
+
+		D3DXHANDLE hMat = ef->GetParameterByName(NULL, "MatWorldViewProj");
+		D3DXHANDLE hDiffMap = ef->GetParameterByName(NULL, "DiffuseMap");
+		D3DXHANDLE hDiffCol = ef->GetParameterByName(NULL, "DiffuseColor");
+		D3DXHANDLE hAmbCol = ef->GetParameterByName(NULL, "AmbientColor");
+
+		D3DXMATRIX transform = *m_obj->GetTransform()->GetWorld();
+		transform *= *System::GetInstance()->GetCurrentScene()->GetCurrentCamera()->GetViewProj();
+
+		D3DXCOLOR ambient = D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f);
+
+		ef->SetMatrix(hMat, &transform);
+		ef->SetTexture(hDiffMap, m_material->GetTextureDiffuse()->GetDX9Texture());
+		ef->SetFloatArray(hDiffCol, (float*)m_material->GetColorDiffuse(), 4);
+		ef->SetFloatArray(hAmbCol, (float*)&ambient, 4);
+
+		ef->CommitChanges();
+	}
 
 	// mesh draw operations
 
@@ -102,7 +126,11 @@ void Mesh::Draw()
 	// material post-draw operations
 	// IFS WILL BE REMOVED!!!
 	if (m_material != nullptr)
-		m_material->PostDraw(this);
+	{
+		/*ID3DXEffect* ef = m_material->GetEffect()->GetDX9Effect();
+		ef->EndPass();
+		ef->End();*/
+	}
 }
 
 void Mesh::Update()

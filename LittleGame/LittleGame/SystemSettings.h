@@ -7,32 +7,33 @@
 
 // Platform selection defines
 
-#define LG_PLATFORM_WINDOWS
-//#define LG_PLATFORM_LINUX
-//#define LG_PLATFORM_ANDROID
+#define LE_PLATFORM_WINDOWS
+//#define LE_PLATFORM_LINUX
+//#define LE_PLATFORM_ANDROID
 
-#ifdef LG_PLATFORM_WINDOWS
+#ifdef LE_PLATFORM_WINDOWS
 
-#define LG_RENDERER_DX9
-//#define LG_RENDERER_DX11
-//#define LG_RENDERER_OGL_WIN
+#define LE_RENDERER_DX9
+//#define LE_RENDERER_DX9FIXED
+//#define LE_RENDERER_DX11
+//#define LE_RENDERER_OGL_WIN
 
-#define LG_LIB_SYSTEM #include <windows.h>
-#define LG_System_SPECIFIC SystemWin
+#define LE_LIB_SYSTEM #include <windows.h>
+#define LE_System_SPECIFIC SystemWin
 
-#elif LG_PLATFORM_LINUX
+#elif LE_PLATFORM_LINUX
 
-#define LG_RENDERER_OGL_LNX
+#define LE_RENDERER_OGL_LNX
 
-#define LG_LIB_SYSTEM
-#define LG_System_SPECIFIC SystemLnx
+#define LE_LIB_SYSTEM
+#define LE_System_SPECIFIC SystemLnx
 
-#elif LG_PLATFORM_ANDROID
+#elif LE_PLATFORM_ANDROID
 
-#define LG_RENDERER_OGL_ES
+#define LE_RENDERER_OGL_ES
 
-#define LG_LIB_SYSTEM
-#define LG_System_SPECIFIC SystemAdr
+#define LE_LIB_SYSTEM
+#define LE_System_SPECIFIC SystemAdr
 
 #endif
 

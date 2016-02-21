@@ -5,20 +5,29 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Core">
+    <Filter Include="ENGINE">
+      <UniqueIdentifier>{670a85c8-22b8-4786-a52d-bacaf33dfdfe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ENGINE\Core">
       <UniqueIdentifier>{1bc4eeb4-801b-4ee3-9af0-6f5ec2611bdc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Rendering">
-      <UniqueIdentifier>{c5ebe7d0-0580-4234-8013-ef378837b857}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Core\Scenes">
+    <Filter Include="ENGINE\Core\Scenes">
       <UniqueIdentifier>{2c953ba4-1c79-49b0-8a3c-18e298bab42c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Rendering\Meshes">
+    <Filter Include="ENGINE\Input">
+      <UniqueIdentifier>{1b11326e-4fb7-46b0-922f-21f9cd95c51b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ENGINE\Rendering">
+      <UniqueIdentifier>{c5ebe7d0-0580-4234-8013-ef378837b857}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ENGINE\Rendering\Meshes">
       <UniqueIdentifier>{9d7a9810-35bd-4999-a0a7-a6b3a49cd7f7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Rendering\Effects">
+    <Filter Include="ENGINE\Rendering\Effects">
       <UniqueIdentifier>{c9b58432-7cf2-409e-b1de-08f802c509c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ENGINE\Core\Components">
+      <UniqueIdentifier>{659b428c-3721-4db6-b38a-b469baf28a7b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -26,120 +35,144 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
-      <Filter>Core</Filter>
+      <Filter>ENGINE\Core</Filter>
     </ClInclude>
     <ClInclude Include="LittleGame.h">
-      <Filter>Core</Filter>
+      <Filter>ENGINE\Core</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
-      <Filter>Core</Filter>
+      <Filter>ENGINE\Core</Filter>
     </ClInclude>
     <ClInclude Include="System.h">
-      <Filter>Core</Filter>
+      <Filter>ENGINE\Core</Filter>
     </ClInclude>
     <ClInclude Include="Singleton.h">
-      <Filter>Core</Filter>
+      <Filter>ENGINE\Core</Filter>
     </ClInclude>
     <ClInclude Include="SystemSettings.h">
-      <Filter>Core</Filter>
+      <Filter>ENGINE\Core</Filter>
     </ClInclude>
     <ClInclude Include="Renderer.h">
-      <Filter>Rendering</Filter>
+      <Filter>ENGINE\Rendering</Filter>
     </ClInclude>
     <ClInclude Include="Component.h">
-      <Filter>Core</Filter>
+      <Filter>ENGINE\Core</Filter>
     </ClInclude>
     <ClInclude Include="GameObject.h">
-      <Filter>Core</Filter>
+      <Filter>ENGINE\Core</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h">
-      <Filter>Rendering</Filter>
+      <Filter>ENGINE\Rendering</Filter>
     </ClInclude>
     <ClInclude Include="Scene.h">
-      <Filter>Core</Filter>
+      <Filter>ENGINE\Core</Filter>
     </ClInclude>
     <ClInclude Include="Transform.h">
-      <Filter>Rendering</Filter>
+      <Filter>ENGINE\Rendering</Filter>
     </ClInclude>
     <ClInclude Include="Material.h">
-      <Filter>Rendering</Filter>
+      <Filter>ENGINE\Rendering</Filter>
     </ClInclude>
     <ClInclude Include="Mesh.h">
-      <Filter>Rendering</Filter>
+      <Filter>ENGINE\Rendering</Filter>
     </ClInclude>
     <ClInclude Include="MeshSprite.h">
-      <Filter>Rendering\Meshes</Filter>
+      <Filter>ENGINE\Rendering\Meshes</Filter>
     </ClInclude>
     <ClInclude Include="SceneTest.h">
-      <Filter>Core\Scenes</Filter>
+      <Filter>ENGINE\Core\Scenes</Filter>
     </ClInclude>
-    <ClInclude Include="Texture.h" />
-    <ClInclude Include="Effect.h" />
-    <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="WindowsResource.h">
-      <Filter>Core</Filter>
+      <Filter>ENGINE\Core</Filter>
     </ClInclude>
     <ClInclude Include="IdentificationManager.h">
-      <Filter>Core</Filter>
+      <Filter>ENGINE\Core</Filter>
     </ClInclude>
     <ClInclude Include="GameResource.h">
-      <Filter>Core</Filter>
+      <Filter>ENGINE\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>ENGINE\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceManager.h">
+      <Filter>ENGINE\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Effect.h">
+      <Filter>ENGINE\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="TestInputController.h">
+      <Filter>ENGINE\Core\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="InputManager.h">
+      <Filter>ENGINE\Input</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="System.cpp">
-      <Filter>Core</Filter>
+      <Filter>ENGINE\Core</Filter>
     </ClCompile>
     <ClCompile Include="LittleGame.cpp">
-      <Filter>Core</Filter>
+      <Filter>ENGINE\Core</Filter>
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
-      <Filter>Core</Filter>
+      <Filter>ENGINE\Core</Filter>
     </ClCompile>
     <ClCompile Include="Singleton.cpp">
-      <Filter>Core</Filter>
+      <Filter>ENGINE\Core</Filter>
     </ClCompile>
     <ClCompile Include="SystemSettings.cpp">
-      <Filter>Core</Filter>
+      <Filter>ENGINE\Core</Filter>
     </ClCompile>
     <ClCompile Include="Renderer.cpp">
-      <Filter>Rendering</Filter>
+      <Filter>ENGINE\Rendering</Filter>
     </ClCompile>
     <ClCompile Include="Component.cpp">
-      <Filter>Core</Filter>
+      <Filter>ENGINE\Core</Filter>
     </ClCompile>
     <ClCompile Include="GameObject.cpp">
-      <Filter>Core</Filter>
+      <Filter>ENGINE\Core</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
-      <Filter>Rendering</Filter>
+      <Filter>ENGINE\Rendering</Filter>
     </ClCompile>
     <ClCompile Include="Scene.cpp">
-      <Filter>Core</Filter>
+      <Filter>ENGINE\Core</Filter>
     </ClCompile>
     <ClCompile Include="Transform.cpp">
-      <Filter>Rendering</Filter>
+      <Filter>ENGINE\Rendering</Filter>
     </ClCompile>
     <ClCompile Include="Material.cpp">
-      <Filter>Rendering</Filter>
+      <Filter>ENGINE\Rendering</Filter>
     </ClCompile>
     <ClCompile Include="Mesh.cpp">
-      <Filter>Rendering</Filter>
+      <Filter>ENGINE\Rendering</Filter>
     </ClCompile>
     <ClCompile Include="MeshSprite.cpp">
-      <Filter>Rendering\Meshes</Filter>
+      <Filter>ENGINE\Rendering\Meshes</Filter>
     </ClCompile>
     <ClCompile Include="SceneTest.cpp">
-      <Filter>Core\Scenes</Filter>
+      <Filter>ENGINE\Core\Scenes</Filter>
     </ClCompile>
-    <ClCompile Include="Texture.cpp" />
-    <ClCompile Include="Effect.cpp" />
-    <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="IdentificationManager.cpp">
-      <Filter>Core</Filter>
+      <Filter>ENGINE\Core</Filter>
     </ClCompile>
     <ClCompile Include="GameResource.cpp">
-      <Filter>Core</Filter>
+      <Filter>ENGINE\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>ENGINE\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceManager.cpp">
+      <Filter>ENGINE\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Effect.cpp">
+      <Filter>ENGINE\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="TestInputController.cpp">
+      <Filter>ENGINE\Core\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="InputManager.cpp">
+      <Filter>ENGINE\Input</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -154,5 +187,10 @@
     <Image Include="LittleGame.ico">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Assets\Effects\SpriteEffect.fx">
+      <Filter>ENGINE\Rendering\Effects</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

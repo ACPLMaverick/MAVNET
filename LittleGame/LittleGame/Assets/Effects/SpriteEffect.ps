@@ -1,11 +1,9 @@
 
 // Global variables
-float4 AmbientColor;
-float4 DiffuseColor;     
+float4 AmbientColor : register (c0);
+float4 DiffuseColor : register (c1);     
 
-texture DiffuseMap;
-                 
-float4x4 MatWorldViewProj;
+texture DiffuseMap : register (t0);
 
 // Texture samplers
 sampler DiffuseMapSampler = 
@@ -19,12 +17,6 @@ sampler_state
 
 /////////////////////////////////
 // IO Structs
-
-struct VS_INPUT
-{
-    float4 Position : POSITION;
-    float2 UV0 : TEXCOORD0;
-};
 
 struct VS_OUTPUT
 {
@@ -40,17 +32,7 @@ struct PS_OUTPUT
 ///////////////////////////////
 // functions
 
-VS_OUTPUT MainVS(VS_INPUT input)
-{
-    VS_OUTPUT Output;
-    
-    Output.Position = mul(input.Position, MatWorldViewProj);
-    Output.UV0 = input.UV0;
-    
-    return Output;    
-}
-
-PS_OUTPUT MainPS(VS_OUTPUT input) 
+PS_OUTPUT main(VS_OUTPUT input) 
 { 
     PS_OUTPUT Output;
 
@@ -59,15 +41,4 @@ PS_OUTPUT MainPS(VS_OUTPUT input)
     //Output.Color = float4(1.0f, 1.0f, 1.0f, 1.0f);
 
     return Output;
-}
-
-//////////////////////////////////////////
-
-technique Main
-{
-    pass Pass0
-    {          
-        VertexShader = compile vs_2_0 MainVS();
-        PixelShader  = compile ps_2_0 MainPS(); 
-    }
 }
