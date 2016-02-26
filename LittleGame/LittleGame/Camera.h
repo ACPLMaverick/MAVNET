@@ -21,7 +21,7 @@ protected:
 
 	float_t m_width;
 	float_t m_height;
-	float_t m_fov;
+	float_t m_fov;											// this is used to calculate size of ortho matrix as a multiplier
 	float_t m_near;
 	float_t m_far;
 	bool m_ortho = false;

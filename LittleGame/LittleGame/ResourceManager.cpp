@@ -23,7 +23,7 @@ void ResourceManager::Initialize()
 	// empty material
 	std::string nEEffect = "SpriteEffect";
 	std::string nETexture = "LE_WHITE";
-	D3DXCOLOR nETexColor = D3DXCOLOR(0.2f, 0.5f, 0.8f, 1.0f);
+	D3DXCOLOR nETexColor = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 	std::string neMaterial = "LE_EMPTY_WHITE";
 	std::string neMaterialFakePath = ASSET_PATH + MATERIALS_PATH + neMaterial + MAT_SUFFIX;
 	Effect* sprite = GetEffect(&nEEffect);
@@ -61,15 +61,15 @@ void ResourceManager::Shutdown()
 	}
 }
 
-void ResourceManager::LoadFileFromAssets(char * data, uint32_t* size, const std::string * filePath, FileMode mode)
+void ResourceManager::LoadFileFromAssets(char ** data, uint32_t* size, const std::string * filePath, FileMode mode)
 {
 	std::string fPath = *filePath;
-	data = nullptr;
+	*data = nullptr;
 
 	std::string fileData;
-	int binary = (mode == FileMode::BINARY) ? std::ios::binary : 0;
+	int fileMode = (mode == FileMode::BINARY) ? std::ios::binary : std::ios::in;
 
-	std::ifstream fileStream(fPath.c_str(), std::ios::in | binary);
+	std::ifstream fileStream(fPath.c_str(), fileMode);
 
 	int length;
 	char* ret;
@@ -79,10 +79,10 @@ void ResourceManager::LoadFileFromAssets(char * data, uint32_t* size, const std:
 
 		if (fileStream.is_open())
 		{
-			while (!fileStream.eof())
+			do
 			{
 				fileData += fileStream.get();
-			}
+			} while (!fileStream.eof());
 		}
 		else
 			return;
@@ -91,7 +91,7 @@ void ResourceManager::LoadFileFromAssets(char * data, uint32_t* size, const std:
 		ret = new char[length];
 		strcpy(ret, fileData.c_str());
 
-		data = ret;
+		*data = ret;
 		*size = length;
 
 		break;
@@ -115,7 +115,7 @@ void ResourceManager::LoadFileFromAssets(char * data, uint32_t* size, const std:
 		strcpy(ret, fileData.c_str());
 		ret[length] = '\0';
 
-		data = ret;
+		*data = ret;
 		*size = (length + 1);
 
 		break;
@@ -255,7 +255,7 @@ Texture * ResourceManager::GetTexture(const std::string * name, TextureExtension
 	else
 	{
 		Texture* ef = new Texture();
-		std::string fullFilePath = TEXTURES_PATH + *name + suffix;
+		//std::string fullFilePath = TEXTURES_PATH + *name + suffix;
 		ef->Initialize(&fullFilePath, name);
 
 		c_textures.emplace(ef->GetHash(), ef);

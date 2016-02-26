@@ -204,6 +204,7 @@ Transform * const GameObject::GetTransform()
 void GameObject::AddTransform(Transform * const transform)
 {
 	m_transform = transform;
+	m_components.push_back(transform);
 }
 
 void GameObject::AddComponent(Component * const component)

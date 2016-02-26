@@ -8,7 +8,6 @@
 #include "Texture.h"
 #include "Effect.h"
 #include "ResourceManager.h"
-#include "TestInputController.h"
 
 #include <d3dx9math.h>
 
@@ -43,13 +42,18 @@ void SceneTest::InitializeScene()
 	testMesh->Initialize(3, testObject);
 	testObject->AddMesh(testMesh);
 
-	std::string neMaterial = "LE_EMPTY_WHITE";
-	Material* mat = ResourceManager::GetInstance()->GetMaterial(&neMaterial);
-	testMesh->SetMaterial(mat);
+	std::string eName = "SpriteEffect";
+	std::string tName = "brick";
+	Effect* te = ResourceManager::GetInstance()->GetEffect(&eName);
+	Texture* tn = ResourceManager::GetInstance()->GetTexture(&tName, ResourceManager::TextureExtension::DDS);
 
-	TestInputController* tic = new TestInputController();
-	tic->Initialize(4, testObject);
-	testObject->AddComponent(tic);
+	std::string neMaterial = "TestMaterial";
+	Material* mat = new Material();
+	mat->SetTextureDiffuse(tn);
+	mat->SetEffect(te);
+	mat->Initialize(0, &neMaterial, &neMaterial);
+
+	testMesh->SetMaterial(mat);
 
 	m_gameObjects.push_back(testObject);
 

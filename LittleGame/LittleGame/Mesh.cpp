@@ -13,6 +13,7 @@
 #include <DxErr.h>
 #pragma comment(lib, "dxerr.lib")
 #pragma comment(lib, "legacy_stdio_definitions.lib")
+
 Mesh::Mesh()
 {
 }
@@ -66,71 +67,22 @@ void Mesh::Shutdown()
 
 void Mesh::Draw()
 {
-	// material pre-draw operations
+	// material controls all drawing
 	// IFS WILL BE REMOVED!!!
 	if (m_material != nullptr)
 	{
-		ID3DXEffect* ef = m_material->GetEffect()->GetDX9Effect();
-
-		ef->Begin(NULL, NULL);
-		ef->BeginPass(0);
-
-		D3DXHANDLE hMat = ef->GetParameterByName(NULL, "MatWorldViewProj");
-		D3DXHANDLE hDiffMap = ef->GetParameterByName(NULL, "DiffuseMap");
-		D3DXHANDLE hDiffCol = ef->GetParameterByName(NULL, "DiffuseColor");
-		D3DXHANDLE hAmbCol = ef->GetParameterByName(NULL, "AmbientColor");
-
-		D3DXMATRIX transform = *m_obj->GetTransform()->GetWorld();
-		transform *= *System::GetInstance()->GetCurrentScene()->GetCurrentCamera()->GetViewProj();
-
-		D3DXCOLOR ambient = D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f);
-
-		ef->SetMatrix(hMat, &transform);
-		ef->SetTexture(hDiffMap, m_material->GetTextureDiffuse()->GetDX9Texture());
-		ef->SetFloatArray(hDiffCol, (float*)m_material->GetColorDiffuse(), 4);
-		ef->SetFloatArray(hAmbCol, (float*)&ambient, 4);
-
-		ef->CommitChanges();
+		m_material->Draw(this);
 	}
+}
 
-	// mesh draw operations
-
+const inline void Mesh::DrawArrays() const
+{
 	LPDIRECT3DDEVICE9 dev = Renderer::GetInstance()->GetDirect3DDevice();
-	/*
-	D3DXMATRIX transform;
-	D3DXMATRIX v;
-	D3DXMATRIX p;
-	D3DXMatrixIdentity(&transform);
-
-	if (m_obj->GetTransform() != nullptr)
-	{
-		transform = *m_obj->GetTransform()->GetWorld();
-	}
-	//dev->SetTransform(D3DTS_WORLD, &transform);
-	if (System::GetInstance()->GetCurrentScene()->GetCurrentCamera() != nullptr)
-	{
-		//transform = transform * *System::GetInstance()->GetCurrentScene()->GetCurrentCamera()->GetViewProj();
-		v = *System::GetInstance()->GetCurrentScene()->GetCurrentCamera()->GetView();
-		p = *System::GetInstance()->GetCurrentScene()->GetCurrentCamera()->GetProj();
-		dev->SetTransform(D3DTS_VIEW, &v);
-		dev->SetTransform(D3DTS_PROJECTION, &p);
-	}
-	*/
-	HRESULT r = dev->SetFVF(D3DFVF_SPRITE);
+	HRESULT r = dev->SetFVF(m_fvf);
 	r = dev->SetStreamSource(0, m_vertexData.m_vertexBuffer, 0, sizeof(VertexSprite));
 	r = dev->SetIndices(m_vertexData.m_indexBuffer);
 	r = dev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0,
 		m_vertexData.m_vertexArray.size(), 0, m_vertexData.m_indexArray.size() / 3);
-	//std::wstring err = DXGetErrorDescription(r);
-
-	// material post-draw operations
-	// IFS WILL BE REMOVED!!!
-	if (m_material != nullptr)
-	{
-		/*ID3DXEffect* ef = m_material->GetEffect()->GetDX9Effect();
-		ef->EndPass();
-		ef->End();*/
-	}
 }
 
 void Mesh::Update()

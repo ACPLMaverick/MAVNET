@@ -73,7 +73,7 @@ public:
 
 #pragma region Utility
 
-	void LoadFileFromAssets(char* data, uint32_t* size, const std::string* filePath, FileMode mode);	// this function will be abstract
+	void LoadFileFromAssets(char** data, uint32_t* size, const std::string* filePath, FileMode mode);	// this function will be abstract
 	void LoadWideTextFileFromAssets(std::wstring* data, const std::string* filePath);	// this function will be abstract
 
 #pragma endregion

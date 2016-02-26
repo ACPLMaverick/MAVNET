@@ -2,6 +2,11 @@
 #include "Texture.h"
 #include "Renderer.h"
 #include "ResourceManager.h"
+#include "System.h"
+
+#include <DxErr.h>
+#pragma comment(lib, "dxerr.lib")
+#pragma comment(lib, "legacy_stdio_definitions.lib")
 
 Texture::Texture()
 {
@@ -18,13 +23,20 @@ void Texture::Initialize(const std::string * filePath, const std::string * name)
 
 	char* data = nullptr;
 	uint32_t dataSize = 0;
-	ResourceManager::GetInstance()->LoadFileFromAssets(data, &dataSize, &m_filePath, ResourceManager::FileMode::BINARY);
+	/*
+	ResourceManager::GetInstance()->LoadFileFromAssets(&data, &dataSize, &m_filePath, ResourceManager::FileMode::BINARY);
 
-	if (data != nullptr)
+	HRESULT h = D3DXCreateTextureFromFileInMemory(Renderer::GetInstance()->GetDirect3DDevice(), data, dataSize, &m_texture);
+	if (h != S_OK)
 	{
-		D3DXCreateTextureFromFileInMemory(Renderer::GetInstance()->GetDirect3DDevice(), data, dataSize, &m_texture);
-		delete data; // !!!!!!!!!!!
+		std::wstring err = DXGetErrorDescription(h);
+		MessageBox(System::GetInstance()->GetSystemSettings()->GetWindowPtr(), err.c_str(), L"Texture loading error!", 0);
 	}
+	delete data; // !!!!!!!!!!!
+	*/
+
+	std::wstring wFilePath(filePath->begin(), filePath->end());
+	D3DXCreateTextureFromFile(Renderer::GetInstance()->GetDirect3DDevice(), wFilePath.c_str(), &m_texture);
 
 	GetInfoFromTexture();
 }

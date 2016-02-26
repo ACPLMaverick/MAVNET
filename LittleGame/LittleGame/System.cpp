@@ -5,6 +5,8 @@
 #include "IdentificationManager.h"
 #include "SceneTest.h"
 #include "InputManager.h"
+#include "Timer.h"
+#include "TTSceneGame.h"
 
 System::System()
 {
@@ -29,15 +31,16 @@ void System::Initialize(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow)
 	InitWindow(hInstance, lpCmdLine, nCmdShow);
 
 	// initialize managers
+	Timer::GetInstance()->Initialize();
 	Renderer::GetInstance()->Initialize();
 	IdentificationManager::GetInstance()->Initialize();
 	ResourceManager::GetInstance()->Initialize();
 	InputManager::GetInstance()->Initialize();
 
 	// initialize scenes
-	m_scenes.push_back(new SceneTest());
-	std::string sName = "SceneTest";
-	m_scenes[0]->Initialize(0, &sName);
+	m_scenes.push_back(new TTSceneGame());
+	std::string sName = "TTSceneGame";
+	m_scenes[0]->Initialize(IdentificationManager::GetInstance()->GetUniqueID(), &sName);
 }
 
 void System::Shutdown()
@@ -47,11 +50,13 @@ void System::Shutdown()
 	ResourceManager::GetInstance()->Shutdown();
 	IdentificationManager::GetInstance()->Shutdown();
 	Renderer::GetInstance()->Shutdown();
+	Timer::GetInstance()->Shutdown();
 
 	InputManager::DestroyInstance();
 	ResourceManager::DestroyInstance();
 	IdentificationManager::DestroyInstance();
 	Renderer::DestroyInstance();
+	Timer::DestroyInstance();
 
 	UnregisterClass((m_settings.s_windowTitle.c_str()), m_settings.m_hInstance);
 	DestroyWindow(m_settings.m_hwnd);
@@ -63,6 +68,9 @@ void System::Run()
 	while (m_running)
 	{
 		RunMessages();
+
+		// update timer
+		Timer::GetInstance()->Update();
 
 		// update input
 		InputManager::GetInstance()->Update();
@@ -82,6 +90,25 @@ void System::Pause()
 void System::Stop()
 {
 	m_running = false;
+}
+
+void System::AddEventHandlerMessage(std::function<void(UINT, WPARAM, LPARAM)>* func)
+{
+	m_eventsMessage.push_back(func);
+}
+
+bool System::RemoveEventHandlerMessage(std::function<void(UINT, WPARAM, LPARAM)>* func)
+{
+	for (std::vector<std::function<void(UINT, WPARAM, LPARAM)>*>::iterator it = m_eventsMessage.begin(); it != m_eventsMessage.end(); ++it)
+	{
+		if (*it == func)
+		{
+			m_eventsMessage.erase(it);
+			return true;
+		}
+	}
+
+	return false;
 }
 
 void System::InitWindow(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow)
@@ -129,6 +156,12 @@ inline void System::RunMessages()
 
 LRESULT System::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	// pass message to event handlers
+	for (std::vector<std::function<void(UINT, WPARAM, LPARAM)>*>::iterator it = instance->m_eventsMessage.begin(); it != instance->m_eventsMessage.end(); ++it)
+	{
+		(*(*it))(message, wParam, lParam);
+	}
+
 	switch (message)
 	{
 	case WM_CREATE:

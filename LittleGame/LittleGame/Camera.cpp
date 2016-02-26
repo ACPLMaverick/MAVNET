@@ -86,7 +86,7 @@ inline void Camera::UpdateProjMatrix()
 {
 	if (m_ortho)
 	{
-		D3DXMatrixOrthoLH(&m_proj, m_width * PROJ_ORTHO_XY_MPLIER, m_height * PROJ_ORTHO_XY_MPLIER, m_near, m_far);
+		D3DXMatrixOrthoLH(&m_proj, m_width * PROJ_ORTHO_XY_MPLIER * m_fov, m_height * PROJ_ORTHO_XY_MPLIER * m_fov, m_near, m_far);
 	}
 	else
 	{

@@ -95,7 +95,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d9.lib;d3dx9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dinput8.lib;dxguid.lib;d3d9.lib;d3dx9.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -124,7 +124,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d9.lib;d3dx9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dinput8.lib;dxguid.lib;d3d9.lib;d3dx9.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -150,6 +150,7 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="Effect.h" />
+    <ClInclude Include="TTGameController.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="GameResource.h" />
     <ClInclude Include="IdentificationManager.h" />
@@ -159,7 +160,9 @@
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshSprite.h" />
     <ClInclude Include="Renderer.h" />
-    <ClInclude Include="TestInputController.h" />
+    <ClInclude Include="Timer.h" />
+    <ClInclude Include="TTInputHandler.h" />
+    <ClInclude Include="TTSceneGame.h" />
     <ClInclude Include="WindowsResource.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="Scene.h" />
@@ -176,6 +179,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="Effect.cpp" />
+    <ClCompile Include="TTGameController.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GameResource.cpp" />
     <ClCompile Include="IdentificationManager.cpp" />
@@ -197,9 +201,11 @@
     </ClCompile>
     <ClCompile Include="System.cpp" />
     <ClCompile Include="SystemSettings.cpp" />
-    <ClCompile Include="TestInputController.cpp" />
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Transform.cpp" />
+    <ClCompile Include="TTInputHandler.cpp" />
+    <ClCompile Include="TTSceneGame.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="LittleGame.rc" />

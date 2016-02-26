@@ -46,6 +46,7 @@ public:
 	virtual void Initialize(uint32_t manualHash = 0, const std::string* filePath = nullptr, const std::string* name = nullptr);
 	virtual void Shutdown();
 	virtual void Update();
+	virtual inline void Draw(const Mesh* const mesh);
 
 #pragma region Accessors
 

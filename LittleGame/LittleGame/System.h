@@ -5,6 +5,7 @@
 #include "WindowsResource.h"
 
 #include <vector>
+#include <functional>
 
 class Scene;
 
@@ -28,6 +29,7 @@ protected:
 
 #pragma region Collections
 
+	std::vector<std::function<void(UINT, WPARAM, LPARAM)>*> m_eventsMessage;
 	std::vector<Scene*> m_scenes;
 	uint32_t m_currentScene = 0;
 
@@ -61,6 +63,9 @@ public:
 	SystemSettings* GetSystemSettings() { return &m_settings; }
 	Scene* GetCurrentScene() { return m_scenes[m_currentScene]; }
 	std::vector<Scene*>* const GetSceneCollection() { return &m_scenes; }
+
+	void AddEventHandlerMessage(std::function<void(UINT, WPARAM, LPARAM)>* func);
+	bool RemoveEventHandlerMessage(std::function<void(UINT, WPARAM, LPARAM)>* func);
 
 #pragma endregion
 };

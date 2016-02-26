@@ -29,12 +29,28 @@ void Renderer::Initialize()
 		D3DADAPTER_DEFAULT,
 		D3DDEVTYPE_HAL,
 		settings->GetWindowPtr(),
-		D3DCREATE_SOFTWARE_VERTEXPROCESSING,
+		D3DCREATE_HARDWARE_VERTEXPROCESSING,
 		&d3dParams,
 		&m_d3dDevice
 		);
 
 	m_d3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+	m_d3dDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
+	m_d3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+	m_d3dDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DBLEND_SRCALPHA);
+	m_d3dDevice->SetRenderState(D3DRS_ZENABLE, D3DZBUFFERTYPE::D3DZB_TRUE);
+	m_d3dDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZBUFFERTYPE::D3DZB_TRUE);
+
+	// CHECKING FOR SUPPORTED SHADER VERSION
+	/*
+	std::string vprof = D3DXGetVertexShaderProfile(m_d3dDevice) != nullptr ? D3DXGetVertexShaderProfile(m_d3dDevice) : "DUPA";
+	std::string pProg = D3DXGetPixelShaderProfile(m_d3dDevice) != nullptr ? D3DXGetPixelShaderProfile(m_d3dDevice) : "DUPA";
+	std::string mess = "Supported Vertex Shader Profile: " + vprof + "\n" +
+		"Supported Pixel Shader Profile: " + pProg;
+	std::wstring wmess(mess.begin(), mess.end());
+
+	MessageBox(settings->GetWindowPtr(), wmess.c_str(), L"Information", 0);
+	*/
 }
 
 void Renderer::Shutdown()

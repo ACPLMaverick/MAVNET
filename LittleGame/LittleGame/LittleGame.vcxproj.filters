@@ -26,8 +26,17 @@
     <Filter Include="ENGINE\Rendering\Effects">
       <UniqueIdentifier>{c9b58432-7cf2-409e-b1de-08f802c509c1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ENGINE\Core\Components">
-      <UniqueIdentifier>{659b428c-3721-4db6-b38a-b469baf28a7b}</UniqueIdentifier>
+    <Filter Include="TETRIS">
+      <UniqueIdentifier>{8c282bc0-e61b-4a3b-8f3f-155908be3be4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TETRIS\Scenes">
+      <UniqueIdentifier>{9cb8f9c8-d066-43bd-8972-d6720dada6a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TETRIS\Components">
+      <UniqueIdentifier>{708edb9d-8411-413f-83c7-a811d1412665}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TETRIS\Singletons">
+      <UniqueIdentifier>{8e9be697-8e34-4c35-a7e4-73dd43d8ebd5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -100,11 +109,20 @@
     <ClInclude Include="Effect.h">
       <Filter>ENGINE\Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="TestInputController.h">
-      <Filter>ENGINE\Core\Components</Filter>
-    </ClInclude>
     <ClInclude Include="InputManager.h">
       <Filter>ENGINE\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Timer.h">
+      <Filter>ENGINE\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="TTSceneGame.h">
+      <Filter>TETRIS\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="TTGameController.h">
+      <Filter>TETRIS\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="TTInputHandler.h">
+      <Filter>TETRIS\Singletons</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -168,11 +186,20 @@
     <ClCompile Include="Effect.cpp">
       <Filter>ENGINE\Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="TestInputController.cpp">
-      <Filter>ENGINE\Core\Components</Filter>
-    </ClCompile>
     <ClCompile Include="InputManager.cpp">
       <Filter>ENGINE\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Timer.cpp">
+      <Filter>ENGINE\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="TTSceneGame.cpp">
+      <Filter>TETRIS\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="TTGameController.cpp">
+      <Filter>TETRIS\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="TTInputHandler.cpp">
+      <Filter>TETRIS\Singletons</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

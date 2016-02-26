@@ -11,7 +11,7 @@ class Material;
 ///////////////
 // DX9 vertex data
 
-#define D3DFVF_SPRITE ( (D3DFVF_XYZ) | (D3DFVF_TEX0) )
+#define D3DFVF_SPRITE ( (D3DFVF_XYZ) | (D3DFVF_TEX1) )
 #define D3DFVF_BASIC ( (D3DFVF_XYZ) | (D3DFVF_NORMAL) | (D3DFVF_DIFFUSE) | (D3DFVF_TEX0) )
 
 struct VertexSprite
@@ -56,12 +56,15 @@ public:
 
 class Mesh : public Component
 {
+	friend class Material;
 protected:
 
 	VertexData m_vertexData;
+	uint32_t m_fvf = 0x00000000;
 	Material* m_material = nullptr;
 
 	virtual void InitializeVertexData() = 0;
+	virtual const inline void DrawArrays() const;
 public:
 	Mesh();
 	~Mesh();

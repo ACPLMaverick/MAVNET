@@ -25,6 +25,6 @@ public:
 	virtual void Initialize(const std::string* name, uint32_t width, uint32_t height, D3DXCOLOR* color);
 	virtual void Shutdown();
 
-	IDirect3DTexture9* const GetDX9Texture() { return m_texture; }
+	IDirect3DTexture9* const GetDX9Texture() const { return m_texture; }
 };
 
