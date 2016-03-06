@@ -87,11 +87,45 @@ void TTGameController::Update()
 		movement *= dt * speed;
 		D3DXVECTOR2 nPos = *Controllable->GetTransform()->GetPosition2D() + movement;
 		Controllable->GetTransform()->SetPosition2D(&nPos);
-
-		std::wstringstream dupa;
-		dupa << nPos.x << " " << nPos.y << "\n";
-		OutputDebugString(dupa.str().c_str());
 	}
+
+	// **************
+	// TEST ONLY
+
+	// move test brick 2 
+	if (
+		InputManager::GetInstance()->GetKey(LEK_A) ||
+		InputManager::GetInstance()->GetKey(LEK_W) ||
+		InputManager::GetInstance()->GetKey(LEK_D) ||
+		InputManager::GetInstance()->GetKey(LEK_S)
+		)
+	{
+		double dt = Timer::GetInstance()->GetDeltaTime();
+		float speed = 5.0f;
+		D3DXVECTOR2 movement = D3DXVECTOR2(0.0f, 0.0f);
+		if (InputManager::GetInstance()->GetKey(LEK_A))
+		{
+			movement += D3DXVECTOR2(-1.0f, 0.0f);
+		}
+		if (InputManager::GetInstance()->GetKey(LEK_W))
+		{
+			movement += D3DXVECTOR2(0.0f, 1.0f);
+		}
+		if (InputManager::GetInstance()->GetKey(LEK_D))
+		{
+			movement += D3DXVECTOR2(1.0f, 0.0f);
+		}
+		if (InputManager::GetInstance()->GetKey(LEK_S))
+		{
+			movement += D3DXVECTOR2(0.0f, -1.0f);
+		}
+
+		movement *= dt * speed;
+		D3DXVECTOR2 nPos = *Controllable2->GetTransform()->GetPosition2D() + movement;
+		Controllable2->GetTransform()->SetPosition2D(&nPos);
+	}
+
+	// *********************
 }
 
 void TTGameController::Draw()

@@ -98,6 +98,7 @@ void TTSceneGame::InitializeScene()
 
 	TTGameController* gameContrComp = new TTGameController();
 	gameContrComp->Controllable = testObject;
+	gameContrComp->Controllable2 = testObject2;
 	gameContrComp->Initialize(IdentificationManager::GetInstance()->GetUniqueID(), controller);
 	controller->AddComponent(gameContrComp);
 

@@ -147,9 +147,13 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ColliderBoxAA2D.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Collider.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="Effect.h" />
+    <ClInclude Include="PhysicsManager.h" />
+    <ClInclude Include="ColliderSphere2D.h" />
     <ClInclude Include="TTGameController.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="GameResource.h" />
@@ -176,9 +180,13 @@
     <ClInclude Include="Transform.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ColliderBoxAA2D.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Collider.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="Effect.cpp" />
+    <ClCompile Include="PhysicsManager.cpp" />
+    <ClCompile Include="ColliderSphere2D.cpp" />
     <ClCompile Include="TTGameController.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GameResource.cpp" />

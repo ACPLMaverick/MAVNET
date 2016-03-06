@@ -11,12 +11,13 @@ Transform::~Transform()
 {
 }
 
-void Transform::Initialize(uint32_t uid, GameObject* obj, const D3DXVECTOR3* position, const D3DXVECTOR3* rotation, const D3DXVECTOR3* scale,
+void Transform::Initialize(uint32_t uid, GameObject* obj, D3DXVECTOR3* const position, D3DXVECTOR3* const rotation, D3DXVECTOR3* const scale,
 	ParentMode mode, std::string* name)
 {
-	m_position = *position;
-	m_rotation = *rotation;
-	m_scale = *scale;
+	SetPosition(position);
+	SetRotation(rotation);
+	SetScale(scale);
+
 	m_parentMode = mode;
 	Component::Initialize(uid, obj, name);
 

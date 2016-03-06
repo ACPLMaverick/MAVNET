@@ -38,6 +38,9 @@
     <Filter Include="TETRIS\Singletons">
       <UniqueIdentifier>{8e9be697-8e34-4c35-a7e4-73dd43d8ebd5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ENGINE\Physics">
+      <UniqueIdentifier>{21996435-02e0-487e-957b-a3d6740a7e24}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -124,6 +127,18 @@
     <ClInclude Include="TTInputHandler.h">
       <Filter>TETRIS\Singletons</Filter>
     </ClInclude>
+    <ClInclude Include="PhysicsManager.h">
+      <Filter>ENGINE\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Collider.h">
+      <Filter>ENGINE\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="ColliderBoxAA2D.h">
+      <Filter>ENGINE\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="ColliderSphere2D.h">
+      <Filter>ENGINE\Physics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="System.cpp">
@@ -200,6 +215,18 @@
     </ClCompile>
     <ClCompile Include="TTInputHandler.cpp">
       <Filter>TETRIS\Singletons</Filter>
+    </ClCompile>
+    <ClCompile Include="PhysicsManager.cpp">
+      <Filter>ENGINE\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="Collider.cpp">
+      <Filter>ENGINE\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="ColliderBoxAA2D.cpp">
+      <Filter>ENGINE\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="ColliderSphere2D.cpp">
+      <Filter>ENGINE\Physics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

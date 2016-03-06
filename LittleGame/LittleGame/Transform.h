@@ -59,7 +59,7 @@ public:
 
 	virtual void Initialize(
 		uint32_t uid, GameObject* obj,
-		const D3DXVECTOR3* position, const D3DXVECTOR3* rotation, const D3DXVECTOR3* scale,
+		D3DXVECTOR3* const position, D3DXVECTOR3* const rotation, D3DXVECTOR3* const scale,
 		ParentMode mode = ParentMode::CONSIDER_NO_SCALE, std::string* name = nullptr);
 	virtual void Shutdown();
 	virtual void Update();

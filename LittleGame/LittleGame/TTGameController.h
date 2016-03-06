@@ -11,6 +11,7 @@ public:
 #pragma region Variables
 
 	GameObject* Controllable = nullptr;
+	GameObject* Controllable2 = nullptr;
 
 #pragma endregion
 
