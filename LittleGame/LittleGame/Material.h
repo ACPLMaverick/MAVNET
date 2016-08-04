@@ -30,6 +30,8 @@ protected:
 
 	Texture* m_diffuseMap = nullptr;
 
+	Texture* m_diffuseColorTexture;
+
 	D3DXCOLOR m_diffuseColor = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 	D3DXCOLOR m_specularColor = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 	float m_specularCoeff = 1.0f;

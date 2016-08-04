@@ -19,3 +19,6 @@ LittleGame/LittleGame/Debug/vc140.idb
 LittleGame/LittleGame/Debug/
 LittleGame/LittleGame/Release/
 LittleGame/Release/
+*.db
+*.opendb
+LittleGame/LittleGame/x64/Debug/

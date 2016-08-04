@@ -14,6 +14,7 @@ MeshSprite::~MeshSprite()
 void MeshSprite::InitializeVertexData()
 {
 	m_fvf = D3DFVF_SPRITE;
+	m_vertexStructSize = sizeof(VertexSprite);
 
 	m_vertexData.m_vertexArray.push_back(VertexSprite(
 		D3DXVECTOR3(-0.5f, -0.5f, 0.0f), D3DXVECTOR2(1.0f, 1.0f)));

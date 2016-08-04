@@ -31,14 +31,14 @@ void Mesh::Initialize(uint32_t uid, GameObject* obj, std::string* name)
 
 	LPDIRECT3DDEVICE9 device = Renderer::GetInstance()->GetDirect3DDevice();
 	HRESULT res = device->CreateVertexBuffer(
-		m_vertexData.m_vertexArray.size() * sizeof(VertexSprite),
-		NULL, D3DFVF_SPRITE, D3DPOOL_MANAGED, 
+		m_vertexData.m_vertexArray.size() * m_vertexStructSize,
+		NULL, m_fvf, D3DPOOL_MANAGED, 
 		&m_vertexData.m_vertexBuffer, NULL
 		);
 	void* accessPtr;
 	m_vertexData.m_vertexBuffer->Lock(0, 0, &accessPtr, 0);
 	memcpy(accessPtr, &m_vertexData.m_vertexArray[0],
-		m_vertexData.m_vertexArray.size() * sizeof(VertexSprite));
+		m_vertexData.m_vertexArray.size() * m_vertexStructSize);
 	m_vertexData.m_vertexBuffer->Unlock();
 
 	res = device->CreateIndexBuffer(
@@ -79,7 +79,7 @@ const inline void Mesh::DrawArrays() const
 {
 	LPDIRECT3DDEVICE9 dev = Renderer::GetInstance()->GetDirect3DDevice();
 	HRESULT r = dev->SetFVF(m_fvf);
-	r = dev->SetStreamSource(0, m_vertexData.m_vertexBuffer, 0, sizeof(VertexSprite));
+	r = dev->SetStreamSource(0, m_vertexData.m_vertexBuffer, 0, m_vertexStructSize);
 	r = dev->SetIndices(m_vertexData.m_indexBuffer);
 	r = dev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0,
 		m_vertexData.m_vertexArray.size(), 0, m_vertexData.m_indexArray.size() / 3);
