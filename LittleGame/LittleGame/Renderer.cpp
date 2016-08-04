@@ -56,9 +56,9 @@ void Renderer::Initialize()
 	m_d3dDevice->SetTextureStageState(1, D3DTSS_COLORARG1, D3DTA_CURRENT);
 	m_d3dDevice->SetTextureStageState(1, D3DTSS_COLORARG2, D3DTA_TEXTURE);
 
-	m_d3dDevice->SetTextureStageState(2, D3DTSS_COLOROP, D3DTOP_ADD);
-	m_d3dDevice->SetTextureStageState(2, D3DTSS_COLORARG1, D3DTA_CURRENT);
-	m_d3dDevice->SetTextureStageState(2, D3DTSS_COLORARG2, D3DTA_TEXTURE);
+	m_d3dDevice->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
+	m_d3dDevice->SetTextureStageState(1, D3DTSS_ALPHAARG1, D3DTA_CURRENT);
+	m_d3dDevice->SetTextureStageState(1, D3DTSS_ALPHAARG2, D3DTA_TEXTURE);
 
 	// CHECKING FOR SUPPORTED SHADER VERSION
 	/*

@@ -42,16 +42,13 @@ void TTSceneGame::InitializeScene()
 	testMesh->Initialize(IdentificationManager::GetInstance()->GetUniqueID(), testObject);
 	testObject->AddMesh(testMesh);
 
-	std::string eName = "SpriteEffect";
 	std::string tName = "brick";
-	Effect* te = ResourceManager::GetInstance()->GetEffect(&eName);
 	Texture* tn = ResourceManager::GetInstance()->GetTexture(&tName, ResourceManager::TextureExtension::DDS);
 
 	std::string neMaterial = "TestMaterial";
 	D3DXCOLOR color = D3DXCOLOR(0.7f, 0.7f, 0.9f, 1.0f);
 	Material* mat = new Material();
 	mat->SetTextureDiffuse(tn);
-	mat->SetEffect(te);
 	mat->SetColorDiffuse(&color);
 	mat->Initialize(0, &neMaterial, &neMaterial);
 

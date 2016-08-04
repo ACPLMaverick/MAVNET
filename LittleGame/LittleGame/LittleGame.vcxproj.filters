@@ -109,9 +109,6 @@
     <ClInclude Include="ResourceManager.h">
       <Filter>ENGINE\Core</Filter>
     </ClInclude>
-    <ClInclude Include="Effect.h">
-      <Filter>ENGINE\Rendering</Filter>
-    </ClInclude>
     <ClInclude Include="InputManager.h">
       <Filter>ENGINE\Input</Filter>
     </ClInclude>
@@ -197,9 +194,6 @@
     </ClCompile>
     <ClCompile Include="ResourceManager.cpp">
       <Filter>ENGINE\Core</Filter>
-    </ClCompile>
-    <ClCompile Include="Effect.cpp">
-      <Filter>ENGINE\Rendering</Filter>
     </ClCompile>
     <ClCompile Include="InputManager.cpp">
       <Filter>ENGINE\Input</Filter>

@@ -6,7 +6,6 @@
 #include <d3dx9math.h>
 #include <functional>
 
-#ifdef LE_PLATFORM_WINDOWS
 
 typedef BYTE KeyCode;
 
@@ -178,8 +177,6 @@ typedef BYTE KeyCode;
 #define LEK_MYCOMPUTER DIK_MYCOMPUTER          /* My Computer */
 #define LEK_MAIL DIK_MAIL                /* Mail */
 #define LEK_MEDIASELECT DIK_MEDIASELECT         /* Media Select */
-
-#endif
 
 struct MouseData
 {
