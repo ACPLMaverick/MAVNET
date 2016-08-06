@@ -20,3 +20,6 @@ LittleGame/LittleGame/Debug/
 LittleGame/LittleGame/Release/
 LittleGame/Release/
 UnrealProjects/Learning02/Saved/
+*.db
+*.opendb
+LittleGame/LittleGame/x64/Debug/

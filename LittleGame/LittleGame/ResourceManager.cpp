@@ -26,7 +26,6 @@ void ResourceManager::Initialize()
 	D3DXCOLOR nETexColor = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 	std::string neMaterial = "LE_EMPTY_WHITE";
 	std::string neMaterialFakePath = ASSET_PATH + MATERIALS_PATH + neMaterial + MAT_SUFFIX;
-	Effect* sprite = GetEffect(&nEEffect);
 
 	Texture* eTex = new Texture();
 	eTex->Initialize(&nETexture, 2U, 2U, &nETexColor);
@@ -35,7 +34,6 @@ void ResourceManager::Initialize()
 	Material* eMat = new Material();
 	eMat->Initialize(0, &neMaterialFakePath, &neMaterial);
 	eMat->SetTextureDiffuse(eTex);
-	eMat->SetEffect(sprite);
 	AddMaterial(eMat);
 }
 
@@ -47,12 +45,7 @@ void ResourceManager::Shutdown()
 		delete it->second;
 		it->second = nullptr;
 	}
-	for (std::map< uint32_t, Effect*>::iterator it = c_effects.begin(); it != c_effects.end(); ++it)
-	{
-		it->second->Shutdown();
-		delete it->second;
-		it->second = nullptr;
-	}
+
 	for (std::map< uint32_t, Texture*>::iterator it = c_textures.begin(); it != c_textures.end(); ++it)
 	{
 		it->second->Shutdown();
@@ -143,20 +136,6 @@ void ResourceManager::LoadWideTextFileFromAssets(std::wstring * data, const std:
 
 }
 
-bool ResourceManager::AddEffect(Effect * const effect)
-{
-	bool inColl = c_effects.count(effect->GetHash());
-
-	if (inColl)
-	{
-		return false;
-	}
-	else
-	{
-		c_effects.emplace(effect->GetHash(), effect);
-	}
-}
-
 bool ResourceManager::AddMaterial(Material * const material)
 {
 	bool inColl = c_materials.count(material->GetHash());
@@ -182,25 +161,6 @@ bool ResourceManager::AddTexture(Texture * const texture)
 	else
 	{
 		c_textures.emplace(texture->GetHash(), texture);
-	}
-}
-
-Effect * ResourceManager::GetEffect(const std::string * name)
-{
-	std::string fullFilePath = ASSET_PATH + EFFECTS_PATH + *name + FX_SUFFIX;
-	uint32_t hash = std::hash<std::string>()(fullFilePath);
-
-	std::map<uint32_t, Effect*>::iterator check = c_effects.find(hash);
-
-	if (check != c_effects.end())
-		return (*check).second;
-	else
-	{
-		Effect* ef = new Effect();
-		ef->Initialize(&fullFilePath, name);
-
-		c_effects.emplace(ef->GetHash(), ef);
-		return ef;
 	}
 }
 

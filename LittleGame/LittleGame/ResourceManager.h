@@ -2,7 +2,6 @@
 
 #include "Singleton.h"
 
-class Effect;
 class Texture;
 class Material;
 class Mesh;
@@ -20,7 +19,6 @@ protected:
 #pragma region Collections
 
 	std::map<uint32_t, Material*> c_materials;
-	std::map<uint32_t, Effect*> c_effects;
 	std::map<uint32_t, Texture*> c_textures;
 
 #pragma endregion
@@ -32,14 +30,9 @@ public:
 #pragma region Constants
 
 	const std::string ASSET_PATH = "./Assets/";
-	const std::string EFFECTS_PATH = "Effects/";
 	const std::string TEXTURES_PATH = "Textures/";
 	const std::string MATERIALS_PATH = "Materials/";
 
-	const std::string FX_SUFFIX = ".fx";
-	const std::string VS_SUFFIX = ".vs";
-	const std::string PS_SUFFIX = ".ps";
-	const std::string GS_SUFFIX = ".gs";
 	const std::string MAT_SUFFIX = ".lemat";
 	const std::string BMP_SUFFIX = ".bmp";
 	const std::string TGA_SUFFIX = ".tga";
@@ -80,11 +73,9 @@ public:
 
 #pragma region Accessors
 
-	bool AddEffect(Effect* const effect);
 	bool AddMaterial(Material* const material);
 	bool AddTexture(Texture* const texture);
 
-	Effect* GetEffect(const std::string* name);
 	Material* GetMaterial(const std::string* name);
 	Texture* GetTexture(const std::string* name, TextureExtension ext);
 

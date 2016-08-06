@@ -41,6 +41,25 @@ void Renderer::Initialize()
 	m_d3dDevice->SetRenderState(D3DRS_ZENABLE, D3DZBUFFERTYPE::D3DZB_TRUE);
 	m_d3dDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZBUFFERTYPE::D3DZB_TRUE);
 
+	m_d3dDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADEMODE::D3DSHADE_FLAT);
+	m_d3dDevice->SetRenderState(D3DRS_SPECULARENABLE, FALSE);
+	m_d3dDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+	m_d3dDevice->SetRenderState(D3DRS_AMBIENT, FALSE);
+	m_d3dDevice->SetRenderState(D3DRS_COLORVERTEX, FALSE);
+	m_d3dDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+	m_d3dDevice->SetRenderState(D3DRS_LOCALVIEWER, FALSE);
+	m_d3dDevice->SetRenderState(D3DRS_NORMALIZENORMALS, FALSE);
+
+	m_d3dDevice->LightEnable(0, FALSE);
+
+	m_d3dDevice->SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_MODULATE);
+	m_d3dDevice->SetTextureStageState(1, D3DTSS_COLORARG1, D3DTA_CURRENT);
+	m_d3dDevice->SetTextureStageState(1, D3DTSS_COLORARG2, D3DTA_TEXTURE);
+
+	m_d3dDevice->SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
+	m_d3dDevice->SetTextureStageState(1, D3DTSS_ALPHAARG1, D3DTA_CURRENT);
+	m_d3dDevice->SetTextureStageState(1, D3DTSS_ALPHAARG2, D3DTA_TEXTURE);
+
 	// CHECKING FOR SUPPORTED SHADER VERSION
 	/*
 	std::string vprof = D3DXGetVertexShaderProfile(m_d3dDevice) != nullptr ? D3DXGetVertexShaderProfile(m_d3dDevice) : "DUPA";

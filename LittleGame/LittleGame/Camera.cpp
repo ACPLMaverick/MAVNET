@@ -29,7 +29,6 @@ void Camera::Initialize(uint32_t uid,
 
 	UpdateViewMatrixAndVectorData();
 	UpdateProjMatrix();
-	UpdateViewProjMatrix();
 
 	GameObject::Initialize(uid, name);
 }

@@ -11,18 +11,20 @@ class Material;
 ///////////////
 // DX9 vertex data
 
-#define D3DFVF_SPRITE ( (D3DFVF_XYZ) | (D3DFVF_TEX1) )
+#define D3DFVF_SPRITE ( (D3DFVF_XYZ) | (D3DFVF_TEX1)  | (D3DFVF_TEX2))
 #define D3DFVF_BASIC ( (D3DFVF_XYZ) | (D3DFVF_NORMAL) | (D3DFVF_DIFFUSE) | (D3DFVF_TEX0) )
 
 struct VertexSprite
 {
 	D3DXVECTOR3 position;
 	D3DXVECTOR2 uv;
+	D3DXVECTOR2 uv2;
 
 	VertexSprite(D3DXVECTOR3 p, D3DXVECTOR2 uv)
 	{
 		position = p;
 		this->uv = uv;
+		this->uv2 = uv;
 	}
 };
 
@@ -61,6 +63,7 @@ protected:
 
 	VertexData m_vertexData;
 	uint32_t m_fvf = 0x00000000;
+	uint32_t m_vertexStructSize = 0;
 	Material* m_material = nullptr;
 
 	virtual void InitializeVertexData() = 0;

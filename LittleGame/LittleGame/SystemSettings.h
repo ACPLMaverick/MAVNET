@@ -5,38 +5,6 @@
 */
 
 
-// Platform selection defines
-
-#define LE_PLATFORM_WINDOWS
-//#define LE_PLATFORM_LINUX
-//#define LE_PLATFORM_ANDROID
-
-#ifdef LE_PLATFORM_WINDOWS
-
-#define LE_RENDERER_DX9
-//#define LE_RENDERER_DX9FIXED
-//#define LE_RENDERER_DX11
-//#define LE_RENDERER_OGL_WIN
-
-#define LE_LIB_SYSTEM #include <windows.h>
-#define LE_System_SPECIFIC SystemWin
-
-#elif LE_PLATFORM_LINUX
-
-#define LE_RENDERER_OGL_LNX
-
-#define LE_LIB_SYSTEM
-#define LE_System_SPECIFIC SystemLnx
-
-#elif LE_PLATFORM_ANDROID
-
-#define LE_RENDERER_OGL_ES
-
-#define LE_LIB_SYSTEM
-#define LE_System_SPECIFIC SystemAdr
-
-#endif
-
 //////////////////
 
 // Other defines

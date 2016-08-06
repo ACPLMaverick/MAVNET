@@ -44,13 +44,11 @@ void SceneTest::InitializeScene()
 
 	std::string eName = "SpriteEffect";
 	std::string tName = "brick";
-	Effect* te = ResourceManager::GetInstance()->GetEffect(&eName);
 	Texture* tn = ResourceManager::GetInstance()->GetTexture(&tName, ResourceManager::TextureExtension::DDS);
 
 	std::string neMaterial = "TestMaterial";
 	Material* mat = new Material();
 	mat->SetTextureDiffuse(tn);
-	mat->SetEffect(te);
 	mat->Initialize(0, &neMaterial, &neMaterial);
 
 	testMesh->SetMaterial(mat);
