@@ -47,6 +47,7 @@ public:
 	void Initialize(uint32_t uID, std::string* name);
 	void Shutdown();
 	void Update();
+	void LateUpdate();
 	void Draw();
 
 #pragma endregion

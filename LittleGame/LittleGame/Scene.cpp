@@ -67,6 +67,14 @@ void Scene::Update()
 	}
 }
 
+void Scene::LateUpdate()
+{
+	for (std::vector<GameObject*>::iterator it = m_gameObjects.begin(); it != m_gameObjects.end(); ++it)
+	{
+		(*it)->LateUpdate();
+	}
+}
+
 void Scene::Draw()
 {
 	for (std::vector<GameObject*>::iterator it = m_gameObjects.begin(); it != m_gameObjects.end(); ++it)

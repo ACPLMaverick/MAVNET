@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "Transform.h"
 #include "GameObject.h"
+#include "Collider.h"
+#include "PhysicsManager.h"
 
 Transform::Transform()
 {
@@ -14,9 +16,9 @@ Transform::~Transform()
 void Transform::Initialize(uint32_t uid, GameObject* obj, D3DXVECTOR3* const position, D3DXVECTOR3* const rotation, D3DXVECTOR3* const scale,
 	ParentMode mode, std::string* name)
 {
-	SetPosition(position);
-	SetRotation(rotation);
-	SetScale(scale);
+	SetPosition(position, false);
+	SetRotation(rotation, false);
+	SetScale(scale, false);
 
 	m_parentMode = mode;
 	Component::Initialize(uid, obj, name);
@@ -29,6 +31,10 @@ void Transform::Shutdown()
 }
 
 void Transform::Update()
+{
+}
+
+void Transform::LateUpdate()
 {
 	// recalculate world matrix if necessary - once per frame
 	if (m_flagUpdateMatrix)
@@ -68,5 +74,14 @@ inline void Transform::UpdateWorldMatrix()
 
 			m_world = pPos * pRot * m_world;
 		}
+	}
+}
+
+inline void Transform::CheckForCollisions()
+{
+	const std::vector<Collider*>* colliders = m_obj->GetColliderCollection();
+	for (std::vector<Collider*>::const_iterator it = colliders->begin(); it != colliders->end(); ++it)
+	{
+		PhysicsManager::GetInstance()->AddColliderToCheck(*it);
 	}
 }

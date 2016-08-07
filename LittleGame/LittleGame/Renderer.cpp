@@ -18,6 +18,8 @@ void Renderer::Initialize()
 	SystemSettings* settings = System::GetInstance()->GetSystemSettings();
 	D3DPRESENT_PARAMETERS d3dParams;
 
+	//MessageBox(settings->GetWindowPtr(), L"Sie zaczyna inicjalizowac", L"Information", 0);
+
 	ZeroMemory(&d3dParams, sizeof(d3dParams));
 
 	d3dParams.Windowed = !settings->GetWindowFullscreen();
@@ -29,7 +31,7 @@ void Renderer::Initialize()
 		D3DADAPTER_DEFAULT,
 		D3DDEVTYPE_HAL,
 		settings->GetWindowPtr(),
-		D3DCREATE_HARDWARE_VERTEXPROCESSING,
+		D3DCREATE_SOFTWARE_VERTEXPROCESSING,
 		&d3dParams,
 		&m_d3dDevice
 		);
@@ -70,6 +72,8 @@ void Renderer::Initialize()
 
 	MessageBox(settings->GetWindowPtr(), wmess.c_str(), L"Information", 0);
 	*/
+
+	//MessageBox(settings->GetWindowPtr(), L"Sie kurwa zainicjalizowalo", L"Information", 0);
 }
 
 void Renderer::Shutdown()

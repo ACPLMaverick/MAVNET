@@ -49,6 +49,7 @@ private:
 #pragma region Internal Functions
 
 	inline void UpdateWorldMatrix();
+	inline void CheckForCollisions();
 
 #pragma endregion
 
@@ -63,6 +64,7 @@ public:
 		ParentMode mode = ParentMode::CONSIDER_NO_SCALE, std::string* name = nullptr);
 	virtual void Shutdown();
 	virtual void Update();
+	virtual void LateUpdate();
 	virtual void Draw();
 
 #pragma region Accessors
@@ -76,13 +78,40 @@ public:
 	const D3DXVECTOR2* GetScale2D() { return &m_scale2D; }
 	ParentMode GetParentMode() { return m_parentMode; }
 
-	void SetPosition(D3DXVECTOR3* const position) { m_position = *position; m_position2D.x = position->x; m_position2D.y = position->y; m_flagUpdateMatrix = true; }
-	void SetRotation(D3DXVECTOR3* const rotation) { m_rotation = *rotation; m_rotation2D = rotation->z; m_flagUpdateMatrix = true; }
-	void SetScale(D3DXVECTOR3* const scale) { m_scale = *scale; m_scale2D.x = scale->x; m_scale2D.y = scale->y; m_flagUpdateMatrix = true; }
-	void SetPosition2D(D3DXVECTOR2* const position) { m_position = D3DXVECTOR3(position->x, position->y, 0.0f); m_position2D = *position; m_flagUpdateMatrix = true; }
-	void SetRotation2D(float rotation) { m_rotation = D3DXVECTOR3(0.0f, 0.0f, rotation); m_rotation2D = rotation; m_flagUpdateMatrix = true; }
-	void SetScale2D(D3DXVECTOR2* const scale) { m_scale = D3DXVECTOR3(scale->x, scale->y, 1.0f); m_scale2D = *scale, m_flagUpdateMatrix = true; }
-	void SetParentMode(ParentMode mode) { m_parentMode = mode; m_flagUpdateMatrix = true; }
+	void SetPosition(D3DXVECTOR3* const position, bool checkForCollisions = true) 
+	{ 
+		m_position = *position; m_position2D.x = position->x; m_position2D.y = position->y; m_flagUpdateMatrix = true; 
+		if (checkForCollisions) { CheckForCollisions(); }
+	}
+	void SetRotation(D3DXVECTOR3* const rotation, bool checkForCollisions = true)
+	{ 
+		m_rotation = *rotation; m_rotation2D = rotation->z; m_flagUpdateMatrix = true; 
+		if (checkForCollisions) { CheckForCollisions(); }
+	}
+	void SetScale(D3DXVECTOR3* const scale, bool checkForCollisions = true)
+	{ 
+		m_scale = *scale; m_scale2D.x = scale->x; m_scale2D.y = scale->y; m_flagUpdateMatrix = true; 
+		if (checkForCollisions) { CheckForCollisions(); }
+	}
+	void SetPosition2D(D3DXVECTOR2* const position, bool checkForCollisions = true)
+	{ 
+		m_position = D3DXVECTOR3(position->x, position->y, m_position.z); m_position2D = *position; m_flagUpdateMatrix = true; 
+		if (checkForCollisions) { CheckForCollisions(); }
+	}
+	void SetRotation2D(float rotation, bool checkForCollisions = true)
+	{ 
+		m_rotation = D3DXVECTOR3(0.0f, 0.0f, rotation); m_rotation2D = rotation; m_flagUpdateMatrix = true; 
+		if (checkForCollisions) { CheckForCollisions(); }
+	}
+	void SetScale2D(D3DXVECTOR2* const scale, bool checkForCollisions = true)
+	{ 
+		m_scale = D3DXVECTOR3(scale->x, scale->y, m_scale.z); m_scale2D = *scale, m_flagUpdateMatrix = true; 
+		if (checkForCollisions) { CheckForCollisions(); }
+	}
+	void SetParentMode(ParentMode mode) 
+	{ 
+		m_parentMode = mode; m_flagUpdateMatrix = true; 
+	}
 
 #pragma endregion
 

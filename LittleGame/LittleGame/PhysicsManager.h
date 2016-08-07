@@ -40,8 +40,8 @@ class PhysicsManager :
 {
 	friend class Singleton<PhysicsManager>;
 	friend class Collider;
-	friend class ColliderSphere;
-	friend class ColliderBoxAA;
+	friend class ColliderSphere2D;
+	friend class ColliderBoxAA2D;
 
 protected:
 	std::vector<Collider*> m_collidersAll;
@@ -52,6 +52,9 @@ protected:
 
 	void AddCollider(Collider* col) { m_collidersAll.push_back(col); }
 	bool RemoveCollider(Collider* col);
+
+	inline void CheckCollider(Collider* col);
+	inline void SolveCollider(ColliderMovement mv);
 public:
 
 	~PhysicsManager();

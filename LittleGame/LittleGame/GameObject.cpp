@@ -3,6 +3,7 @@
 #include "Component.h"
 #include "Transform.h"
 #include "Mesh.h"
+#include "Collider.h"
 
 GameObject::GameObject()
 {
@@ -87,6 +88,24 @@ void GameObject::Update()
 	for (std::vector<Mesh*>::iterator it = m_meshes.begin(); it != m_meshes.end(); ++it)
 	{
 		(*it)->Update();
+	}
+}
+
+void GameObject::LateUpdate()
+{
+	for (std::vector<GameObject*>::iterator it = m_children.begin(); it != m_children.end(); ++it)
+	{
+		(*it)->LateUpdate();
+	}
+
+	for (std::vector<Component*>::iterator it = m_components.begin(); it != m_components.end(); ++it)
+	{
+		(*it)->LateUpdate();
+	}
+
+	for (std::vector<Mesh*>::iterator it = m_meshes.begin(); it != m_meshes.end(); ++it)
+	{
+		(*it)->LateUpdate();
 	}
 }
 
@@ -201,26 +220,32 @@ Transform * const GameObject::GetTransform()
 	return m_transform;
 }
 
+const std::vector<Collider*>* GameObject::GetColliderCollection()
+{
+	return &m_colliders;
+}
+
+const std::vector<GameObject*>* GameObject::GetChildrenCollection()
+{
+	return &m_children;
+}
+
 void GameObject::AddTransform(Transform * const transform)
 {
 	m_transform = transform;
-	m_components.push_back(transform);
+	AddComponent((Component*)transform);
 }
 
 void GameObject::AddComponent(Component * const component)
 {
-	if (typeid(component) == typeid(Transform*))
-	{
-		m_transform = (Transform*)component;
-	}
-	else if (typeid(component) == typeid(Mesh*))
-	{
-		m_meshes.push_back((Mesh*)component);
-		return;
-	}
-
 	m_componentsToAdd.push_back(component);
 	m_flagComponentsToAdd = true;
+}
+
+void GameObject::AddCollider(Collider * const component)
+{
+	m_colliders.push_back(component);
+	AddComponent((Component*)component);
 }
 
 void GameObject::AddChild(GameObject * const child)
@@ -367,6 +392,51 @@ Mesh * const GameObject::RemoveMesh(const Mesh * ptr)
 		{
 			Mesh* tmp = (*it);
 			m_meshes.erase(it);
+			return tmp;
+		}
+	}
+
+	return nullptr;
+}
+
+Collider * const GameObject::RemoveCollider(uint32_t id)
+{
+	for (std::vector<Collider*>::iterator it = m_colliders.begin(); it != m_colliders.end(); ++it)
+	{
+		if ((*it)->GetUID() == id)
+		{
+			Collider* tmp = (*it);
+			m_colliders.erase(it);
+			return tmp;
+		}
+	}
+
+	return nullptr;
+}
+
+Collider * const GameObject::RemoveCollider(const std::string * name)
+{
+	for (std::vector<Collider*>::iterator it = m_colliders.begin(); it != m_colliders.end(); ++it)
+	{
+		if (*(*it)->GetName() == *name)
+		{
+			Collider* tmp = (*it);
+			m_colliders.erase(it);
+			return tmp;
+		}
+	}
+
+	return nullptr;
+}
+
+Collider * const GameObject::RemoveCollider(const Collider * ptr)
+{
+	for (std::vector<Collider*>::iterator it = m_colliders.begin(); it != m_colliders.end(); ++it)
+	{
+		if ((*it) == ptr)
+		{
+			Collider* tmp = (*it);
+			m_colliders.erase(it);
 			return tmp;
 		}
 	}

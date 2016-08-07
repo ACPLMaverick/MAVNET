@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "System.h"
 #include "Renderer.h"
+#include "PhysicsManager.h"
 #include "ResourceManager.h"
 #include "IdentificationManager.h"
 #include "SceneTest.h"
@@ -36,6 +37,7 @@ void System::Initialize(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow)
 	IdentificationManager::GetInstance()->Initialize();
 	ResourceManager::GetInstance()->Initialize();
 	InputManager::GetInstance()->Initialize();
+	PhysicsManager::GetInstance()->Initialize();
 
 	// initialize scenes
 	m_scenes.push_back(new TTSceneGame());
@@ -46,6 +48,7 @@ void System::Initialize(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow)
 void System::Shutdown()
 {
 	// shutdown managers
+	PhysicsManager::GetInstance()->Shutdown();
 	InputManager::GetInstance()->Shutdown();
 	ResourceManager::GetInstance()->Shutdown();
 	IdentificationManager::GetInstance()->Shutdown();
@@ -77,6 +80,10 @@ void System::Run()
 
 		// update scene instances
 		m_scenes[m_currentScene]->Update();
+
+		PhysicsManager::GetInstance()->Run();
+
+		m_scenes[m_currentScene]->LateUpdate();
 
 		// render one frame
 		Renderer::GetInstance()->Run();

@@ -7,6 +7,7 @@
 class Component;
 class Transform;
 class Mesh;
+class Collider;
 
 class GameObject
 {
@@ -16,6 +17,7 @@ private:
 
 	std::vector<Component*> m_components;
 	std::vector<Mesh*> m_meshes;
+	std::vector<Collider*> m_colliders;
 
 	std::vector<GameObject*> m_children;
 	GameObject* m_parent = nullptr;
@@ -51,6 +53,7 @@ public:
 	virtual void Initialize(uint32_t uid, const std::string* name = nullptr);
 	virtual void Shutdown();
 	virtual void Update();
+	virtual void LateUpdate();
 	virtual void Draw();
 
 #pragma region AccessorsCollections
@@ -64,9 +67,12 @@ public:
 	Mesh* const GetMesh(const std::string* name);
 	const std::vector<Mesh*>* GetMeshCollection();
 	Transform* const GetTransform();
+	const std::vector<Collider*>* GetColliderCollection();
+	const std::vector<GameObject*>* GetChildrenCollection();
 
 	void AddTransform(Transform* const transform);
 	void AddComponent(Component* const component);
+	void AddCollider(Collider* const component);
 	void AddChild(GameObject* const child);
 	void AddMesh(Mesh* const mesh);
 	
@@ -81,6 +87,9 @@ public:
 	Mesh* const RemoveMesh(uint32_t id);
 	Mesh* const RemoveMesh(const std::string* name);
 	Mesh* const RemoveMesh(const Mesh* ptr);
+	Collider* const RemoveCollider(uint32_t id);
+	Collider* const RemoveCollider(const std::string* name);
+	Collider* const RemoveCollider(const Collider* ptr);
 
 #pragma endregion
 

@@ -10,6 +10,8 @@
 #include "ResourceManager.h"
 #include "IdentificationManager.h"
 #include "System.h"
+#include "ColliderSphere2D.h"
+#include "ColliderBoxAA2D.h"
 
 #include "TTGameController.h"
 
@@ -54,6 +56,12 @@ void TTSceneGame::InitializeScene()
 
 	testMesh->SetMaterial(mat);
 
+	ColliderBoxAA2D* colliderOne = new ColliderBoxAA2D();
+	D3DXVECTOR2 min = D3DXVECTOR2(-0.55f, -0.55f);
+	D3DXVECTOR2 max = D3DXVECTOR2(0.55f, 0.55f);
+	colliderOne->Initialize(&min, &max, IdentificationManager::GetInstance()->GetUniqueID(), testObject);
+	testObject->AddCollider(colliderOne);
+
 	m_gameObjects.push_back(testObject);
 
 	////
@@ -72,6 +80,10 @@ void TTSceneGame::InitializeScene()
 	testMesh2->Initialize(IdentificationManager::GetInstance()->GetUniqueID(), testObject2);
 	testObject2->AddMesh(testMesh2);
 	testMesh2->SetMaterial(mat);
+
+	ColliderBoxAA2D* colliderTwo = new ColliderBoxAA2D();
+	colliderTwo->Initialize(&min, &max, IdentificationManager::GetInstance()->GetUniqueID(), testObject2);
+	testObject2->AddCollider(colliderTwo);
 
 	m_gameObjects.push_back(testObject2);
 

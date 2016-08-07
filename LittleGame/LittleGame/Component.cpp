@@ -23,3 +23,7 @@ void Component::Shutdown()
 {
 	m_obj = nullptr;
 }
+
+void Component::LateUpdate()
+{
+}

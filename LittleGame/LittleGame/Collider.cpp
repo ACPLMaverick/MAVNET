@@ -19,17 +19,30 @@ void Collider::Initialize(uint32_t uid, GameObject * obj, std::string * name)
 
 void Collider::Shutdown()
 {
-	Component::Shutdown();
-
 	PhysicsManager::GetInstance()->RemoveCollider(this);
+	Component::Shutdown();
 }
 
 void Collider::Update()
 {
-	// do nth
+	if (m_isTempColVecUsable)
+	{
+		m_isTempColVecUsable = false;
+	}
+}
+
+void Collider::LateUpdate()
+{
 }
 
 void Collider::Draw()
 {
 	// do nth
+}
+
+void Collider::AssignTempColVec(D3DXVECTOR3 vecMin, D3DXVECTOR3 vecMax)
+{
+	m_tempColVecMin = vecMin;
+	m_tempColVecMax = vecMax;
+	m_isTempColVecUsable = true;
 }
