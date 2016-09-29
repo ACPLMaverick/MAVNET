@@ -70,6 +70,10 @@ void Scene::Update()
 
 void Scene::Draw(Buffer<int32_t> * const buf, Buffer<float>* const depth)
 {
+	for (std::vector<Primitive*>::iterator it = m_primitives.begin(); it != m_primitives.end(); ++it)
+	{
+		(*it)->Draw(buf, depth);
+	}
 }
 
 Camera * const Scene::GetCamera(uint32_t uid)

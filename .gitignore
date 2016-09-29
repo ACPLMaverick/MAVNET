@@ -24,3 +24,5 @@ UnrealProjects/Learning02/Saved/
 *.opendb
 LittleGame/LittleGame/x64/Debug/
 Rasterizer/FGK_Raytracer/Debug/
+Rasterizer/Rasterizer/x64/Debug/Rasterizer.tlog/link.write.1.tlog
+Rasterizer/Rasterizer/x64/

@@ -53,6 +53,8 @@ protected:
 		_In_ LPWSTR    lpCmdLine,
 		_In_ int       nCmdShow);
 	inline void RunMessages();
+	inline void ResizeWindowBitmap();
+	inline void DrawColorBuffer();
 
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 

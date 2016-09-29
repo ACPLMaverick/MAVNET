@@ -12,6 +12,12 @@ protected:
 
 #pragma endregion
 
+#pragma region Functions Protected
+
+	virtual inline uint16_t ConvertFromScreenToBuffer(float point, uint16_t maxValue);
+
+#pragma endregion
+
 public:
 
 #pragma region Functions Public

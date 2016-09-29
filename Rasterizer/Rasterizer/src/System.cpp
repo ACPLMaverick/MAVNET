@@ -24,17 +24,22 @@ void System::Initialize(HINSTANCE hInstance, LPWSTR lpCmdLine, int nCmdShow)
 	InitWindow(hInstance, lpCmdLine, nCmdShow);
 
 	// initialize DIB
+	RECT r;
+	GetClientRect(m_settings.m_hwnd, &r);
+	
 	ZeroMemory(&m_bitmapScreenBufferInfo, sizeof(BITMAPINFO));
 	m_bitmapScreenBufferInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-	m_bitmapScreenBufferInfo.bmiHeader.biWidth = m_settings.GetWindowWidth();
-	m_bitmapScreenBufferInfo.bmiHeader.biHeight = m_settings.GetWindowHeight();
+	m_bitmapScreenBufferInfo.bmiHeader.biWidth = r.right - r.left;
+	m_bitmapScreenBufferInfo.bmiHeader.biHeight = r.bottom - r.top;
 	m_bitmapScreenBufferInfo.bmiHeader.biPlanes = 1;
-	m_bitmapScreenBufferInfo.bmiHeader.biBitCount = 24;
+	m_bitmapScreenBufferInfo.bmiHeader.biBitCount = 32;
+	m_bitmapScreenBufferInfo.bmiHeader.biSizeImage = m_settings.GetWindowWidth() * m_settings.GetWindowHeight();
 	m_bitmapScreenBufferInfo.bmiHeader.biCompression = BI_RGB;
 	m_bitmapScreenBufferInfo.bmiHeader.biSizeImage = 0;
 
 	HDC dc = GetWindowDC(m_settings.m_hwnd);
 	m_bitmapScreenBuffer = CreateDIBSection(dc, &m_bitmapScreenBufferInfo, DIB_RGB_COLORS, &m_bitmapScreenBufferDataPtr, NULL, NULL);
+
 	// initialize managers
 
 	// initialize scenes
@@ -61,22 +66,16 @@ void System::Run()
 		// update scene instances
 		m_scenes[m_currentScene]->Update();
 
-		m_BufferColor.Fill(0xFF000000);
+		m_BufferColor.Fill(0x00FF0000);
 		m_BufferDepth.Fill(0.0f);
 
-		// draw scene
+		// draw scene to buffer
 		m_scenes[m_currentScene]->Draw(&m_BufferColor, &m_BufferDepth);
 
 		// draw buffer to window
-		
-		size_t ti = m_BufferColor.GetWidth();
-		for (size_t i = 0; i < ti; ++i)
-		{
-			for (size_t j = 0; j < m_BufferColor.GetHeight(); ++j)
-			{
-				int32_t px = m_BufferColor.GetPixel(i, j);
-			}
-		}
+		RECT r;
+		GetClientRect(m_settings.m_hwnd, &r);
+		InvalidateRect(m_settings.m_hwnd, &r, false);
 	}
 }
 
@@ -151,6 +150,45 @@ inline void System::RunMessages()
 	}
 }
 
+inline void System::ResizeWindowBitmap()
+{
+	if (m_bitmapScreenBuffer == nullptr || m_bitmapScreenBufferDataPtr == nullptr)
+		return;
+
+}
+
+inline void System::DrawColorBuffer()
+{
+	if (m_bitmapScreenBuffer == nullptr || m_bitmapScreenBufferDataPtr == nullptr)
+		return;
+
+	PAINTSTRUCT ps;
+	BITMAP nbm;
+	HDC hdc = BeginPaint(m_settings.m_hwnd, &ps);
+
+	// fill bitmap with color buffer data
+	size_t tj = m_bitmapScreenBufferInfo.bmiHeader.biWidth;
+	size_t ti = m_bitmapScreenBufferInfo.bmiHeader.biHeight;
+	for (size_t i = 0; i < ti; ++i)
+	{
+		for (size_t j = 0; j < tj; ++j)
+		{
+			((int32_t*)m_bitmapScreenBufferDataPtr)[i * tj + j] = (int32_t)m_BufferColor.GetPixelScaled((uint16_t)j, (uint16_t)i, tj, ti);
+		}
+	}
+
+	HDC hdcMem = CreateCompatibleDC(hdc);
+	HBITMAP oldBitmap = (HBITMAP)SelectObject(hdcMem, (HBITMAP)m_bitmapScreenBuffer);
+	GetObject((HBITMAP)m_bitmapScreenBuffer, sizeof(BITMAP), &nbm);
+	BitBlt(hdc, 0, 0, ps.rcPaint.right - ps.rcPaint.left, ps.rcPaint.bottom - ps.rcPaint.top,
+		hdcMem, 0, 0, SRCCOPY);
+
+	SelectObject(hdcMem, oldBitmap);
+	DeleteDC(hdcMem);
+
+	EndPaint(m_settings.m_hwnd, &ps);
+}
+
 LRESULT System::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	// pass message to event handlers
@@ -163,25 +201,15 @@ LRESULT System::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_CREATE:
 		break;
+	case WM_SIZE:
+		{
+			System::GetInstance()->ResizeWindowBitmap();
+		}
+
+		break;
 	case WM_PAINT:
 		{
-			PAINTSTRUCT ps;
-			BITMAP nbm;
-			HDC hdc = BeginPaint(System::GetInstance()->m_settings.m_hwnd, &ps);
-
-			HDC hdcMem = CreateCompatibleDC(hdc);
-			HBITMAP oldBitmap = (HBITMAP)SelectObject(hdcMem, (HBITMAP)System::GetInstance()->m_bitmapScreenBuffer);
-			GetObject((HBITMAP)System::GetInstance()->m_bitmapScreenBuffer, sizeof(BITMAP), &nbm);
-
-			SelectObject(hdcMem, oldBitmap);
-			DeleteDC(hdcMem);
-
-			// All painting occurs here, between BeginPaint and EndPaint.
-
-			//FillRect(hdc, &ps.rcPaint, (HBRUSH)(0x00000000));
-
-			EndPaint(System::GetInstance()->m_settings.m_hwnd, &ps);
-
+			System::GetInstance()->DrawColorBuffer();
 		}
 		
 		break;

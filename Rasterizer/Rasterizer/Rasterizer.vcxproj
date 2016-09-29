@@ -34,6 +34,7 @@
     <ClCompile Include="src\Triangle.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Math.h" />
     <ClInclude Include="src\Color32.h" />
     <ClInclude Include="src\Buffer.h" />
     <ClInclude Include="src\Float3.h" />
