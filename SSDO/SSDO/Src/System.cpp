@@ -5,6 +5,8 @@
 #include "Renderer.h"
 #include "Timer.h"
 
+#include "Scenes/SceneTest.h"
+
 System::System() :
 	_options(1280, 720, 60, false)
 {
@@ -25,12 +27,16 @@ void System::Initialize(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpC
 
 	Timer::GetInstance()->Initialize();
 	Renderer::GetInstance()->Initialize();
+
+	_scene = new Scenes::SceneTest();
+	_scene->Initialize();
 }
 
 void System::Run()
 {
 	while (!_bNeedToQuit)
 	{
+		_scene->Update();
 		Renderer::GetInstance()->Run();
 		RunMessageLoop();
 		Timer::GetInstance()->Run();
@@ -39,6 +45,12 @@ void System::Run()
 
 void System::Shutdown()
 {
+	if (_scene != nullptr)
+	{
+		_scene->Shutdown();
+		delete _scene;
+	}
+
 	Renderer::GetInstance()->Shutdown();
 	Timer::GetInstance()->Shutdown();
 }

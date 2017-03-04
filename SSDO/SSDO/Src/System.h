@@ -3,6 +3,11 @@
 #include "stdafx.h"
 #include "Singleton.h"
 
+namespace Scenes
+{
+	class Scene;
+}
+
 class System : public Singleton<System>
 {
 public:
@@ -12,13 +17,15 @@ public:
 		const int32_t _windowWidth;
 		const int32_t _windowHeight;
 		const int32_t _refreshRate;
+		const float _aspectRatio;
 		const bool _bFullscreen;
 
 		Options(int32_t ww, int32_t wh, int32_t rr, bool bw) :
 			_windowWidth(ww),
 			_windowHeight(wh),
 			_refreshRate(rr),
-			_bFullscreen(bw)
+			_bFullscreen(bw),
+			_aspectRatio(static_cast<float>(ww) / static_cast<float>(wh))
 		{
 
 		}
@@ -36,6 +43,8 @@ protected:
 	HWND _hwnd;
 	WCHAR _szTitle[MAX_LOADSTRING];                  // The title bar text
 	WCHAR _szWindowClass[MAX_LOADSTRING];            // the main window class name
+
+	Scenes::Scene* _scene = nullptr;
 
 	bool _bNeedToQuit = false;
 
@@ -68,6 +77,7 @@ public:
 	HINSTANCE GetHInst() const { return _hInst; }
 	HWND GetHWND() const { return _hwnd; }
 	const Options& GetOptions() const { return _options; }
+	const Scenes::Scene& GetScene() const { return *_scene; }
 
 #pragma endregion
 };

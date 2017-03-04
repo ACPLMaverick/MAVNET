@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Renderer.h"
 #include "System.h"
+#include "Scenes\Scene.h"
 
 Renderer::Renderer()
 {
@@ -91,6 +92,23 @@ void Renderer::Initialize()
 	
 	_deviceContext->OMSetRenderTargets(1, &_vMainRenderTarget, _vDepthStencilBuffer);
 
+	// create rasterizer state
+
+	D3D11_RASTERIZER_DESC rasterizerDesc;
+	rasterizerDesc.AntialiasedLineEnable = true;
+	rasterizerDesc.CullMode = D3D11_CULL_BACK;
+	rasterizerDesc.DepthBias = 0;
+	rasterizerDesc.DepthBiasClamp = 0;
+	rasterizerDesc.DepthClipEnable = true;
+	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+	rasterizerDesc.FrontCounterClockwise = true;
+	rasterizerDesc.MultisampleEnable = true;
+	rasterizerDesc.ScissorEnable = true;
+	rasterizerDesc.SlopeScaledDepthBias = false;
+
+	_device->CreateRasterizerState(&rasterizerDesc, &_rasterizerState);
+	ASSERT(_rasterizerState != nullptr);
+
 	// set viewport (default 100%)
 
 	D3D11_VIEWPORT viewport;
@@ -100,6 +118,10 @@ void Renderer::Initialize()
 	viewport.MaxDepth = 1.0f;
 
 	_deviceContext->RSSetViewports(1, &viewport);
+
+	// set other global things
+
+	_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
 void Renderer::Run()
@@ -107,6 +129,8 @@ void Renderer::Run()
 	float black[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	_deviceContext->ClearRenderTargetView(_vMainRenderTarget, black);
 	_deviceContext->ClearDepthStencilView(_vDepthStencilBuffer, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 0.0f, 0);
+
+	System::GetInstance()->GetScene().Draw();
 	
 	_swapChain->Present(0, 0);
 }
@@ -124,6 +148,9 @@ void Renderer::Shutdown()
 
 	_tDepthStencilBuffer->Release();
 	_tDepthStencilBuffer = nullptr;
+
+	_rasterizerState->Release();
+	_rasterizerState = nullptr;
 
 	_swapChain->Release();
 	_swapChain = nullptr;

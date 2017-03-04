@@ -17,6 +17,8 @@ protected:
 
 	IDXGISwapChain* _swapChain = nullptr;
 
+	ID3D11RasterizerState* _rasterizerState = nullptr;
+
 	ID3D11Texture2D* _tMainRenderTarget = nullptr;
 	ID3D11RenderTargetView* _vMainRenderTarget = nullptr;
 	ID3D11Texture2D* _tDepthStencilBuffer = nullptr;
@@ -38,6 +40,9 @@ public:
 	void Initialize();
 	void Run();
 	void Shutdown();
+
+	ID3D11Device* GetDevice() const { return _device; }
+	ID3D11DeviceContext* GetDeviceContext() const { return _deviceContext; }
 
 #pragma endregion
 };

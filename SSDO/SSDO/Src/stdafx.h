@@ -21,6 +21,10 @@
 // TODO: reference additional headers your program requires here
 #include <cstdint>
 #include <string>
+#include <d3d11.h>
+#include <DirectXMath.h>
+
+using namespace DirectX;
 using namespace std;
 
 #include "System.h"
