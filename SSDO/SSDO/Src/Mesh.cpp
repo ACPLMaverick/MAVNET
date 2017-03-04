@@ -56,7 +56,8 @@ Mesh::Mesh(const Material& mat, const XMFLOAT3 & pos, const XMFLOAT3 & rot, cons
 			XMVECTOR nrm = XMLoadFloat3(&_vNormals[tr[j]]);
 			XMVECTOR n1 = XMVector3Normalize(XMLoadFloat3(&neighbour1) - XMLoadFloat3(&me));
 			XMVECTOR n2 = XMVector3Normalize(XMLoadFloat3(&neighbour2) - XMLoadFloat3(&me));
-			XMVECTOR cr = XMVector3Cross(n1, n2) + nrm;
+			XMVECTOR cr = XMVector3Normalize(XMVector3Cross(n1, n2));
+			cr = cr + nrm;
 			XMStoreFloat3(&_vNormals[tr[j]], cr);
 		}
 	}
@@ -67,7 +68,6 @@ Mesh::Mesh(const Material& mat, const XMFLOAT3 & pos, const XMFLOAT3 & rot, cons
 		nrm = XMVector3Normalize(nrm);
 		XMStoreFloat3(&_vNormals[i], nrm);
 	}
-
 	InitBuffers();
 }
 
@@ -124,13 +124,13 @@ inline void Mesh::InitBuffers()
 	desc[1] = desc[2] = desc[3] = desc[0];
 	desc[2].ByteWidth = static_cast<uint32_t>(sizeof(XMFLOAT2) * _vUvs.GetSize());
 	desc[3].BindFlags = D3D11_BIND_INDEX_BUFFER;
-	desc[3].ByteWidth = static_cast<uint32_t>(sizeof(int16_t) * _indices.GetSize());
+	desc[3].ByteWidth = static_cast<uint32_t>(sizeof(int16_t) * _indices.GetSize() * 3);
 
 	ZeroMemory(sData, sizeof(D3D11_SUBRESOURCE_DATA) * 4);
-	sData[0].pSysMem = &_vPositions[0];
-	sData[1].pSysMem = &_vNormals[0];
-	sData[2].pSysMem = &_vUvs[0];
-	sData[3].pSysMem = &_indices[0];
+	sData[0].pSysMem = _vPositions.GetDataPtr();
+	sData[1].pSysMem = _vNormals.GetDataPtr();
+	sData[2].pSysMem = _vUvs.GetDataPtr();
+	sData[3].pSysMem = _indices.GetDataPtr();
 
 	ID3D11Device* device = Renderer::GetInstance()->GetDevice();
 

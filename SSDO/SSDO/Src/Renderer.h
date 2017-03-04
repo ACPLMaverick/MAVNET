@@ -18,6 +18,8 @@ protected:
 	IDXGISwapChain* _swapChain = nullptr;
 
 	ID3D11RasterizerState* _rasterizerState = nullptr;
+	ID3D11DepthStencilState* _depthStencilState = nullptr;
+	ID3D11BlendState* _blendState = nullptr;
 
 	ID3D11Texture2D* _tMainRenderTarget = nullptr;
 	ID3D11RenderTargetView* _vMainRenderTarget = nullptr;

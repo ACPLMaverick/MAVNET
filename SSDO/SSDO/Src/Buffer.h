@@ -27,6 +27,7 @@ public:
 	T operator[](int64_t index) const;
 	T& operator[](int64_t index);
 
+	inline T* GetDataPtr() { return _data; }
 	inline int64_t GetSize() const { return _size; }
 
 #pragma endregion

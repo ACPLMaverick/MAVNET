@@ -11,16 +11,18 @@ protected:
 
 #pragma region Structs
 
+	__declspec(align(16))
 	struct BufferPerObject
 	{
 		XMFLOAT4X4 gMatWVP;
 		XMFLOAT4X4 gMatW;
 		XMFLOAT4X4 gMatWInvTransp;
-		XMFLOAT4X4 gColBase;
-		XMFLOAT4X4 gColSpecular;
+		XMFLOAT4 gColBase;
+		XMFLOAT4 gColSpecular;
 		float gGloss;
 	};
 
+	__declspec(align(16))
 	struct BufferPerFrame
 	{
 		XMFLOAT3 gLightDir;

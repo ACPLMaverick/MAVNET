@@ -15,7 +15,11 @@ Renderer::~Renderer()
 void Renderer::Initialize()
 {
 	// create device and device context
+#ifdef _DEBUG
+	D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, D3D11_CREATE_DEVICE_DEBUG, nullptr, 0, D3D11_SDK_VERSION, &_device, nullptr, &_deviceContext);
+#else
 	D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, nullptr, 0, D3D11_SDK_VERSION, &_device, nullptr, &_deviceContext);
+#endif
 
 	// create swap chain
 	IDXGIDevice* dxgiDevice = nullptr;
@@ -68,22 +72,44 @@ void Renderer::Initialize()
 	_device->CreateRenderTargetView(_tMainRenderTarget, nullptr, &_vMainRenderTarget);
 	ASSERT(_vMainRenderTarget != nullptr);
 
+	// create depth scencil state
+
+	D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
+	depthStencilDesc.DepthEnable = true;
+	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	depthStencilDesc.StencilEnable = true;
+	depthStencilDesc.StencilReadMask = 255;
+	depthStencilDesc.StencilWriteMask = 255;
+	depthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+	depthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+	depthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+	depthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+	_device->CreateDepthStencilState(&depthStencilDesc, &_depthStencilState);
+	ASSERT(_depthStencilState != nullptr);
+	_deviceContext->OMSetDepthStencilState(_depthStencilState, 1);
+
 	// create depth and stencil buffer view
 
-	D3D11_TEXTURE2D_DESC depthStencilDesc;
-	depthStencilDesc.Width = System::GetInstance()->GetOptions()._windowWidth;
-	depthStencilDesc.Height = System::GetInstance()->GetOptions()._windowHeight;
-	depthStencilDesc.MipLevels = 1;
-	depthStencilDesc.ArraySize = 1;
-	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	depthStencilDesc.SampleDesc.Count = 4;
-	depthStencilDesc.SampleDesc.Quality = sampleQuality - 1;
-	depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
-	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-	depthStencilDesc.CPUAccessFlags = 0;
-	depthStencilDesc.MiscFlags = 0;
+	D3D11_TEXTURE2D_DESC depthStencilDescTex;
+	depthStencilDescTex.Width = System::GetInstance()->GetOptions()._windowWidth;
+	depthStencilDescTex.Height = System::GetInstance()->GetOptions()._windowHeight;
+	depthStencilDescTex.MipLevels = 1;
+	depthStencilDescTex.ArraySize = 1;
+	depthStencilDescTex.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthStencilDescTex.SampleDesc.Count = 4;
+	depthStencilDescTex.SampleDesc.Quality = sampleQuality - 1;
+	depthStencilDescTex.Usage = D3D11_USAGE_DEFAULT;
+	depthStencilDescTex.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	depthStencilDescTex.CPUAccessFlags = 0;
+	depthStencilDescTex.MiscFlags = 0;
 
-	_device->CreateTexture2D(&depthStencilDesc, nullptr, &_tDepthStencilBuffer);
+	_device->CreateTexture2D(&depthStencilDescTex, nullptr, &_tDepthStencilBuffer);
 	ASSERT(_tDepthStencilBuffer != nullptr);
 	_device->CreateDepthStencilView(_tDepthStencilBuffer, nullptr, &_vDepthStencilBuffer);
 	ASSERT(_vDepthStencilBuffer != nullptr);
@@ -92,22 +118,45 @@ void Renderer::Initialize()
 	
 	_deviceContext->OMSetRenderTargets(1, &_vMainRenderTarget, _vDepthStencilBuffer);
 
+	// create blend state
+
+	D3D11_BLEND_DESC blendDesc;
+	D3D11_RENDER_TARGET_BLEND_DESC rbDesc;
+
+	rbDesc.BlendEnable = false;
+	rbDesc.SrcBlend = D3D11_BLEND_ONE;
+	rbDesc.DestBlend = D3D11_BLEND_ZERO;
+	rbDesc.BlendOp = D3D11_BLEND_OP_ADD;
+	rbDesc.SrcBlendAlpha = D3D11_BLEND_ONE;
+	rbDesc.DestBlendAlpha = D3D11_BLEND_ZERO;
+	rbDesc.BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	rbDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+	blendDesc.AlphaToCoverageEnable = false;
+	blendDesc.IndependentBlendEnable = false;
+	blendDesc.RenderTarget[0] = rbDesc;
+
+	_device->CreateBlendState(&blendDesc, &_blendState);
+	ASSERT(_blendState != nullptr);
+	_deviceContext->OMSetBlendState(_blendState, nullptr, 0xFFFFFFFF);
+
 	// create rasterizer state
 
 	D3D11_RASTERIZER_DESC rasterizerDesc;
 	rasterizerDesc.AntialiasedLineEnable = true;
-	rasterizerDesc.CullMode = D3D11_CULL_BACK;
+	rasterizerDesc.CullMode = D3D11_CULL_NONE;
 	rasterizerDesc.DepthBias = 0;
 	rasterizerDesc.DepthBiasClamp = 0;
-	rasterizerDesc.DepthClipEnable = true;
+	rasterizerDesc.DepthClipEnable = false;
 	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
 	rasterizerDesc.FrontCounterClockwise = true;
 	rasterizerDesc.MultisampleEnable = true;
-	rasterizerDesc.ScissorEnable = true;
-	rasterizerDesc.SlopeScaledDepthBias = false;
+	rasterizerDesc.ScissorEnable = false;
+	rasterizerDesc.SlopeScaledDepthBias = true;
 
 	_device->CreateRasterizerState(&rasterizerDesc, &_rasterizerState);
 	ASSERT(_rasterizerState != nullptr);
+	_deviceContext->RSSetState(_rasterizerState);
 
 	// set viewport (default 100%)
 
@@ -126,9 +175,9 @@ void Renderer::Initialize()
 
 void Renderer::Run()
 {
-	float black[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	float black[4] = { 0.3f, 0.3f, 0.3f, 1.0f };
 	_deviceContext->ClearRenderTargetView(_vMainRenderTarget, black);
-	_deviceContext->ClearDepthStencilView(_vDepthStencilBuffer, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 0.0f, 0);
+	_deviceContext->ClearDepthStencilView(_vDepthStencilBuffer, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 255);
 
 	System::GetInstance()->GetScene().Draw();
 	

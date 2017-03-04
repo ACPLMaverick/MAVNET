@@ -51,6 +51,7 @@ void Material::DrawMesh(const Camera & camera, const Mesh & mesh) const
 	D3D11_MAPPED_SUBRESOURCE mappedRes;
 	ID3D11DeviceContext* deviceContext = Renderer::GetInstance()->GetDeviceContext();
 
+
 	deviceContext->IASetInputLayout(_inputLayout);
 	deviceContext->VSSetShader(_vs, nullptr, 0);
 	deviceContext->PSSetShader(_ps, nullptr, 0);
@@ -58,21 +59,29 @@ void Material::DrawMesh(const Camera & camera, const Mesh & mesh) const
 	XMFLOAT4X4 wvp;
 	XMMATRIX w = XMLoadFloat4x4(&mesh._matWorld);
 	XMMATRIX vp = XMLoadFloat4x4(&camera.GetMatViewProj());
-	XMStoreFloat4x4(&wvp, w * vp);
+	XMMATRIX transposedWVP = XMMatrixTranspose(w * vp);
+	XMStoreFloat4x4(&wvp, transposedWVP);
+
+	XMMATRIX transposedW = XMMatrixTranspose(w);
+	XMMATRIX transposedWInvTransp = XMMatrixTranspose(XMLoadFloat4x4(&mesh._matWorldInvTransp));
 
 	// set vertex and index buffers
 
 	deviceContext->Map(_bufferPerObject, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedRes);
 
 	buffer = reinterpret_cast<BufferPerObject*>(mappedRes.pData);
+
 	buffer->gMatWVP = wvp;
-	buffer->gMatW = mesh._matWorld;
-	buffer->gMatWInvTransp = mesh._matWorldInvTransp;
+	XMStoreFloat4x4(&buffer->gMatW, transposedW);
+	XMStoreFloat4x4(&buffer->gMatWInvTransp, transposedWInvTransp);
 	memcpy(&buffer->gColBase, &_colorBase, sizeof(XMFLOAT4));
 	memcpy(&buffer->gColSpecular, &_colorSpecular, sizeof(XMFLOAT4));
 	buffer->gGloss = _gloss;
 
 	deviceContext->Unmap(_bufferPerObject, 0);
+
+	deviceContext->VSSetConstantBuffers(0, 1, &_bufferPerObject);
+	deviceContext->PSSetConstantBuffers(0, 1, &_bufferPerObject);
 
 	// DRAW!
 
@@ -85,7 +94,7 @@ void Material::DrawMesh(const Camera & camera, const Mesh & mesh) const
 	deviceContext->IASetVertexBuffers(2, 1, &mesh._fUvs, &strideUvs, &offset);
 	deviceContext->IASetIndexBuffer(mesh._fIndices, DXGI_FORMAT_R16_UINT, 0);
 
-	deviceContext->DrawIndexed(static_cast<uint32_t>(mesh._indices.GetSize()), 0, 0);
+	deviceContext->DrawIndexed(static_cast<uint32_t>(mesh._indices.GetSize() * 3), 0, 0);
 }
 
 inline void Material::LoadShader(const wstring & shaderFilename)
@@ -93,30 +102,33 @@ inline void Material::LoadShader(const wstring & shaderFilename)
 	ID3D11Device* device = Renderer::GetInstance()->GetDevice();
 
 	// loading compiled shaders from files
-	vector<uint8_t> vecVS, vecPS;
+	uint8_t* vecVS, *vecPS;
+	int64_t sizeVS, sizePS;
 
 	wstring pathVS = PATH_PREFIX + shaderFilename + L"/" + shaderFilename + PATH_SUFFIX_VS;
 	wstring pathPS = PATH_PREFIX + shaderFilename + L"/" + shaderFilename + PATH_SUFFIX_PS;
 
 	ifstream streamVS(pathVS, ios::binary);
 	ASSERT(streamVS.is_open());
-	while (!streamVS.eof())
-	{
-		vecVS.push_back(streamVS.get());
-	}
+	streamVS.seekg(0, streamVS.end);
+	sizeVS = streamVS.tellg();
+	streamVS.seekg(0, streamVS.beg);
+	vecVS = new uint8_t[sizeVS];
+	streamVS.read(reinterpret_cast<char*>(vecVS), sizeVS);
 	streamVS.close();
 
 	ifstream streamPS(pathPS, ios::binary);
 	ASSERT(streamPS.is_open());
-	while (!streamPS.eof())
-	{
-		vecPS.push_back(streamPS.get());
-	}
+	streamPS.seekg(0, streamPS.end);
+	sizePS = streamPS.tellg();
+	streamPS.seekg(0, streamPS.beg);
+	vecPS = new uint8_t[sizePS];
+	streamPS.read(reinterpret_cast<char*>(vecPS), sizePS);
 	streamPS.close();
 
 	// creating shader resources
-	HRESULT hr = device->CreateVertexShader(vecVS.data(), vecVS.size(), nullptr, &_vs);
-	hr = device->CreatePixelShader(vecPS.data(), vecPS.size(), nullptr, &_ps);
+	HRESULT hr = device->CreateVertexShader(vecVS, sizeVS, nullptr, &_vs);
+	hr = device->CreatePixelShader(vecPS, sizePS, nullptr, &_ps);
 	ASSERT(_vs != nullptr && _ps != nullptr);
 
 	// create vertex layout description
@@ -145,8 +157,11 @@ inline void Material::LoadShader(const wstring & shaderFilename)
 	layout[2].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 	layout[2].InstanceDataStepRate = 0;
 
-	device->CreateInputLayout(layout, 3, vecVS.data(), vecVS.size(), &_inputLayout);
+	device->CreateInputLayout(layout, 3, vecVS, sizeVS, &_inputLayout);
 	ASSERT(_inputLayout != nullptr);
+
+	delete[] vecVS;
+	delete[] vecPS;
 
 	// creating GPU Constant Buffers for shaders
 
@@ -158,7 +173,7 @@ inline void Material::LoadShader(const wstring & shaderFilename)
 	bDesc.MiscFlags = 0;
 	bDesc.StructureByteStride = 0;
 
-	device->CreateBuffer(&bDesc, nullptr, &_bufferPerObject);
+	hr = device->CreateBuffer(&bDesc, nullptr, &_bufferPerObject);
 	
 	bDesc.ByteWidth = sizeof(BufferPerFrame);
 

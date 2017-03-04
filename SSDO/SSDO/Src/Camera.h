@@ -25,8 +25,8 @@ protected:
 	float _near;
 	float _far;
 
-	bool _bNeedUpdateView;
-	bool _bNeedUpdateProj;
+	bool _bNeedUpdateView = false;
+	bool _bNeedUpdateProj = false;
 
 #pragma endregion
 
@@ -42,10 +42,10 @@ public:
 
 #pragma region Functions Public
 
-	Camera(	const XMFLOAT3& position = XMFLOAT3(5.0f, 5.0f, 5.0f),
+	Camera(	const XMFLOAT3& position = XMFLOAT3(2.0f, 2.0f, 2.0f),
 			const XMFLOAT3& target = XMFLOAT3(0.0f, 0.0f, 0.0f),
 			const XMFLOAT3& up = XMFLOAT3(0.0f, 1.0f, 0.0f),
-			float fov = 75.0f,
+			float fov = 1.33f,
 			float near = 0.1f,
 			float far = 1000.0f);
 	~Camera();
