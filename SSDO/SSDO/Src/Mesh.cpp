@@ -2,6 +2,7 @@
 #include "Mesh.h"
 #include "Material.h"
 #include "Renderer.h"
+#include "Timer.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
 #include <tiny_obj_loader/tiny_obj_loader.h>
@@ -10,15 +11,15 @@
 Mesh::Mesh(const Material& mat, const XMFLOAT3 & pos, const XMFLOAT3 & rot, const XMFLOAT3 & scl) :
 	_myMaterial(mat),
 	_position(pos),
-	_rotation(QuaterionFromEuler(rot)),
+	_rotation(rot),
 	_scale(scl)
 {
 	CreateWorldMatrix();
 
-	_vPositions.resize(8);
-	_vNormals.resize(8);
-	_vUvs.resize(8);
-	_indices.resize(12);
+	_vPositions.Resize(8);
+	_vNormals.Resize(8);
+	_vUvs.Resize(8);
+	_indices.Resize(12);
 
 	float s = 0.5f;
 	_vPositions[0] = XMFLOAT3(-s, -s, -s);
@@ -78,7 +79,7 @@ Mesh::Mesh(const Material& mat, const XMFLOAT3 & pos, const XMFLOAT3 & rot, cons
 Mesh::Mesh(const std::wstring & filePath, const Material& mat, const XMFLOAT3 & pos, const XMFLOAT3 & rot, const XMFLOAT3 & scl) :
 	_myMaterial(mat),
 	_position(pos),
-	_rotation(QuaterionFromEuler(rot)),
+	_rotation(rot),
 	_scale(scl)
 {
 	CreateWorldMatrix();
@@ -86,20 +87,17 @@ Mesh::Mesh(const std::wstring & filePath, const Material& mat, const XMFLOAT3 & 
 	std::string path = std::string(filePath.begin(), filePath.end());
 	path = "./Resources/Meshes/" + path + ".obj";
 
-	vector<uint16_t> indices;
+	Buffer<uint16_t> indices;
+	indices.Allocate(16);
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
 	bool ret = tinyobj::LoadObj(&attrib, &shapes, nullptr, nullptr, path.c_str());
 	ASSERT(ret);
 
-	//for (auto it = attrib.vertices.begin(); it != attrib.vertices.end(); it += 3)
-	//{
-	//	_vPositions.push_back(XMFLOAT3((*it), (*(it + 1)), (*(it + 2))));
-	//}
 	size_t vCount = attrib.vertices.size() / 3;
-	_vPositions.resize(vCount);
-	_vNormals.resize(vCount);
-	_vUvs.resize(vCount);
+	_vPositions.Resize(vCount);
+	_vNormals.Resize(vCount);
+	_vUvs.Resize(vCount);
 
 	for (auto it = shapes.begin(); it != shapes.end(); ++it)
 	{
@@ -110,29 +108,33 @@ Mesh::Mesh(const std::wstring & filePath, const Material& mat, const XMFLOAT3 & 
 			XMFLOAT2 uv = XMFLOAT2(attrib.texcoords[(*jt).texcoord_index * 2], attrib.texcoords[(*jt).texcoord_index * 2 + 1]);
 			XMFLOAT3 position = XMFLOAT3(attrib.vertices[(*jt).vertex_index * 3], attrib.vertices[(*jt).vertex_index * 3 + 1], attrib.vertices[(*jt).vertex_index * 3 + 2]);
 
+			XMFLOAT3 cPosition = _vPositions[index];
+			XMFLOAT3 cNormal = _vNormals[index];
+			XMFLOAT2 cUv = _vUvs[index];
+
 			// check if normal or uv are already assigned to this vertex
-			if (Float3Equal(_vPositions[index], position) &&
-				Float3Equal(normal, _vNormals[index]) && 
-				Float2Equal(uv, _vUvs[index]))
+			if (Float3Equal(cPosition, position) &&
+				Float3Equal(cNormal, normal) &&
+				Float2Equal(cUv, uv))
 			{
 				// already has assigned normal and uv and does not need to be altered.
-				indices.push_back(index);
+				indices.Add(index);
 			}
 			else
 			{
-				if (Float3Equal(_vPositions[index], position))	// if already written to this position
+				if (Float3Equal(cPosition, position))	// if already written to this position
 				{
 					// already has assigned normal and uv but they're different, so we need to create a new vertex with a new id
-					uint16_t newIndex = static_cast<uint16_t>(_vPositions.size());
-					_vPositions.push_back(position);
-					_vNormals.push_back(normal);
-					_vUvs.push_back(uv);
-					indices.push_back(newIndex);
+					uint16_t newIndex = static_cast<uint16_t>(_vPositions.GetSize());
+					_vPositions.Add(position);
+					_vNormals.Add(normal);
+					_vUvs.Add(uv);
+					indices.Add(newIndex);
 				}
 				else
 				{
 					// has not assigned any normal or uv yet
-					indices.push_back(index);
+					indices.Add(index);
 					_vPositions[index] = position;
 					_vNormals[index] = normal;
 					_vUvs[index] = uv;
@@ -141,25 +143,17 @@ Mesh::Mesh(const std::wstring & filePath, const Material& mat, const XMFLOAT3 & 
 		}
 	}
 
-	_indices.resize(0);
-	for (auto it = indices.begin(); it != indices.end(); it += 3)
+	_indices.Allocate(indices.GetSize());
+	for (auto it = indices.GetIterator(); it.IsValid(); it += 3)
 	{
-		_indices.push_back(Triangle(*(it + 2), *(it + 1), *(it)));
+		_indices.Add(Triangle(*(it + 2), *(it + 1), *(it)));
 	}
 
-	for (auto it = _vNormals.begin(); it != _vNormals.end(); ++it)
+	for (auto it = _vNormals.GetIterator(); it.IsValid(); ++it)
 	{
 		XMVECTOR nv = XMLoadFloat3(&(*it));
 		nv = XMVector3Normalize(nv);
 		XMStoreFloat3(&(*it), nv);
-	}
-
-	for (auto it = _vPositions.begin(); it != _vPositions.end(); ++it)
-	{
-		float scl = 0.5f;
-		(*it).x *= scl;
-		(*it).y *= scl;
-		(*it).z *= scl;
 	}
 
 	InitBuffers();
@@ -182,6 +176,10 @@ Mesh::~Mesh()
 
 void Mesh::Update()
 {
+	// debug
+	XMFLOAT3 rot = GetRotation();
+	SetRotation(XMFLOAT3(rot.x, rot.y + 0.5f * Timer::GetInstance()->GetDeltaTime(), rot.z));
+
 	if (_bNeedCreateWorldMatrix)
 	{
 		CreateWorldMatrix();
@@ -196,12 +194,12 @@ void Mesh::Draw(const Camera & camera) const
 
 inline bool Mesh::Float3Equal(const XMFLOAT3 & lhs, const XMFLOAT3 & rhs) const
 {
-	return lhs.x == rhs.x && lhs.y == lhs.y && lhs.z == lhs.z;
+	return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z;
 }
 
 inline bool Mesh::Float2Equal(const XMFLOAT2 & lhs, const XMFLOAT2 & rhs) const
 {
-	return lhs.x == rhs.x && lhs.y == lhs.y;
+	return lhs.x == rhs.x && lhs.y == rhs.y;
 }
 
 inline void Mesh::InitBuffers()
@@ -211,16 +209,16 @@ inline void Mesh::InitBuffers()
 	ID3D11Buffer** bufferPtrs[4] = { &_fPositions, &_fNormals, &_fUvs, &_fIndices };
 
 	desc[0].BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	desc[0].ByteWidth = static_cast<uint32_t>(sizeof(XMFLOAT3) * _vPositions.size());
+	desc[0].ByteWidth = static_cast<uint32_t>(sizeof(XMFLOAT3) * _vPositions.GetSize());
 	desc[0].CPUAccessFlags = 0;
 	desc[0].MiscFlags = 0;
 	desc[0].StructureByteStride = 0;
 	desc[0].Usage = D3D11_USAGE_DEFAULT;
 
 	desc[1] = desc[2] = desc[3] = desc[0];
-	desc[2].ByteWidth = static_cast<uint32_t>(sizeof(XMFLOAT2) * _vUvs.size());
+	desc[2].ByteWidth = static_cast<uint32_t>(sizeof(XMFLOAT2) * _vUvs.GetSize());
 	desc[3].BindFlags = D3D11_BIND_INDEX_BUFFER;
-	desc[3].ByteWidth = static_cast<uint32_t>(sizeof(int16_t) * _indices.size() * 3);
+	desc[3].ByteWidth = static_cast<uint32_t>(sizeof(int16_t) * _indices.GetSize() * 3);
 
 	ZeroMemory(sData, sizeof(D3D11_SUBRESOURCE_DATA) * 4);
 	sData[0].pSysMem = &_vPositions[0];
@@ -264,9 +262,9 @@ inline XMFLOAT3 Mesh::EulerFromQuaternion(const XMFLOAT4 & quat) const
 inline void Mesh::CreateWorldMatrix()
 {
 	XMVECTOR pos = XMLoadFloat3(&_position);
-	XMVECTOR quat = XMLoadFloat4(&_rotation);
+	XMVECTOR rot = XMLoadFloat3(&_rotation);
 	XMVECTOR scl = XMLoadFloat3(&_scale);
-	XMMATRIX mat = XMMatrixTranslationFromVector(pos) * XMMatrixRotationQuaternion(quat) * XMMatrixScalingFromVector(scl);
+	XMMATRIX mat = XMMatrixTranslationFromVector(pos) * XMMatrixRotationRollPitchYaw(_rotation.x, _rotation.y, _rotation.z) * XMMatrixScalingFromVector(scl);
 	XMMATRIX matInvTransp = XMMatrixTranspose(XMMatrixInverse(nullptr, mat));
 	XMStoreFloat4x4(&_matWorld, mat);
 	XMStoreFloat4x4(&_matWorldInvTransp, matInvTransp);

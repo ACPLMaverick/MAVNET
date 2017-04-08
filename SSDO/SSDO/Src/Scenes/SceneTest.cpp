@@ -17,7 +17,7 @@ namespace Scenes
 
 	void SceneTest::SetupScene()
 	{
-		_mainCamera = new Camera(XMFLOAT3(4.0f, 4.0f, -4.0f));
+		_mainCamera = new Camera(XMFLOAT3(5.0f, 4.0f, -2.0f));
 		
 		_materials.push_back(new Material(L"TestShader"));
 

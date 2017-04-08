@@ -60,14 +60,14 @@ protected:
 	XMFLOAT4X4 _matWorld;
 	XMFLOAT4X4 _matWorldInvTransp;
 
-	XMFLOAT4 _rotation;
+	XMFLOAT3 _rotation;
 	XMFLOAT3 _scale;
 	XMFLOAT3 _position;
 
-	vector<XMFLOAT3> _vPositions;
-	vector<XMFLOAT3> _vNormals;
-	vector<XMFLOAT2> _vUvs;
-	vector<Triangle> _indices;
+	Buffer<XMFLOAT3> _vPositions;
+	Buffer<XMFLOAT3> _vNormals;
+	Buffer<XMFLOAT2> _vUvs;
+	Buffer<Triangle> _indices;
 
 	ID3D11Buffer* _fPositions = nullptr;
 	ID3D11Buffer* _fNormals = nullptr;
@@ -126,11 +126,11 @@ public:
 #pragma region GettersSetters
 
 	inline const XMFLOAT3& GetPosition() const { return _position; }
-	inline XMFLOAT3 GetRotation() const { return EulerFromQuaternion(_rotation); }
+	inline XMFLOAT3 GetRotation() const { return _rotation; }
 	inline const XMFLOAT3& GetScale() const { return _scale; }
 	
 	inline void SetPosition(const XMFLOAT3& pos) { _position = pos; _bNeedCreateWorldMatrix = true; }
-	inline void SetRotation(const XMFLOAT3& rot) { _rotation = QuaterionFromEuler(rot); _bNeedCreateWorldMatrix = true; }
+	inline void SetRotation(const XMFLOAT3& rot) { _rotation = rot; _bNeedCreateWorldMatrix = true; }
 	inline void SetScale(const XMFLOAT3& scl) { _scale = scl; _bNeedCreateWorldMatrix = true; }
 
 #pragma endregion

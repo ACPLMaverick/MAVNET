@@ -78,7 +78,7 @@ void Renderer::Initialize()
 	depthStencilDesc.DepthEnable = true;
 	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
-	depthStencilDesc.StencilEnable = true;
+	depthStencilDesc.StencilEnable = false;
 	depthStencilDesc.StencilReadMask = 255;
 	depthStencilDesc.StencilWriteMask = 255;
 	depthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
@@ -144,10 +144,10 @@ void Renderer::Initialize()
 
 	D3D11_RASTERIZER_DESC rasterizerDesc;
 	rasterizerDesc.AntialiasedLineEnable = true;
-	rasterizerDesc.CullMode = D3D11_CULL_NONE;
+	rasterizerDesc.CullMode = D3D11_CULL_BACK;
 	rasterizerDesc.DepthBias = 0;
 	rasterizerDesc.DepthBiasClamp = 0;
-	rasterizerDesc.DepthClipEnable = false;
+	rasterizerDesc.DepthClipEnable = true;
 	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
 	rasterizerDesc.FrontCounterClockwise = true;
 	rasterizerDesc.MultisampleEnable = true;

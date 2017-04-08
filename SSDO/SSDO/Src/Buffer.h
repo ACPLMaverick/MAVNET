@@ -90,8 +90,8 @@ protected:
 
 #pragma region Protected
 
-	size_t _capacity;
-	size_t _size;
+	size_t _capacity = 0;
+	size_t _size = 0;
 	T* _data = nullptr;
 
 	inline void Reallocate();
@@ -106,7 +106,7 @@ public:
 	Buffer();
 	~Buffer();
 
-	void Allocate(size_t size);
+	void Allocate(size_t capacity);
 	void Destroy();
 	void Resize(size_t size);
 
@@ -143,12 +143,13 @@ inline Buffer<T>::~Buffer()
 }
 
 template<class T>
-inline void Buffer<T>::Allocate(size_t size)
+inline void Buffer<T>::Allocate(size_t capacity)
 {
-	ASSERT(_data == nullptr);
-	ASSERT(size != 0);
-	_size = size;
-	_capacity = 2 * _size;
+	ASSERT(capacity != 0);
+	if (_data != nullptr)
+		Destroy();
+	_size = 0;
+	_capacity = capacity;
 	_data = new T[_capacity];
 	ZeroMemory(_data, _capacity * sizeof(T));
 }
@@ -165,9 +166,11 @@ inline void Buffer<T>::Destroy()
 template<class T>
 inline void Buffer<T>::Resize(size_t size)
 {
-	if (IsAllocated())
-		Destroy();
-	Allocate(size);
+	if (size > _capacity)
+	{
+		Allocate(size);
+	}
+
 	_size = size;
 }
 
@@ -177,7 +180,7 @@ inline void Buffer<T>::Add(T & obj)
 	ASSERT(_data != nullptr);
 
 	++_size;
-	if (_capacity == _size)
+	if (_capacity <= _size)
 	{
 		Reallocate();
 	}

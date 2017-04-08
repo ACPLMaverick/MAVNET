@@ -94,7 +94,7 @@ void Material::DrawMesh(const Camera & camera, const Mesh & mesh) const
 	deviceContext->IASetVertexBuffers(2, 1, &mesh._fUvs, &strideUvs, &offset);
 	deviceContext->IASetIndexBuffer(mesh._fIndices, DXGI_FORMAT_R16_UINT, 0);
 
-	deviceContext->DrawIndexed(static_cast<uint32_t>(mesh._indices.size() * 3), 0, 0);
+	deviceContext->DrawIndexed(static_cast<uint32_t>(mesh._indices.GetSize() * 3), 0, 0);
 }
 
 inline void Material::LoadShader(const wstring & shaderFilename)
