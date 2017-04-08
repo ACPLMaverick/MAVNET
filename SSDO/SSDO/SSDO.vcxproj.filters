@@ -60,6 +60,24 @@
     <ClInclude Include="Src\Scenes\Scene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Src\GlobalDefines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Lights\LightAmbient.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Lights\LightDirectional.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Lights\LightPoint.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\GBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\Camera.cpp">
@@ -95,6 +113,21 @@
     <ClCompile Include="Src\Scenes\Scene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Src\Lights\LightAmbient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Lights\LightDirectional.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Lights\LightPoint.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\GBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Shader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\RC\SSDO.ico">
@@ -110,7 +143,20 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Resources\Shaders\TestShader\TestShader_PS.hlsl" />
-    <FxCompile Include="Resources\Shaders\TestShader\TestShader_VS.hlsl" />
+    <FxCompile Include="Resources\Shaders\ColorShader\ColorShader_PS.hlsl" />
+    <FxCompile Include="Resources\Shaders\ColorShader\ColorShader_VS.hlsl" />
+    <FxCompile Include="Resources\Shaders\DeferredLightAmbientShader\DeferredLightAmbientShader_VS.hlsl" />
+    <FxCompile Include="Resources\Shaders\DeferredLightAmbientShader\DeferredLightAmbientShader_PS.hlsl" />
+    <FxCompile Include="Resources\Shaders\DeferredLightDirectionalShader\DeferredLightDirectionalShader_VS.hlsl" />
+    <FxCompile Include="Resources\Shaders\DeferredLightDirectionalShader\DeferredLightDirectionalShader_PS.hlsl" />
+    <FxCompile Include="Resources\Shaders\DeferredLightMergeShader\DeferredLightMergeShader_VS.hlsl" />
+    <FxCompile Include="Resources\Shaders\DeferredLightMergeShader\DeferredLightMergeShader_PS.hlsl" />
+    <FxCompile Include="Resources\Shaders\DeferredLightPointShader\DeferredLightPointShader_VS.hlsl" />
+    <FxCompile Include="Resources\Shaders\DeferredLightPointShader\DeferredLightPointShader_PS.hlsl" />
+    <FxCompile Include="Resources\Shaders\DeferredDrawShader\DeferredDrawShader_PS.hlsl" />
+    <FxCompile Include="Resources\Shaders\DeferredDrawShader\DeferredDrawShader_VS.hlsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Shaders\DeferredDrawShader\DeferredDrawShader_H.hlsli" />
   </ItemGroup>
 </Project>

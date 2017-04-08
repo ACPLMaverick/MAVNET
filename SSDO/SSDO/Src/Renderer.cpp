@@ -2,6 +2,7 @@
 #include "Renderer.h"
 #include "System.h"
 #include "Scenes\Scene.h"
+#include "Camera.h"
 
 Renderer::Renderer()
 {
@@ -180,6 +181,8 @@ void Renderer::Run()
 	_deviceContext->ClearDepthStencilView(_vDepthStencilBuffer, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 255);
 
 	System::GetInstance()->GetScene().Draw();
+
+	System::GetInstance()->GetScene().GetMainCamera()->GetGBuffer().Draw();
 	
 	_swapChain->Present(0, 0);
 }

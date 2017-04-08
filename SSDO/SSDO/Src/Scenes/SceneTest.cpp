@@ -17,10 +17,12 @@ namespace Scenes
 
 	void SceneTest::SetupScene()
 	{
-		_mainCamera = new Camera(XMFLOAT3(5.0f, 4.0f, -2.0f));
-		
-		_materials.push_back(new Material(L"TestShader"));
+		_mainCamera = new Camera(XMFLOAT3(0.0f, 4.0f, -5.0f));
 
-		_meshes.push_back(new Mesh(L"box", *_materials[0], XMFLOAT3(0.0f, 0.0f, 0.0f)));
+		Shader* shdColor = LoadShader(std::wstring(L"ColorShader"));
+
+		_materials.push_back(new Material(*shdColor));
+
+		_meshes.push_back(new Mesh(L"box", *_materials[0], XMFLOAT3(0.7f, 0.0f, 0.0f)));
 	}
 }

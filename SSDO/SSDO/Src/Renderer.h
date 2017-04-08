@@ -43,6 +43,8 @@ public:
 	void Run();
 	void Shutdown();
 
+	inline void SetMainRenderTarget() { _deviceContext->OMSetRenderTargets(1, &_vMainRenderTarget, _vDepthStencilBuffer); }
+
 	ID3D11Device* GetDevice() const { return _device; }
 	ID3D11DeviceContext* GetDeviceContext() const { return _deviceContext; }
 

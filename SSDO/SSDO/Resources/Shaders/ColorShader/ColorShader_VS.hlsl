@@ -1,23 +1,10 @@
 // GLOBALS
 
-cbuffer BufferPerObject
+cbuffer BufferVS
 {
 	float4x4 gMatWVP;
 	float4x4 gMatW;
 	float4x4 gMatWInvTransp;
-	float4 gColBase;
-	float4 gColSpecular;
-	float gGloss;
-};
-
-cbuffer BufferPerFrame
-{
-	float3 gLightDir;
-};
-
-cbuffer BufferInfrequent
-{
-
 };
 
 // STRUCTURES
@@ -25,8 +12,8 @@ cbuffer BufferInfrequent
 struct VertexInput
 {
 	float3 Position : POSITION;
-	float3 Normal : NORMAL;
 	float2 Uv : TEXCOORD0;
+	float3 Normal : NORMAL;
 };
 
 struct PixelInput

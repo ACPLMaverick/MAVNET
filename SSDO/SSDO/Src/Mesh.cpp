@@ -264,7 +264,7 @@ inline void Mesh::CreateWorldMatrix()
 	XMVECTOR pos = XMLoadFloat3(&_position);
 	XMVECTOR rot = XMLoadFloat3(&_rotation);
 	XMVECTOR scl = XMLoadFloat3(&_scale);
-	XMMATRIX mat = XMMatrixTranslationFromVector(pos) * XMMatrixRotationRollPitchYaw(_rotation.x, _rotation.y, _rotation.z) * XMMatrixScalingFromVector(scl);
+	XMMATRIX mat = XMMatrixScalingFromVector(scl) * XMMatrixRotationRollPitchYaw(_rotation.x, _rotation.y, _rotation.z) * XMMatrixTranslationFromVector(pos);
 	XMMATRIX matInvTransp = XMMatrixTranspose(XMMatrixInverse(nullptr, mat));
 	XMStoreFloat4x4(&_matWorld, mat);
 	XMStoreFloat4x4(&_matWorldInvTransp, matInvTransp);

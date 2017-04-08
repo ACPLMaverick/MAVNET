@@ -1,6 +1,10 @@
 #include "stdafx.h"
 #include "Camera.h"
 #include "System.h"
+#include "Scenes\Scene.h"
+#include "Mesh.h"
+
+using namespace Scenes;
 
 Camera::Camera(const XMFLOAT3 & position, const XMFLOAT3 & target, const XMFLOAT3 & up, float fov, float nearPlane, float farPlane) :
 	_position(position),
@@ -45,6 +49,18 @@ void Camera::Update()
 
 void Camera::Draw(const Scene& scene) const
 {
+	// draw all objects' colors, normals, depth
+
+	const_cast<GBuffer&>(_gBuffer).SetDrawMeshes();
+	for (auto it = scene._meshes.begin(); it != scene._meshes.end(); ++it)
+	{
+		(*it)->Draw(*this);
+	}
+
+	// for each light, enlighten final buffer
+	//const_cast<GBuffer&>(_gBuffer).SetDrawLights();
+
+	// apply postprocesses
 }
 
 void Camera::SetDirection(const XMFLOAT3 & direction)

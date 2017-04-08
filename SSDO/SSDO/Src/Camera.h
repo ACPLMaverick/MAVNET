@@ -1,14 +1,22 @@
 #pragma once
 
-#include "stdafx.h"
+#include "GlobalDefines.h"
+#include "GBuffer.h"
 
-class Scene;
+namespace Scenes
+{
+	class Scene;
+}
 
 class Camera
 {
 protected:
 
 #pragma region Protected
+
+	GBuffer _gBuffer;
+
+
 
 	XMFLOAT4X4 _matViewProj;
 	XMFLOAT4X4 _matView;
@@ -51,9 +59,11 @@ public:
 	~Camera();
 
 	void Update();
-	void Draw(const Scene& scene) const;
+	void Draw(const Scenes::Scene& scene) const;
 
 #pragma region GettersSetters
+
+	inline const GBuffer& GetGBuffer() const { return _gBuffer; }
 
 	inline void SetPosition(const XMFLOAT3& position) { _position = position; _bNeedUpdateView = true; }
 	inline void SetTarget(const XMFLOAT3& target) { _target = target; _bNeedUpdateView = true; }

@@ -77,7 +77,7 @@ public:
 	HINSTANCE GetHInst() const { return _hInst; }
 	HWND GetHWND() const { return _hwnd; }
 	const Options& GetOptions() const { return _options; }
-	const Scenes::Scene& GetScene() const { return *_scene; }
+	Scenes::Scene& GetScene() { return *_scene; }
 
 #pragma endregion
 };

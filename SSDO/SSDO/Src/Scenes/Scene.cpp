@@ -40,6 +40,12 @@ namespace Scenes
 
 		_materials.clear();
 		_meshes.clear();
+
+		for (auto it = _shaders.begin(); it != _shaders.end(); ++it)
+		{
+			delete (*it).second;
+		}
+		_shaders.clear();
 	}
 
 	void Scene::Update()
@@ -59,10 +65,7 @@ namespace Scenes
 
 	void Scene::Draw() const
 	{
-		for (auto it = _meshes.begin(); it != _meshes.end(); ++it)
-		{
-			(*it)->Draw(*_mainCamera);
-		}
+		_mainCamera->Draw(*this);
 	}
 
 }
