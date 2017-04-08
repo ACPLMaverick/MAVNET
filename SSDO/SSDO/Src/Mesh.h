@@ -3,6 +3,8 @@
 #include "stdafx.h"
 #include "Buffer.h"
 
+#include <vector>
+
 class Camera;
 class Material;
 
@@ -62,10 +64,10 @@ protected:
 	XMFLOAT3 _scale;
 	XMFLOAT3 _position;
 
-	Buffer<XMFLOAT3> _vPositions;
-	Buffer<XMFLOAT3> _vNormals;
-	Buffer<XMFLOAT2> _vUvs;
-	Buffer<Triangle> _indices;
+	vector<XMFLOAT3> _vPositions;
+	vector<XMFLOAT3> _vNormals;
+	vector<XMFLOAT2> _vUvs;
+	vector<Triangle> _indices;
 
 	ID3D11Buffer* _fPositions = nullptr;
 	ID3D11Buffer* _fNormals = nullptr;
@@ -79,6 +81,9 @@ protected:
 #pragma endregion
 
 #pragma region Functions Protected
+
+	inline bool Float3Equal(const XMFLOAT3& lhs, const XMFLOAT3& rhs) const;
+	inline bool Float2Equal(const XMFLOAT2& lhs, const XMFLOAT2& rhs) const;
 
 	inline void InitBuffers();
 	inline XMFLOAT4 QuaterionFromEuler(const XMFLOAT3& euler) const;

@@ -57,7 +57,7 @@ public:
 #pragma region Functions Public
 
 	Material(const wstring& shaderFilename, 
-		const XMFLOAT4& colorBase = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f), 
+		const XMFLOAT4& colorBase = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 
 		const XMFLOAT4& colorSpecular = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
 		float gloss = 50.0f);
 	~Material();

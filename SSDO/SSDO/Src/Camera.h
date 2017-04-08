@@ -42,10 +42,10 @@ public:
 
 #pragma region Functions Public
 
-	Camera(	const XMFLOAT3& position = XMFLOAT3(2.0f, 2.0f, 2.0f),
+	Camera(	const XMFLOAT3& position = XMFLOAT3(5.0f, 5.0f, 5.0f),
 			const XMFLOAT3& target = XMFLOAT3(0.0f, 0.0f, 0.0f),
 			const XMFLOAT3& up = XMFLOAT3(0.0f, 1.0f, 0.0f),
-			float fov = 1.33f,
+			float fov = 0.7f,
 			float near = 0.1f,
 			float far = 1000.0f);
 	~Camera();

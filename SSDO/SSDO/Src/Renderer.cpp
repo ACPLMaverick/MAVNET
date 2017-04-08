@@ -198,6 +198,12 @@ void Renderer::Shutdown()
 	_tDepthStencilBuffer->Release();
 	_tDepthStencilBuffer = nullptr;
 
+	_blendState->Release();
+	_blendState = nullptr;
+
+	_depthStencilState->Release();
+	_depthStencilState = nullptr;
+
 	_rasterizerState->Release();
 	_rasterizerState = nullptr;
 

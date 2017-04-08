@@ -17,10 +17,10 @@ namespace Scenes
 
 	void SceneTest::SetupScene()
 	{
-		_mainCamera = new Camera();
+		_mainCamera = new Camera(XMFLOAT3(4.0f, 4.0f, -4.0f));
 		
 		_materials.push_back(new Material(L"TestShader"));
 
-		_meshes.push_back(new Mesh(*_materials[0], XMFLOAT3(-1.0f, 0.0f, -1.0f), XMFLOAT3(0.1f, 0.2f, 0.3f)));
+		_meshes.push_back(new Mesh(L"box", *_materials[0], XMFLOAT3(0.0f, 0.0f, 0.0f)));
 	}
 }

@@ -34,5 +34,5 @@ struct PixelInput
 
 float4 main(PixelInput input) : SV_Target
 {
-	return float4(input.Normal, 1.0f);
+	return gColBase;
 }

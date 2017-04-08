@@ -50,7 +50,7 @@ void Camera::Draw(const Scene& scene) const
 void Camera::SetDirection(const XMFLOAT3 & direction)
 {
 	XMVECTOR pos = XMLoadFloat3(&_position);
-	XMVECTOR dir = XMLoadFloat3(&_direction);
+	XMVECTOR dir = XMLoadFloat3(&_target) - pos;
 
 	XMVECTOR len = XMVector3Length(dir);
 	XMVECTOR nTgt = pos + XMVector3Normalize(XMLoadFloat3(&direction)) * len;
