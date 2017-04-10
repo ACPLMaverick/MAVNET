@@ -1,6 +1,10 @@
 #include "stdafx.h"
 #include "Shader.h"
 #include "Renderer.h"
+#include "Lights\LightAmbient.h"
+#include "Lights\LightDirectional.h"
+#include "Lights\LightPoint.h"
+using namespace Lights;
 
 #include <vector>
 #include <fstream>
@@ -96,7 +100,7 @@ Shader::Shader(const wstring& shaderFilename, size_t inputLayoutNumElements,
 	for (int i = 0; i < _constantVsBufferCount; ++i)
 	{
 		bDesc.ByteWidth = (UINT)cbVsDescs[i].Size;
-		ASSERT(device->CreateBuffer(&bDesc, nullptr, &_constantVsBuffers[i]) == S_OK);
+		ASSERT_X(device->CreateBuffer(&bDesc, nullptr, &_constantVsBuffers[i]));
 	}
 
 	_constantPsBufferCount = cbPsCount;
@@ -105,7 +109,7 @@ Shader::Shader(const wstring& shaderFilename, size_t inputLayoutNumElements,
 	for (int i = 0; i < _constantPsBufferCount; ++i)
 	{
 		bDesc.ByteWidth = (UINT)cbPsDescs[i].Size;
-		ASSERT(device->CreateBuffer(&bDesc, nullptr, &_constantPsBuffers[i]) == S_OK);
+		ASSERT_X(device->CreateBuffer(&bDesc, nullptr, &_constantPsBuffers[i]));
 	}
 }
 
@@ -190,12 +194,24 @@ Shader * Shader::CreateResource(const std::wstring & name)
 		return new Shader(name, 3, &vsDesc, 1, &psDesc, 1);
 	}
 	else if (name == L"DeferredDrawShader" || 
-		name == L"DeferredLightAmbientShader" ||
-		name == L"DeferredLightDirectionalShader" ||
-		name == L"DeferredLightMergeShader" ||
-		name == L"DeferredLightPointShader")
+		name == L"DeferredLightMergeShader")
 	{
 		return new Shader(name, 2, nullptr, 0, nullptr, 0);
+	}
+	else if (name == L"DeferredLightAmbientShader")
+	{
+		ConstantBufferDesc psDesc(sizeof(LightAmbient));
+		return new Shader(name, 2, nullptr, 0, &psDesc, 1);
+	}
+	else if (name == L"DeferredLightDirectionalShader")
+	{
+		ConstantBufferDesc descs[2] = { sizeof(LightDirectional), sizeof(LightCommonDataPS) };
+		return new Shader(name, 2, nullptr, 0, descs, 2);
+	}
+	else if (name == L"DeferredLightPointShader")
+	{
+		ConstantBufferDesc descs[2] = { sizeof(LightPoint), sizeof(LightCommonDataPS) };
+		return new Shader(name, 2, nullptr, 0, descs, 2);
 	}
 	else
 	{

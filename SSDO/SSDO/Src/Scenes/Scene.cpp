@@ -3,6 +3,10 @@
 #include "Camera.h"
 #include "Mesh.h"
 #include "Material.h"
+#include "../Lights/LightAmbient.h"
+#include "../Lights/LightDirectional.h"
+#include "../Lights/LightPoint.h"
+using namespace Lights;
 
 namespace Scenes
 {
@@ -38,8 +42,22 @@ namespace Scenes
 			delete *it;
 		}
 
+		for (auto it = _lightsDirectional.begin(); it != _lightsDirectional.end(); ++it)
+		{
+			delete *it;
+		}
+
+		for (auto it = _lightsPoint.begin(); it != _lightsPoint.end(); ++it)
+		{
+			delete *it;
+		}
+
 		_materials.clear();
 		_meshes.clear();
+		_lightsPoint.clear();
+		_lightsDirectional.clear();
+
+		if (_lightAmbient != nullptr) delete _lightAmbient;
 
 		for (auto it = _shaders.begin(); it != _shaders.end(); ++it)
 		{

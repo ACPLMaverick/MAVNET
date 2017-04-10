@@ -4,6 +4,13 @@ class Mesh;
 class Material;
 class Camera;
 
+namespace Lights
+{
+	class LightAmbient;
+	class LightDirectional;
+	class LightPoint;
+}
+
 #include "Shader.h"
 
 #include <vector>
@@ -23,6 +30,10 @@ namespace Scenes
 		// scene elems
 		std::vector<Mesh*> _meshes;
 		std::vector<Material*> _materials;
+		std::vector<Lights::LightDirectional*> _lightsDirectional;
+		std::vector<Lights::LightPoint*> _lightsPoint;
+
+		Lights::LightAmbient* _lightAmbient;
 
 		// resources
 		std::map<std::wstring, Shader*> _shaders;
@@ -64,6 +75,9 @@ namespace Scenes
 		inline const Camera* GetMainCamera() const { return _mainCamera; }
 
 		inline Shader* LoadShader(std::wstring& name) { return GetResource<Shader>(name, _shaders); }
+		inline const Lights::LightAmbient* GetLightAmbient() const { return _lightAmbient; }
+		inline const std::vector<Lights::LightDirectional*>& GetLightsDirectional() const { return _lightsDirectional; }
+		inline const std::vector<Lights::LightPoint*>& GetLightsPoint() const { return _lightsPoint; }
 
 #pragma endregion
 	};

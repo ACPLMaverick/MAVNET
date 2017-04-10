@@ -1,8 +1,8 @@
-#include "DeferredDrawShader_H.hlsli"
+#include "../_global/GlobalDefines.hlsli"
 
-PixelInput main( VertexInput input )
+DPixelInput main( DVertexInput input )
 {
-	PixelInput output;
+	DPixelInput output;
 	output.Position = float4(input.Position, 1.0f);
 	output.Uv = input.Uv;
 	return output;

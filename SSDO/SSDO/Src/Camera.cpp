@@ -13,7 +13,8 @@ Camera::Camera(const XMFLOAT3 & position, const XMFLOAT3 & target, const XMFLOAT
 	_up(up),
 	_fov(fov),
 	_near(nearPlane),
-	_far(farPlane)
+	_far(farPlane),
+	_gBuffer(*this)
 {
 	UpdateView();
 	UpdateProjection();
@@ -59,18 +60,46 @@ void Camera::Draw(const Scene& scene) const
 	}
 	else
 	{
-		// draw all objects' colors, normals, depth
-
-		const_cast<GBuffer&>(_gBuffer).SetDrawMeshes();
+		GBuffer& gBuffer = const_cast<GBuffer&>(_gBuffer);
+		// draw meshes
+		gBuffer.SetDrawMeshes();
 		for (auto it = scene._meshes.begin(); it != scene._meshes.end(); ++it)
 		{
 			(*it)->Draw(*this);
 		}
 
-		// for each light, enlighten final buffer
-		//const_cast<GBuffer&>(_gBuffer).SetDrawLights();
+		// enlighten meshes
+		gBuffer.SetDrawLights();
+
+		if (scene._lightAmbient != nullptr)
+		{
+			gBuffer.SetDrawLightAmbient();
+			gBuffer.DrawLightAmbient(*scene._lightAmbient);
+		}
+
+		if (scene._lightsDirectional.size() > 0)
+		{
+			gBuffer.SetDrawLightDirectional();
+
+			for (auto it = scene._lightsDirectional.begin(); it != scene._lightsDirectional.end(); ++it)
+			{
+				gBuffer.DrawLightDirectional(**it);
+			}
+		}
+
+		if (scene._lightsPoint.size() > 0)
+		{
+			gBuffer.SetDrawLightPoint();
+
+			for (auto it = scene._lightsPoint.begin(); it != scene._lightsPoint.end(); ++it)
+			{
+				gBuffer.DrawLightPoint(**it);
+			}
+		}
 
 		// apply postprocesses
+
+		gBuffer.EndFrame();
 	}
 }
 

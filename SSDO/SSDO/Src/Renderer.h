@@ -23,7 +23,7 @@ public:
 	const float DEFAULT_CLEAR_COLOR[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	const float DEFAULT_CLEAR_DEPTH = 1.0f;
 	const uint8_t DEFAULT_CLEAR_STENCIL = 255;
-	const uint32_t DEFAULT_SAMPLE_COUNT = 4;
+	const uint32_t DEFAULT_SAMPLE_COUNT = 1;
 
 protected:
 

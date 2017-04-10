@@ -157,6 +157,7 @@
     <FxCompile Include="Resources\Shaders\DeferredDrawShader\DeferredDrawShader_VS.hlsl" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\Shaders\DeferredDrawShader\DeferredDrawShader_H.hlsli" />
+    <None Include="Resources\Shaders\_global\GlobalDefines.hlsli" />
+    <None Include="Resources\Shaders\_global\Lighting.hlsli" />
   </ItemGroup>
 </Project>

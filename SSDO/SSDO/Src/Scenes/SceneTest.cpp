@@ -3,6 +3,10 @@
 #include "Camera.h"
 #include "Mesh.h"
 #include "Material.h"
+#include "../Lights/LightAmbient.h"
+#include "../Lights/LightDirectional.h"
+#include "../Lights/LightPoint.h"
+using namespace Lights;
 
 namespace Scenes
 {
@@ -24,5 +28,10 @@ namespace Scenes
 		_materials.push_back(new Material(*shdColor, XMFLOAT4(0.7f, 1.0f, 0.7f, 1.0f)));
 
 		_meshes.push_back(new Mesh(L"box", *_materials[0], XMFLOAT3(0.7f, 0.0f, 0.0f)));
+
+
+		_lightAmbient = new LightAmbient(XMFLOAT4(0.05f, 0.05f, 0.1f, 1.0f));
+
+		_lightsDirectional.push_back(new LightDirectional(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT3(1.0f, -0.3f, 1.0f)));
 	}
 }

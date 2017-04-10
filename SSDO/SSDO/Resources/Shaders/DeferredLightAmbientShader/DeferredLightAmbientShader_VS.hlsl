@@ -1,4 +1,9 @@
-float4 main( float4 pos : POSITION ) : SV_POSITION
+#include "../_global/GlobalDefines.hlsli"
+
+DPixelInput main(DVertexInput input)
 {
-	return pos;
+	DPixelInput output;
+	output.Position = float4(input.Position, 1.0f);
+	output.Uv = input.Uv;
+	return output;
 }

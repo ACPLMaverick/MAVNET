@@ -21,6 +21,7 @@ struct PixelOutput
 {
 	float4 Color    : SV_Target0;
 	float4 Normal	: SV_Target1;
+	float4 WorldPos : SV_Target2;
 };
 
 
@@ -30,6 +31,7 @@ PixelOutput main(PixelInput input)
 {
 	PixelOutput output;
 	output.Color = gColBase;
-	output.Normal = float4(normalize(input.Normal), 0.0f);
+	output.Normal = float4(normalize(input.Normal), gGloss);
+	output.WorldPos = float4(input.PositionWorld, 1.0f);
 	return output;
 }

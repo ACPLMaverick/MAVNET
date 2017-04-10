@@ -2,10 +2,12 @@
 #include "GBuffer.h"
 #include "System.h"
 #include "Renderer.h"
+#include "Camera.h"
 #include "Scenes\Scene.h"
 #include "Lights\LightAmbient.h"
 #include "Lights\LightDirectional.h"
 #include "Lights\LightPoint.h"
+using namespace Lights;
 
 #define SHADER_DRAW L"DeferredDrawShader"
 #define SHADER_MERGE L"DeferredLightMergeShader"
@@ -13,7 +15,8 @@
 #define SHADER_L_DIRECTIONAL L"DeferredLightDirectionalShader"
 #define SHADER_L_POINT L"DeferredLightPointShader"
 
-GBuffer::GBuffer()
+GBuffer::GBuffer(const Camera& camera) :
+	_camera(camera)
 {
 	const uint32_t w = System::GetInstance()->GetOptions()._windowWidth;
 	const uint32_t h = System::GetInstance()->GetOptions()._windowHeight;
@@ -83,23 +86,27 @@ GBuffer::GBuffer()
 
 	ASSERT(device->CreateTexture2D(&descTexture, nullptr, &_color.Texture) == S_OK);
 	ASSERT(device->CreateTexture2D(&descTextureNormals, nullptr, &_normal.Texture) == S_OK);
+	ASSERT(device->CreateTexture2D(&descTextureNormals, nullptr, &_worldPos.Texture) == S_OK);
 	ASSERT(device->CreateTexture2D(&descTexture, nullptr, &_outputA.Texture) == S_OK);
 	ASSERT(device->CreateTexture2D(&descTexture, nullptr, &_outputB.Texture) == S_OK);
 	ASSERT(device->CreateTexture2D(&descDs, nullptr, &_depth.Texture) == S_OK);
 
 	ASSERT(device->CreateRenderTargetView(_color.Texture, nullptr, &_color.View) == S_OK);
 	ASSERT(device->CreateRenderTargetView(_normal.Texture, nullptr, &_normal.View) == S_OK);
+	ASSERT(device->CreateRenderTargetView(_worldPos.Texture, nullptr, &_worldPos.View) == S_OK);
 	ASSERT(device->CreateRenderTargetView(_outputA.Texture, nullptr, &_outputA.View) == S_OK);
 	ASSERT(device->CreateRenderTargetView(_outputB.Texture, nullptr, &_outputB.View) == S_OK);
 
 	ASSERT(device->CreateSamplerState(&descSampler, &_color.Sampler) == S_OK);
 	ASSERT(device->CreateSamplerState(&descSampler, &_normal.Sampler) == S_OK);
+	ASSERT(device->CreateSamplerState(&descSampler, &_worldPos.Sampler) == S_OK);
 	ASSERT(device->CreateSamplerState(&descSampler, &_outputA.Sampler) == S_OK);
 	ASSERT(device->CreateSamplerState(&descSampler, &_outputB.Sampler) == S_OK);
 	ASSERT(device->CreateSamplerState(&descSampler, &_depth.Sampler) == S_OK);
 
 	ASSERT(device->CreateShaderResourceView(_color.Texture, &descSrv, &_color.SRV) == S_OK);
 	ASSERT(device->CreateShaderResourceView(_normal.Texture, &descSrvNormals, &_normal.SRV) == S_OK);
+	ASSERT(device->CreateShaderResourceView(_worldPos.Texture, &descSrvNormals, &_worldPos.SRV) == S_OK);
 	ASSERT(device->CreateShaderResourceView(_outputA.Texture, &descSrv, &_outputA.SRV) == S_OK);
 	ASSERT(device->CreateShaderResourceView(_outputB.Texture, &descSrv, &_outputB.SRV) == S_OK);
 	descSrv.Format = formatDepthSrv;
@@ -167,6 +174,7 @@ GBuffer::~GBuffer()
 {
 	_color.Shutdown();
 	_normal.Shutdown();
+	_worldPos.Shutdown();
 	_depth.Shutdown();
 	_outputA.Shutdown();
 	_outputB.Shutdown();
@@ -176,30 +184,84 @@ void GBuffer::SetDrawMeshes()
 {
 	ID3D11DeviceContext* context = Renderer::GetInstance()->GetDeviceContext();
 	
-	ID3D11RenderTargetView* rtPtrs[2] = { _color.View, _normal.View };
-	context->OMSetRenderTargets(2, rtPtrs, _depth.DepthStencilView);
+	ID3D11RenderTargetView* rtPtrs[3] = { _color.View, _normal.View, _worldPos.View };
+	context->OMSetRenderTargets(3, rtPtrs, _depth.DepthStencilView);
 
 	context->ClearRenderTargetView(_color.View, Renderer::GetInstance()->DEFAULT_CLEAR_COLOR);
 	context->ClearRenderTargetView(_normal.View, Renderer::GetInstance()->DEFAULT_CLEAR_COLOR);
+	context->ClearRenderTargetView(_worldPos.View, Renderer::GetInstance()->DEFAULT_CLEAR_COLOR);
 	context->ClearRenderTargetView(_outputA.View, Renderer::GetInstance()->DEFAULT_CLEAR_COLOR);
 	context->ClearRenderTargetView(_outputB.View, Renderer::GetInstance()->DEFAULT_CLEAR_COLOR);
 	context->ClearDepthStencilView(_depth.DepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 
 		Renderer::GetInstance()->DEFAULT_CLEAR_DEPTH, Renderer::GetInstance()->DEFAULT_CLEAR_STENCIL);
 }
 
+void GBuffer::SetDrawLights()
+{
+	// cleanup after mesh drawing
+
+	ID3D11DeviceContext* context = Renderer::GetInstance()->GetDeviceContext();
+	ID3D11RenderTargetView* nullPtrs[3] = { nullptr, nullptr, nullptr };
+	context->OMSetRenderTargets(3, nullPtrs, nullptr);
+
+	// set blend state to ADDITIVE here
+}
+
 void GBuffer::SetDrawLightAmbient()
 {
 	ID3D11DeviceContext* context = Renderer::GetInstance()->GetDeviceContext();
+	_shaderLightAmbient->Set();
+	SetMapData();
+	context->OMSetRenderTargets(1, &_outputA.View, nullptr);
 }
 
 void GBuffer::SetDrawLightDirectional()
 {
 	ID3D11DeviceContext* context = Renderer::GetInstance()->GetDeviceContext();
+	_shaderLightDirectional->Set();
+	SetMapData();
+	Shader::LightCommonDataPS* cd = reinterpret_cast<Shader::LightCommonDataPS*>(_shaderLightDirectional->MapPsBuffer(1));
+	cd->gViewPosition = _camera.GetPosition();
+	_shaderLightDirectional->UnmapPsBuffer(1);
+	context->OMSetRenderTargets(1, &_outputA.View, nullptr);
 }
 
 void GBuffer::SetDrawLightPoint()
 {
 	ID3D11DeviceContext* context = Renderer::GetInstance()->GetDeviceContext();
+	_shaderLightPoint->Set();
+	SetMapData();
+	Shader::LightCommonDataPS* cd = reinterpret_cast<Shader::LightCommonDataPS*>(_shaderLightPoint->MapPsBuffer(1));
+	cd->gViewPosition = _camera.GetPosition();
+	_shaderLightPoint->UnmapPsBuffer(1);
+	context->OMSetRenderTargets(1, &_outputA.View, nullptr);
+}
+
+void GBuffer::DrawLightAmbient(const Lights::LightAmbient & lightAmbient)
+{
+	// assuming correct shader is set
+	LightAmbient* la = reinterpret_cast<LightAmbient*>(_shaderLightAmbient->MapPsBuffer(0));
+	(*la) = lightAmbient;
+	_shaderLightAmbient->UnmapPsBuffer(0);
+	DrawFullscreenPlane();
+}
+
+void GBuffer::DrawLightDirectional(const Lights::LightDirectional & lightDirectional)
+{
+	// assuming correct shader is set
+	LightDirectional* ld = reinterpret_cast<LightDirectional*>(_shaderLightDirectional->MapPsBuffer(0));
+	(*ld) = lightDirectional;
+	_shaderLightDirectional->UnmapPsBuffer(0);
+	DrawFullscreenPlane();
+}
+
+void GBuffer::DrawLightPoint(const Lights::LightPoint & lightPoint)
+{
+	// assuming correct shader is set
+	LightPoint* lp = reinterpret_cast<LightPoint*>(_shaderLightPoint->MapPsBuffer(0));
+	(*lp) = lightPoint;
+	_shaderLightPoint->UnmapPsBuffer(0);
+	DrawFullscreenPlane();
 }
 
 void GBuffer::SetDrawPostprocess()
@@ -208,38 +270,16 @@ void GBuffer::SetDrawPostprocess()
 	FlipOutputs();
 }
 
+void GBuffer::EndFrame()
+{
+	UnsetMapData();
+}
+
 void GBuffer::Draw() const
 {
 	ID3D11DeviceContext* context = Renderer::GetInstance()->GetDeviceContext();
 
-	Renderer::GetInstance()->CopyRenderTargetToMain(_color.Texture);
-	/*
-	_shaderDraw->Set();
-	Renderer::GetInstance()->SetMainRenderTarget();
-	ID3D11ShaderResourceView* srv[3] = { _color.SRV, _normal.SRV, _depth.SRV };
-	ID3D11SamplerState* ss[3] = { _color.Sampler, _normal.Sampler, _depth.Sampler };
-	context->PSSetShaderResources(0, 3, srv);
-	context->PSSetSamplers(0, 3, ss);
-
-	uint32_t stride = sizeof(XMFLOAT3);
-	uint32_t offset = 0;
-	context->IASetVertexBuffers(0, 1, &_fullscreenPlaneVertexBuffer, &stride, &offset);
-	stride = sizeof(XMFLOAT2);
-	context->IASetVertexBuffers(1, 1, &_fullscreenPlaneUvBuffer, &stride, &offset);
-	context->IASetIndexBuffer(_fullscreenPlaneIndexBuffer, DXGI_FORMAT::DXGI_FORMAT_R16_UINT, 0);
-
-	context->DrawIndexed(6, 0, 0);
-
-	ID3D11ShaderResourceView* const nullSrv[1] = { nullptr };
-	ID3D11SamplerState* const nullSmp[1] = { nullptr };
-
-	context->PSSetShaderResources(0, 1, nullSrv);
-	context->PSSetShaderResources(1, 1, nullSrv);
-	context->PSSetShaderResources(2, 1, nullSrv);
-	context->PSSetSamplers(0, 1, nullSmp);
-	context->PSSetSamplers(1, 1, nullSmp);
-	context->PSSetSamplers(2, 1, nullSmp);
-	*/
+	Renderer::GetInstance()->CopyRenderTargetToMain(_outputA.Texture);
 }
 
 void GBuffer::Merge(const GBuffer & other)
@@ -252,4 +292,38 @@ inline void GBuffer::FlipOutputs()
 	RenderTarget vmp = _outputA;
 	_outputA = _outputB;
 	_outputB = vmp;
+}
+
+inline void GBuffer::SetMapData()
+{
+	ID3D11DeviceContext* context = Renderer::GetInstance()->GetDeviceContext();
+	const int32_t numViews = 4;
+	ID3D11ShaderResourceView* srv[numViews] = { _color.SRV, _normal.SRV, _worldPos.SRV, _depth.SRV };
+	ID3D11SamplerState* ss[numViews] = { _color.Sampler, _normal.Sampler, _worldPos.Sampler, _depth.Sampler };
+	context->PSSetShaderResources(0, numViews, srv);
+	context->PSSetSamplers(0, numViews, ss);
+}
+
+inline void GBuffer::UnsetMapData()
+{
+	ID3D11DeviceContext* context = Renderer::GetInstance()->GetDeviceContext();
+	const int32_t numViews = 4;
+	ID3D11ShaderResourceView* const nullSrv[numViews] = { nullptr, nullptr, nullptr, nullptr };
+	ID3D11SamplerState* const nullSmp[numViews] = { nullptr, nullptr, nullptr, nullptr };
+
+	context->PSSetShaderResources(0, numViews, nullSrv);
+	context->PSSetSamplers(0, numViews, nullSmp);
+}
+
+inline void GBuffer::DrawFullscreenPlane()
+{
+	ID3D11DeviceContext* context = Renderer::GetInstance()->GetDeviceContext();
+	uint32_t stride = sizeof(XMFLOAT3);
+	uint32_t offset = 0;
+	context->IASetVertexBuffers(0, 1, &_fullscreenPlaneVertexBuffer, &stride, &offset);
+	stride = sizeof(XMFLOAT2);
+	context->IASetVertexBuffers(1, 1, &_fullscreenPlaneUvBuffer, &stride, &offset);
+	context->IASetIndexBuffer(_fullscreenPlaneIndexBuffer, DXGI_FORMAT::DXGI_FORMAT_R16_UINT, 0);
+
+	context->DrawIndexed(6, 0, 0);
 }

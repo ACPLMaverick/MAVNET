@@ -17,15 +17,19 @@ if(!(expression)) { MessageBox(System::GetInstance()->GetHWND(), message, L"Asse
 
 #define ASSERT(expression) ASSERT_D(expression, L"Assertion error!")
 
+#define ASSERT_X(func) ASSERT(func == S_OK)
+
 #define DEBUG(text) \
 std::wstring d_text(text + L"\n"); \
 OutputDebugString(d_text.c_str());
 
 #else
 
-#define ASSERT(expression, message)
+#define ASSERT_D(expression, message) expression
 
-#define ASSERT(expression)
+#define ASSERT(expression) expression
+
+#define ASSERT_X(func) func
 
 #define DEBUG(text)
 

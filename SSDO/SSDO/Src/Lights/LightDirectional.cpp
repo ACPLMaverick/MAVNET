@@ -4,9 +4,10 @@
 namespace Lights
 {
 	LightDirectional::LightDirectional(const XMFLOAT4 & color, const XMFLOAT3 & direction) :
-		LightAmbient(color),
+		_color(color),
 		_direction(direction)
 	{
+		SetDirection(direction);
 	}
 
 	LightDirectional::~LightDirectional()

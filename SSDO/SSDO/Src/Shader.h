@@ -38,6 +38,14 @@ public:
 		float gGloss;
 	};
 
+	__declspec(align(16))
+		struct LightCommonDataPS
+	{
+		XMFLOAT3 gViewPosition;
+		float padding1;
+		XMFLOAT4 padding2;
+	};
+
 #pragma endregion
 
 protected:

@@ -4,6 +4,7 @@
 #include "Buffer.h"
 
 class Shader;
+class Camera;
 
 namespace Lights
 {
@@ -70,8 +71,11 @@ protected:
 
 #pragma region Protected
 
+	const Camera& _camera;
+
 	RenderTarget _color;
 	RenderTarget _normal;
+	RenderTarget _worldPos;
 	RenderTargetDepthBuffer _depth;
 				
 	RenderTarget _outputA;
@@ -92,6 +96,9 @@ protected:
 #pragma region Functions Protected
 
 	inline void FlipOutputs();
+	inline void SetMapData();
+	inline void UnsetMapData();
+	inline void DrawFullscreenPlane();
 
 #pragma endregion
 
@@ -99,16 +106,27 @@ public:
 
 #pragma region Functions Public
 
-	GBuffer();
+	GBuffer(const Camera& camera);
 	~GBuffer();
 
 	void SetDrawMeshes();
+
+	void SetDrawLights();
 
 	void SetDrawLightAmbient();
 	void SetDrawLightDirectional();
 	void SetDrawLightPoint();
 
+	// Before calling this function, SetDrawLightAmbient must be called.
+	void DrawLightAmbient(const Lights::LightAmbient& lightAmbient);
+	// Before calling this function, SetDrawLightDirectional must be called.
+	void DrawLightDirectional(const Lights::LightDirectional& lightAmbient);
+	// Before calling this function, SetDrawLightPoint must be called.
+	void DrawLightPoint(const Lights::LightPoint& lightAmbient);
+
 	void SetDrawPostprocess();
+
+	void EndFrame();
 
 	void Draw() const;
 
