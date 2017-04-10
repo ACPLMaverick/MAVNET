@@ -3,6 +3,7 @@
 #include "System.h"
 #include "Scenes\Scene.h"
 #include "Mesh.h"
+#include "Renderer.h"
 
 using namespace Scenes;
 
@@ -49,18 +50,28 @@ void Camera::Update()
 
 void Camera::Draw(const Scene& scene) const
 {
-	// draw all objects' colors, normals, depth
-
-	const_cast<GBuffer&>(_gBuffer).SetDrawMeshes();
-	for (auto it = scene._meshes.begin(); it != scene._meshes.end(); ++it)
+	if (Renderer::GetInstance()->GetRenderMode() == Renderer::RenderMode::FORWARD)
 	{
-		(*it)->Draw(*this);
+		for (auto it = scene._meshes.begin(); it != scene._meshes.end(); ++it)
+		{
+			(*it)->Draw(*this);
+		}
 	}
+	else
+	{
+		// draw all objects' colors, normals, depth
 
-	// for each light, enlighten final buffer
-	//const_cast<GBuffer&>(_gBuffer).SetDrawLights();
+		const_cast<GBuffer&>(_gBuffer).SetDrawMeshes();
+		for (auto it = scene._meshes.begin(); it != scene._meshes.end(); ++it)
+		{
+			(*it)->Draw(*this);
+		}
 
-	// apply postprocesses
+		// for each light, enlighten final buffer
+		//const_cast<GBuffer&>(_gBuffer).SetDrawLights();
+
+		// apply postprocesses
+	}
 }
 
 void Camera::SetDirection(const XMFLOAT3 & direction)

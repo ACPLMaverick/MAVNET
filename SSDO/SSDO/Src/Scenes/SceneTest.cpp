@@ -21,7 +21,7 @@ namespace Scenes
 
 		Shader* shdColor = LoadShader(std::wstring(L"ColorShader"));
 
-		_materials.push_back(new Material(*shdColor));
+		_materials.push_back(new Material(*shdColor, XMFLOAT4(0.7f, 1.0f, 0.7f, 1.0f)));
 
 		_meshes.push_back(new Mesh(L"box", *_materials[0], XMFLOAT3(0.7f, 0.0f, 0.0f)));
 	}

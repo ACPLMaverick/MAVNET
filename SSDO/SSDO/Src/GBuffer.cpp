@@ -17,10 +17,13 @@ GBuffer::GBuffer()
 {
 	const uint32_t w = System::GetInstance()->GetOptions()._windowWidth;
 	const uint32_t h = System::GetInstance()->GetOptions()._windowHeight;
-	const DXGI_FORMAT format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+	const DXGI_FORMAT format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM;
+	const DXGI_FORMAT formatNormal = DXGI_FORMAT::DXGI_FORMAT_R16G16B16A16_SNORM;
 	const DXGI_FORMAT formatDepthTexture = DXGI_FORMAT::DXGI_FORMAT_R32_TYPELESS;
 	const DXGI_FORMAT formatDepthDsv = DXGI_FORMAT::DXGI_FORMAT_D32_FLOAT;
 	const DXGI_FORMAT formatDepthSrv = DXGI_FORMAT::DXGI_FORMAT_R32_FLOAT;
+	const D3D11_SRV_DIMENSION srvDimension = Renderer::GetInstance()->DEFAULT_SAMPLE_COUNT != 1 ? D3D11_SRV_DIMENSION_TEXTURE2DMS : D3D11_SRV_DIMENSION_TEXTURE2D;
+	const D3D11_DSV_DIMENSION dsvDimension = Renderer::GetInstance()->DEFAULT_SAMPLE_COUNT != 1 ? D3D11_DSV_DIMENSION_TEXTURE2DMS : D3D11_DSV_DIMENSION_TEXTURE2D;
 	ID3D11Device* device = Renderer::GetInstance()->GetDevice();
 
 	D3D11_TEXTURE2D_DESC descTexture;
@@ -33,8 +36,11 @@ GBuffer::GBuffer()
 	descTexture.Usage = D3D11_USAGE_DEFAULT;
 	descTexture.Width = w;
 	descTexture.Height = h;
-	descTexture.SampleDesc.Count = 1;
-	descTexture.SampleDesc.Quality = 0;
+	descTexture.SampleDesc.Count = Renderer::GetInstance()->DEFAULT_SAMPLE_COUNT;
+	descTexture.SampleDesc.Quality = Renderer::GetInstance()->GetSampleQuality() - 1;
+
+	D3D11_TEXTURE2D_DESC descTextureNormals = descTexture;
+	descTextureNormals.Format = formatNormal;
 
 	D3D11_SAMPLER_DESC descSampler;
 	descSampler.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
@@ -54,9 +60,12 @@ GBuffer::GBuffer()
 	D3D11_SHADER_RESOURCE_VIEW_DESC descSrv;
 	ZeroMemory(&descSrv, sizeof(D3D11_SHADER_RESOURCE_VIEW_DESC));
 	descSrv.Format = format;
-	descSrv.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	descSrv.ViewDimension = srvDimension;
 	descSrv.Texture2D.MipLevels = 1;
 	descSrv.Texture2D.MostDetailedMip = 0;
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC descSrvNormals = descSrv;
+	descSrvNormals.Format = formatNormal;
 
 	D3D11_TEXTURE2D_DESC descDs;
 	descDs.Width = w;
@@ -64,8 +73,8 @@ GBuffer::GBuffer()
 	descDs.MipLevels = 1;
 	descDs.ArraySize = 1;
 	descDs.Format = formatDepthTexture;
-	descDs.SampleDesc.Count = 1;
-	descDs.SampleDesc.Quality = 0;
+	descDs.SampleDesc.Count = Renderer::GetInstance()->DEFAULT_SAMPLE_COUNT;
+	descDs.SampleDesc.Quality = Renderer::GetInstance()->GetSampleQuality() - 1;
 	descDs.Usage = D3D11_USAGE_DEFAULT;
 	descDs.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
 	descDs.CPUAccessFlags = 0;
@@ -73,7 +82,7 @@ GBuffer::GBuffer()
 	
 
 	ASSERT(device->CreateTexture2D(&descTexture, nullptr, &_color.Texture) == S_OK);
-	ASSERT(device->CreateTexture2D(&descTexture, nullptr, &_normal.Texture) == S_OK);
+	ASSERT(device->CreateTexture2D(&descTextureNormals, nullptr, &_normal.Texture) == S_OK);
 	ASSERT(device->CreateTexture2D(&descTexture, nullptr, &_outputA.Texture) == S_OK);
 	ASSERT(device->CreateTexture2D(&descTexture, nullptr, &_outputB.Texture) == S_OK);
 	ASSERT(device->CreateTexture2D(&descDs, nullptr, &_depth.Texture) == S_OK);
@@ -90,7 +99,7 @@ GBuffer::GBuffer()
 	ASSERT(device->CreateSamplerState(&descSampler, &_depth.Sampler) == S_OK);
 
 	ASSERT(device->CreateShaderResourceView(_color.Texture, &descSrv, &_color.SRV) == S_OK);
-	ASSERT(device->CreateShaderResourceView(_normal.Texture, &descSrv, &_normal.SRV) == S_OK);
+	ASSERT(device->CreateShaderResourceView(_normal.Texture, &descSrvNormals, &_normal.SRV) == S_OK);
 	ASSERT(device->CreateShaderResourceView(_outputA.Texture, &descSrv, &_outputA.SRV) == S_OK);
 	ASSERT(device->CreateShaderResourceView(_outputB.Texture, &descSrv, &_outputB.SRV) == S_OK);
 	descSrv.Format = formatDepthSrv;
@@ -99,7 +108,7 @@ GBuffer::GBuffer()
 	D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
 	ZeroMemory(&dsvDesc, sizeof(D3D11_DEPTH_STENCIL_VIEW_DESC));
 	dsvDesc.Format = formatDepthDsv;
-	dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	dsvDesc.ViewDimension = dsvDimension;
 	dsvDesc.Texture2D.MipSlice = 0;
 	ASSERT(device->CreateDepthStencilView(_depth.Texture, &dsvDesc, &_depth.DepthStencilView) == S_OK);
 
@@ -170,12 +179,12 @@ void GBuffer::SetDrawMeshes()
 	ID3D11RenderTargetView* rtPtrs[2] = { _color.View, _normal.View };
 	context->OMSetRenderTargets(2, rtPtrs, _depth.DepthStencilView);
 
-	const float black[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	context->ClearRenderTargetView(_color.View, black);
-	context->ClearRenderTargetView(_normal.View, black);
-	context->ClearRenderTargetView(_outputA.View, black);
-	context->ClearRenderTargetView(_outputB.View, black);
-	context->ClearDepthStencilView(_depth.DepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 255);
+	context->ClearRenderTargetView(_color.View, Renderer::GetInstance()->DEFAULT_CLEAR_COLOR);
+	context->ClearRenderTargetView(_normal.View, Renderer::GetInstance()->DEFAULT_CLEAR_COLOR);
+	context->ClearRenderTargetView(_outputA.View, Renderer::GetInstance()->DEFAULT_CLEAR_COLOR);
+	context->ClearRenderTargetView(_outputB.View, Renderer::GetInstance()->DEFAULT_CLEAR_COLOR);
+	context->ClearDepthStencilView(_depth.DepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 
+		Renderer::GetInstance()->DEFAULT_CLEAR_DEPTH, Renderer::GetInstance()->DEFAULT_CLEAR_STENCIL);
 }
 
 void GBuffer::SetDrawLightAmbient()
@@ -203,13 +212,14 @@ void GBuffer::Draw() const
 {
 	ID3D11DeviceContext* context = Renderer::GetInstance()->GetDeviceContext();
 
+	Renderer::GetInstance()->CopyRenderTargetToMain(_color.Texture);
+	/*
 	_shaderDraw->Set();
 	Renderer::GetInstance()->SetMainRenderTarget();
 	ID3D11ShaderResourceView* srv[3] = { _color.SRV, _normal.SRV, _depth.SRV };
 	ID3D11SamplerState* ss[3] = { _color.Sampler, _normal.Sampler, _depth.Sampler };
 	context->PSSetShaderResources(0, 3, srv);
 	context->PSSetSamplers(0, 3, ss);
-
 
 	uint32_t stride = sizeof(XMFLOAT3);
 	uint32_t offset = 0;
@@ -229,6 +239,7 @@ void GBuffer::Draw() const
 	context->PSSetSamplers(0, 1, nullSmp);
 	context->PSSetSamplers(1, 1, nullSmp);
 	context->PSSetSamplers(2, 1, nullSmp);
+	*/
 }
 
 void GBuffer::Merge(const GBuffer & other)

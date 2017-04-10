@@ -59,12 +59,12 @@ void Material::DrawMesh(const Camera & camera, const Mesh & mesh) const
 	// DRAW!
 
 	uint32_t stridePos = sizeof(mesh._vPositions[0]);
-	uint32_t strideNrms = sizeof(mesh._vNormals[0]);
 	uint32_t strideUvs = sizeof(mesh._vUvs[0]);
+	uint32_t strideNrms = sizeof(mesh._vNormals[0]);
 	uint32_t offset = 0;
 	deviceContext->IASetVertexBuffers(0, 1, &mesh._fPositions, &stridePos, &offset);	// this can be simplified
-	deviceContext->IASetVertexBuffers(1, 1, &mesh._fNormals, &strideNrms, &offset);
-	deviceContext->IASetVertexBuffers(2, 1, &mesh._fUvs, &strideUvs, &offset);
+	deviceContext->IASetVertexBuffers(1, 1, &mesh._fUvs, &strideUvs, &offset);
+	deviceContext->IASetVertexBuffers(2, 1, &mesh._fNormals, &strideNrms, &offset);
 	deviceContext->IASetIndexBuffer(mesh._fIndices, DXGI_FORMAT_R16_UINT, 0);
 
 	deviceContext->DrawIndexed(static_cast<uint32_t>(mesh._indices.GetSize() * 3), 0, 0);

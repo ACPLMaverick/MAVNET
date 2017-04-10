@@ -1,13 +1,13 @@
 #include "DeferredDrawShader_H.hlsli"
 
-Texture2D TexColor;
-SamplerState SmpColor;
+Texture2D TexColor : register(t0);
+SamplerState SmpColor : register(s0);
 
-Texture2D TexNormal;
-SamplerState SmpNormal;
+Texture2D TexNormal : register(t1);
+SamplerState SmpNormal : register(s1);
 
-Texture2D TexDepth;
-SamplerState SmpDepth;
+Texture2D TexDepth : register(t2);
+SamplerState SmpDepth : register(s2);
 
 float4 main(PixelInput input) : SV_TARGET
 {
@@ -15,5 +15,5 @@ float4 main(PixelInput input) : SV_TARGET
 	float3 normal = normalize(TexNormal.Sample(SmpNormal, input.Uv).xyz);
 	float depth = TexDepth.Sample(SmpDepth, input.Uv).x;
 
-	return float4(normal, 1.0f);
+	return color;
 }

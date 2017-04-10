@@ -4,7 +4,8 @@
 #include "Scenes\Scene.h"
 #include "Camera.h"
 
-Renderer::Renderer()
+Renderer::Renderer() : 
+	_renderMode(RenderMode::DEFERRED)
 {
 }
 
@@ -38,8 +39,7 @@ void Renderer::Initialize()
 
 	ASSERT(dxgiFactory != nullptr);
 
-	UINT sampleQuality = 0;
-	_device->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, 4, &sampleQuality);
+	_device->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, 4, &_sampleQuality);
 
 	DXGI_SWAP_CHAIN_DESC swapChainDesc;
 	swapChainDesc.BufferDesc.Width = System::GetInstance()->GetOptions()._windowWidth;
@@ -51,8 +51,8 @@ void Renderer::Initialize()
 	swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 	swapChainDesc.BufferCount = 1;
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	swapChainDesc.SampleDesc.Count = 4;
-	swapChainDesc.SampleDesc.Quality = sampleQuality - 1;
+	swapChainDesc.SampleDesc.Count = DEFAULT_SAMPLE_COUNT;
+	swapChainDesc.SampleDesc.Quality = _sampleQuality - 1;
 	swapChainDesc.OutputWindow = System::GetInstance()->GetHWND();
 	swapChainDesc.Windowed = !System::GetInstance()->GetOptions()._bFullscreen;
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
@@ -103,8 +103,8 @@ void Renderer::Initialize()
 	depthStencilDescTex.MipLevels = 1;
 	depthStencilDescTex.ArraySize = 1;
 	depthStencilDescTex.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	depthStencilDescTex.SampleDesc.Count = 4;
-	depthStencilDescTex.SampleDesc.Quality = sampleQuality - 1;
+	depthStencilDescTex.SampleDesc.Count = DEFAULT_SAMPLE_COUNT;
+	depthStencilDescTex.SampleDesc.Quality = _sampleQuality - 1;
 	depthStencilDescTex.Usage = D3D11_USAGE_DEFAULT;
 	depthStencilDescTex.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 	depthStencilDescTex.CPUAccessFlags = 0;
@@ -135,7 +135,8 @@ void Renderer::Initialize()
 
 	blendDesc.AlphaToCoverageEnable = false;
 	blendDesc.IndependentBlendEnable = false;
-	blendDesc.RenderTarget[0] = rbDesc;
+	for(int i = 0; i < 8; ++i)
+		blendDesc.RenderTarget[i] = rbDesc;
 
 	_device->CreateBlendState(&blendDesc, &_blendState);
 	ASSERT(_blendState != nullptr);
@@ -176,13 +177,16 @@ void Renderer::Initialize()
 
 void Renderer::Run()
 {
-	float black[4] = { 0.3f, 0.3f, 0.3f, 1.0f };
-	_deviceContext->ClearRenderTargetView(_vMainRenderTarget, black);
-	_deviceContext->ClearDepthStencilView(_vDepthStencilBuffer, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 255);
+	_deviceContext->ClearRenderTargetView(_vMainRenderTarget, DEFAULT_CLEAR_COLOR);
+	_deviceContext->ClearDepthStencilView(_vDepthStencilBuffer, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 
+		DEFAULT_CLEAR_DEPTH, DEFAULT_CLEAR_STENCIL);
 
 	System::GetInstance()->GetScene().Draw();
 
-	System::GetInstance()->GetScene().GetMainCamera()->GetGBuffer().Draw();
+	if (_renderMode == RenderMode::DEFERRED)
+	{
+		System::GetInstance()->GetScene().GetMainCamera()->GetGBuffer().Draw();
+	}
 	
 	_swapChain->Present(0, 0);
 }

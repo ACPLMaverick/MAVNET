@@ -54,8 +54,8 @@ public:
 			const XMFLOAT3& target = XMFLOAT3(0.0f, 0.0f, 0.0f),
 			const XMFLOAT3& up = XMFLOAT3(0.0f, 1.0f, 0.0f),
 			float fov = 0.7f,
-			float near = 0.1f,
-			float far = 1000.0f);
+			float near = 0.5f,
+			float far = 100.0f);
 	~Camera();
 
 	void Update();
