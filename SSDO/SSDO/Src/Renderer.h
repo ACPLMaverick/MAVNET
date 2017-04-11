@@ -64,6 +64,7 @@ public:
 	void Shutdown();
 
 	inline void CopyRenderTargetToMain(ID3D11Texture2D* rt) { _deviceContext->CopyResource(_tMainRenderTarget, rt); }
+	inline void SetMainBlendState() { _deviceContext->OMSetBlendState(_blendState, nullptr, 0xFFFFFFFF); }
 	inline void SetMainRenderTarget() { _deviceContext->OMSetRenderTargets(1, &_vMainRenderTarget, _vDepthStencilBuffer); }
 
 	inline ID3D11Device* GetDevice() const { return _device; }

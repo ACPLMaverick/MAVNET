@@ -85,6 +85,8 @@ protected:
 	ID3D11Buffer* _fullscreenPlaneUvBuffer;
 	ID3D11Buffer* _fullscreenPlaneIndexBuffer;
 
+	ID3D11BlendState* _additiveBlendState;
+
 	Shader* _shaderDraw;
 	Shader* _shaderMerge;
 	Shader* _shaderLightAmbient;

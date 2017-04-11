@@ -32,6 +32,8 @@ namespace Scenes
 
 		_lightAmbient = new LightAmbient(XMFLOAT4(0.05f, 0.05f, 0.1f, 1.0f));
 
-		_lightsDirectional.push_back(new LightDirectional(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), XMFLOAT3(1.0f, -0.3f, 1.0f)));
+		_lightsDirectional.push_back(new LightDirectional(XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f), XMFLOAT3(-1.0f, -0.3f, 1.0f)));
+
+		_lightsPoint.push_back(new LightPoint(XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), XMFLOAT3(-5.0f, 5.0f, 0.0f), 25.0f));
 	}
 }

@@ -146,15 +146,11 @@ void Shader::Set() const
 	deviceContext->VSSetShader(_vs, nullptr, 0);
 	deviceContext->PSSetShader(_ps, nullptr, 0);
 
-	for (int i = 0; i < _constantVsBufferCount; ++i)
-	{
-		deviceContext->VSSetConstantBuffers(0, 1, &_constantVsBuffers[i]);
-	}
+	if(_constantVsBufferCount > 0)
+		deviceContext->VSSetConstantBuffers(0, _constantVsBufferCount, _constantVsBuffers);
 
-	for (int i = 0; i < _constantPsBufferCount; ++i)
-	{
-		deviceContext->PSSetConstantBuffers(0, 1, &_constantPsBuffers[i]);
-	}
+	if (_constantPsBufferCount > 0)
+		deviceContext->PSSetConstantBuffers(0, _constantPsBufferCount, _constantPsBuffers);
 }
 
 void * Shader::MapVsBuffer(size_t i) const

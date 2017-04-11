@@ -21,7 +21,7 @@ GBuffer::GBuffer(const Camera& camera) :
 	const uint32_t w = System::GetInstance()->GetOptions()._windowWidth;
 	const uint32_t h = System::GetInstance()->GetOptions()._windowHeight;
 	const DXGI_FORMAT format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM;
-	const DXGI_FORMAT formatNormal = DXGI_FORMAT::DXGI_FORMAT_R16G16B16A16_SNORM;
+	const DXGI_FORMAT formatNormal = DXGI_FORMAT::DXGI_FORMAT_R16G16B16A16_FLOAT;
 	const DXGI_FORMAT formatDepthTexture = DXGI_FORMAT::DXGI_FORMAT_R32_TYPELESS;
 	const DXGI_FORMAT formatDepthDsv = DXGI_FORMAT::DXGI_FORMAT_D32_FLOAT;
 	const DXGI_FORMAT formatDepthSrv = DXGI_FORMAT::DXGI_FORMAT_R32_FLOAT;
@@ -119,6 +119,26 @@ GBuffer::GBuffer(const Camera& camera) :
 	dsvDesc.Texture2D.MipSlice = 0;
 	ASSERT(device->CreateDepthStencilView(_depth.Texture, &dsvDesc, &_depth.DepthStencilView) == S_OK);
 
+	D3D11_BLEND_DESC blendDesc;
+	D3D11_RENDER_TARGET_BLEND_DESC rbDesc;
+
+	rbDesc.BlendEnable = true;
+	rbDesc.SrcBlend = D3D11_BLEND_ONE;
+	rbDesc.DestBlend = D3D11_BLEND_ONE;
+	rbDesc.BlendOp = D3D11_BLEND_OP_ADD;
+	rbDesc.SrcBlendAlpha = D3D11_BLEND_ONE;
+	rbDesc.DestBlendAlpha = D3D11_BLEND_ONE;
+	rbDesc.BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	rbDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+	blendDesc.AlphaToCoverageEnable = false;
+	blendDesc.IndependentBlendEnable = false;
+	for (int i = 0; i < 8; ++i)
+		blendDesc.RenderTarget[i] = rbDesc;
+
+	device->CreateBlendState(&blendDesc, &_additiveBlendState);
+	ASSERT(_additiveBlendState != nullptr);
+
 
 	_shaderDraw = System::GetInstance()->GetScene().LoadShader(std::wstring(SHADER_DRAW));
 	_shaderMerge = System::GetInstance()->GetScene().LoadShader(std::wstring(SHADER_MERGE));
@@ -205,6 +225,7 @@ void GBuffer::SetDrawLights()
 	context->OMSetRenderTargets(3, nullPtrs, nullptr);
 
 	// set blend state to ADDITIVE here
+	context->OMSetBlendState(_additiveBlendState, nullptr, 0xFFFFFFFF);
 }
 
 void GBuffer::SetDrawLightAmbient()
@@ -272,6 +293,7 @@ void GBuffer::SetDrawPostprocess()
 
 void GBuffer::EndFrame()
 {
+	Renderer::GetInstance()->SetMainBlendState();
 	UnsetMapData();
 }
 
