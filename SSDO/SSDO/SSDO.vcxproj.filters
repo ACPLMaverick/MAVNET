@@ -78,6 +78,15 @@
     <ClInclude Include="Src\Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Postprocesses\Postprocess.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Postprocesses\Sepia.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Object.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\Camera.cpp">
@@ -128,6 +137,15 @@
     <ClCompile Include="Src\Shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Src\Postprocesses\Postprocess.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Postprocesses\Sepia.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Object.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\RC\SSDO.ico">
@@ -145,7 +163,6 @@
   <ItemGroup>
     <FxCompile Include="Resources\Shaders\ColorShader\ColorShader_PS.hlsl" />
     <FxCompile Include="Resources\Shaders\ColorShader\ColorShader_VS.hlsl" />
-    <FxCompile Include="Resources\Shaders\DeferredLightAmbientShader\DeferredLightAmbientShader_VS.hlsl" />
     <FxCompile Include="Resources\Shaders\DeferredLightAmbientShader\DeferredLightAmbientShader_PS.hlsl" />
     <FxCompile Include="Resources\Shaders\DeferredLightDirectionalShader\DeferredLightDirectionalShader_VS.hlsl" />
     <FxCompile Include="Resources\Shaders\DeferredLightDirectionalShader\DeferredLightDirectionalShader_PS.hlsl" />
@@ -155,6 +172,9 @@
     <FxCompile Include="Resources\Shaders\DeferredLightPointShader\DeferredLightPointShader_PS.hlsl" />
     <FxCompile Include="Resources\Shaders\DeferredDrawShader\DeferredDrawShader_PS.hlsl" />
     <FxCompile Include="Resources\Shaders\DeferredDrawShader\DeferredDrawShader_VS.hlsl" />
+    <FxCompile Include="Resources\Shaders\DeferredLightAmbientShader\DeferredLightAmbientShader_VS.hlsl" />
+    <FxCompile Include="Resources\Shaders\PPSepia\PPSepia_VS.hlsl" />
+    <FxCompile Include="Resources\Shaders\PPSepia\PPSepia_PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\_global\GlobalDefines.hlsli" />

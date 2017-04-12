@@ -3,10 +3,13 @@
 #include "Camera.h"
 #include "Mesh.h"
 #include "Material.h"
-#include "../Lights/LightAmbient.h"
-#include "../Lights/LightDirectional.h"
-#include "../Lights/LightPoint.h"
+#include "Object.h"
+#include "Lights/LightAmbient.h"
+#include "Lights/LightDirectional.h"
+#include "Lights/LightPoint.h"
+#include "Postprocesses/Postprocess.h"
 using namespace Lights;
+using namespace Postprocesses;
 
 namespace Scenes
 {
@@ -32,12 +35,7 @@ namespace Scenes
 			delete _mainCamera;
 		}
 
-		for (auto it = _materials.begin(); it != _materials.end(); ++it)
-		{
-			delete *it;
-		}
-
-		for (auto it = _meshes.begin(); it != _meshes.end(); ++it)
+		for (auto it = _objects.begin(); it != _objects.end(); ++it)
 		{
 			delete *it;
 		}
@@ -52,10 +50,15 @@ namespace Scenes
 			delete *it;
 		}
 
-		_materials.clear();
-		_meshes.clear();
+		for (auto it = _postprocesses.begin(); it != _postprocesses.end(); ++it)
+		{
+			delete *it;
+		}
+
+		_objects.clear();
 		_lightsPoint.clear();
 		_lightsDirectional.clear();
+		_postprocesses.clear();
 
 		if (_lightAmbient != nullptr) delete _lightAmbient;
 
@@ -63,6 +66,20 @@ namespace Scenes
 		{
 			delete (*it).second;
 		}
+
+
+		for (auto it = _materials.begin(); it != _materials.end(); ++it)
+		{
+			delete (*it).second;
+		}
+
+		for (auto it = _meshes.begin(); it != _meshes.end(); ++it)
+		{
+			delete (*it).second;
+		}
+
+		_materials.clear();
+		_meshes.clear();
 		_shaders.clear();
 	}
 
@@ -72,10 +89,10 @@ namespace Scenes
 
 		for (auto it = _materials.begin(); it != _materials.end(); ++it)
 		{
-			(*it)->Update();
+			(*it).second->Update();
 		}
 
-		for (auto it = _meshes.begin(); it != _meshes.end(); ++it)
+		for (auto it = _objects.begin(); it != _objects.end(); ++it)
 		{
 			(*it)->Update();
 		}

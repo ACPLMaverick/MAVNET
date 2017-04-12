@@ -6,6 +6,11 @@
 class Shader;
 class Camera;
 
+namespace Postprocesses
+{
+	class Postprocess;
+}
+
 namespace Lights
 {
 	class LightAmbient;
@@ -50,6 +55,15 @@ protected:
 				SRV = nullptr;
 			}
 		}
+
+		virtual RenderTarget& operator=(const RenderTarget& other)
+		{
+			Texture = other.Texture;
+			View = other.View;
+			Sampler = other.Sampler;
+			SRV = other.SRV;
+			return *this;
+		}
 	};
 
 	struct RenderTargetDepthBuffer : RenderTarget
@@ -64,6 +78,13 @@ protected:
 				DepthStencilView->Release();
 				DepthStencilView = nullptr;
 			}
+		}
+
+		virtual RenderTargetDepthBuffer& operator=(const RenderTargetDepthBuffer& other)
+		{
+			RenderTarget::operator=(other);
+			DepthStencilView = other.DepthStencilView;
+			return *this;
 		}
 	};
 
@@ -80,10 +101,6 @@ protected:
 				
 	RenderTarget _outputA;
 	RenderTarget _outputB;
-
-	ID3D11Buffer* _fullscreenPlaneVertexBuffer;
-	ID3D11Buffer* _fullscreenPlaneUvBuffer;
-	ID3D11Buffer* _fullscreenPlaneIndexBuffer;
 
 	ID3D11BlendState* _additiveBlendState;
 
@@ -126,7 +143,9 @@ public:
 	// Before calling this function, SetDrawLightPoint must be called.
 	void DrawLightPoint(const Lights::LightPoint& lightAmbient);
 
-	void SetDrawPostprocess();
+	void SetDrawPostproecesses();
+
+	void DrawPostprocess(const Postprocesses::Postprocess& pp);
 
 	void EndFrame();
 

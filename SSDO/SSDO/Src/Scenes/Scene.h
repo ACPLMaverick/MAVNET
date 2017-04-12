@@ -1,8 +1,7 @@
 #pragma once
 
-class Mesh;
-class Material;
 class Camera;
+class Object;
 
 namespace Lights
 {
@@ -11,7 +10,16 @@ namespace Lights
 	class LightPoint;
 }
 
+namespace Postprocesses
+{
+	class Postprocess;
+}
+
+#include "GlobalDefines.h"
+
 #include "Shader.h"
+#include "Mesh.h"
+#include "Material.h"
 
 #include <vector>
 #include <map>
@@ -28,22 +36,24 @@ namespace Scenes
 		Camera* _mainCamera = nullptr;
 
 		// scene elems
-		std::vector<Mesh*> _meshes;
-		std::vector<Material*> _materials;
+		std::vector<Object*> _objects;
 		std::vector<Lights::LightDirectional*> _lightsDirectional;
 		std::vector<Lights::LightPoint*> _lightsPoint;
+		std::vector<Postprocesses::Postprocess*> _postprocesses;
 
 		Lights::LightAmbient* _lightAmbient;
 
 		// resources
-		std::map<std::wstring, Shader*> _shaders;
+		std::map<const std::wstring, Shader*> _shaders;
+		std::map<const std::wstring, Mesh*> _meshes;
+		std::map<const std::wstring, Material*> _materials;
 
 #pragma endregion
 
 #pragma region Functions Protected
 
 		virtual void SetupScene() = 0;
-		template <typename T> T* GetResource(std::wstring name, std::map<std::wstring, T*>& dict)
+		template <typename T> T* GetResource(const std::wstring name, std::map<const std::wstring, T*>& dict)
 		{
 			T* ret = nullptr;
 			if ((ret = dict[name]) != nullptr)
@@ -74,10 +84,14 @@ namespace Scenes
 
 		inline const Camera* GetMainCamera() const { return _mainCamera; }
 
-		inline Shader* LoadShader(std::wstring& name) { return GetResource<Shader>(name, _shaders); }
+		inline Shader* LoadShader(const std::wstring& name) { return GetResource<Shader>(name, _shaders); }
+		inline Mesh* LoadMesh(const std::wstring& name) { return GetResource<Mesh>(name, _meshes); }
+		inline Material* LoadMaterial(const std::wstring& name) { return GetResource<Material>(name, _materials); }
+
 		inline const Lights::LightAmbient* GetLightAmbient() const { return _lightAmbient; }
 		inline const std::vector<Lights::LightDirectional*>& GetLightsDirectional() const { return _lightsDirectional; }
 		inline const std::vector<Lights::LightPoint*>& GetLightsPoint() const { return _lightsPoint; }
+		inline const std::vector<Postprocesses::Postprocess*>& GetPostprocesses() const { return _postprocesses; }
 
 #pragma endregion
 	};

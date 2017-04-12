@@ -37,20 +37,24 @@ Shader::Shader(const wstring& shaderFilename, size_t inputLayoutNumElements,
 	streamVS.read(reinterpret_cast<char*>(vecVS), sizeVS);
 	streamVS.close();
 
+	device->CreateVertexShader(vecVS, sizeVS, nullptr, &_vs);
+	ASSERT(_vs != nullptr);
+
 	ifstream streamPS(pathPS, ios::binary);
-	ASSERT(streamPS.is_open());
-	streamPS.seekg(0, streamPS.end);
-	sizePS = streamPS.tellg();
-	streamPS.seekg(0, streamPS.beg);
-	vecPS = new uint8_t[sizePS];
-	streamPS.read(reinterpret_cast<char*>(vecPS), sizePS);
-	streamPS.close();
+	if (streamPS.is_open())
+	{
+		streamPS.seekg(0, streamPS.end);
+		sizePS = streamPS.tellg();
+		streamPS.seekg(0, streamPS.beg);
+		vecPS = new uint8_t[sizePS];
+		streamPS.read(reinterpret_cast<char*>(vecPS), sizePS);
+		streamPS.close();
 
-	// creating shader resources
-	HRESULT hr = device->CreateVertexShader(vecVS, sizeVS, nullptr, &_vs);
-	hr = device->CreatePixelShader(vecPS, sizePS, nullptr, &_ps);
-	ASSERT(_vs != nullptr && _ps != nullptr);
-
+		device->CreatePixelShader(vecPS, sizePS, nullptr, &_ps);
+		ASSERT(_ps != nullptr);
+		delete[] vecPS;
+	}
+	
 	// create vertex layout description
 	D3D11_INPUT_ELEMENT_DESC layout[3];
 	layout[0].SemanticName = "POSITION";
@@ -77,12 +81,13 @@ Shader::Shader(const wstring& shaderFilename, size_t inputLayoutNumElements,
 	layout[2].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 	layout[2].InstanceDataStepRate = 0;
 
-
-	device->CreateInputLayout(layout, (UINT)inputLayoutNumElements, vecVS, sizeVS, &_inputLayout);
-	ASSERT(_inputLayout != nullptr);
+	if (inputLayoutNumElements > 0)
+	{
+		device->CreateInputLayout(layout, (UINT)inputLayoutNumElements, vecVS, sizeVS, &_inputLayout);
+		ASSERT(_inputLayout != nullptr);
+	}
 
 	delete[] vecVS;
-	delete[] vecPS;
 
 	// creating GPU Constant Buffers for shaders
 
@@ -103,13 +108,16 @@ Shader::Shader(const wstring& shaderFilename, size_t inputLayoutNumElements,
 		ASSERT_X(device->CreateBuffer(&bDesc, nullptr, &_constantVsBuffers[i]));
 	}
 
-	_constantPsBufferCount = cbPsCount;
-	_constantPsBufferCount > 0 ? _constantPsBuffers = new ID3D11Buffer*[_constantPsBufferCount] : _constantPsBuffers = nullptr;
-
-	for (int i = 0; i < _constantPsBufferCount; ++i)
+	if (_ps != nullptr)
 	{
-		bDesc.ByteWidth = (UINT)cbPsDescs[i].Size;
-		ASSERT_X(device->CreateBuffer(&bDesc, nullptr, &_constantPsBuffers[i]));
+		_constantPsBufferCount = cbPsCount;
+		_constantPsBufferCount > 0 ? _constantPsBuffers = new ID3D11Buffer*[_constantPsBufferCount] : _constantPsBuffers = nullptr;
+
+		for (int i = 0; i < _constantPsBufferCount; ++i)
+		{
+			bDesc.ByteWidth = (UINT)cbPsDescs[i].Size;
+			ASSERT_X(device->CreateBuffer(&bDesc, nullptr, &_constantPsBuffers[i]));
+		}
 	}
 }
 
@@ -119,11 +127,17 @@ Shader::~Shader()
 	_vs->Release();
 	_vs = nullptr;
 
-	_ps->Release();
-	_ps = nullptr;
+	if (_ps != nullptr)
+	{
+		_ps->Release();
+		_ps = nullptr;
+	}
 
-	_inputLayout->Release();
-	_inputLayout = nullptr;
+	if (_inputLayout != nullptr)
+	{
+		_inputLayout->Release();
+		_inputLayout = nullptr;
+	}
 
 	for (int i = 0; i < _constantVsBufferCount; ++i)
 	{
@@ -147,10 +161,10 @@ void Shader::Set() const
 	deviceContext->PSSetShader(_ps, nullptr, 0);
 
 	if(_constantVsBufferCount > 0)
-		deviceContext->VSSetConstantBuffers(0, _constantVsBufferCount, _constantVsBuffers);
+		deviceContext->VSSetConstantBuffers(0, static_cast<UINT>(_constantVsBufferCount), _constantVsBuffers);
 
 	if (_constantPsBufferCount > 0)
-		deviceContext->PSSetConstantBuffers(0, _constantPsBufferCount, _constantPsBuffers);
+		deviceContext->PSSetConstantBuffers(0, static_cast<UINT>(_constantPsBufferCount), _constantPsBuffers);
 }
 
 void * Shader::MapVsBuffer(size_t i) const
@@ -197,17 +211,21 @@ Shader * Shader::CreateResource(const std::wstring & name)
 	else if (name == L"DeferredLightAmbientShader")
 	{
 		ConstantBufferDesc psDesc(sizeof(LightAmbient));
-		return new Shader(name, 2, nullptr, 0, &psDesc, 1);
+		return new Shader(name, 0, nullptr, 0, &psDesc, 1);
 	}
 	else if (name == L"DeferredLightDirectionalShader")
 	{
 		ConstantBufferDesc descs[2] = { sizeof(LightDirectional), sizeof(LightCommonDataPS) };
-		return new Shader(name, 2, nullptr, 0, descs, 2);
+		return new Shader(name, 0, nullptr, 0, descs, 2);
 	}
 	else if (name == L"DeferredLightPointShader")
 	{
 		ConstantBufferDesc descs[2] = { sizeof(LightPoint), sizeof(LightCommonDataPS) };
-		return new Shader(name, 2, nullptr, 0, descs, 2);
+		return new Shader(name, 0, nullptr, 0, descs, 2);
+	}
+	else if (name == L"PPSepia")
+	{
+		return new Shader(name, 0, nullptr, 0, nullptr, 0);
 	}
 	else
 	{

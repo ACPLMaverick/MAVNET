@@ -7,7 +7,9 @@
 #include "Lights\LightAmbient.h"
 #include "Lights\LightDirectional.h"
 #include "Lights\LightPoint.h"
+#include "Postprocesses\Postprocess.h"
 using namespace Lights;
+using namespace Postprocesses;
 
 #define SHADER_DRAW L"DeferredDrawShader"
 #define SHADER_MERGE L"DeferredLightMergeShader"
@@ -176,17 +178,6 @@ GBuffer::GBuffer(const Camera& camera) :
 	data.pSysMem = &fpVertices;
 	data.SysMemPitch = 0;
 	data.SysMemSlicePitch = 0;
-
-	device->CreateBuffer(&desc, &data, &_fullscreenPlaneVertexBuffer);
-
-	data.pSysMem = &fpUvs;
-	desc.ByteWidth = static_cast<uint32_t>(sizeof(XMFLOAT2) * 4);
-	device->CreateBuffer(&desc, &data, &_fullscreenPlaneUvBuffer);
-
-	data.pSysMem = &fpIndices;
-	desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	desc.ByteWidth = static_cast<uint32_t>(sizeof(int16_t) * 6);
-	device->CreateBuffer(&desc, &data, &_fullscreenPlaneIndexBuffer);
 }
 
 
@@ -226,6 +217,11 @@ void GBuffer::SetDrawLights()
 
 	// set blend state to ADDITIVE here
 	context->OMSetBlendState(_additiveBlendState, nullptr, 0xFFFFFFFF);
+
+	// nullify vertex and index buffers
+	const uintptr_t null = 0;
+	context->IASetVertexBuffers(0, 1, reinterpret_cast<ID3D11Buffer *const *>(&null), reinterpret_cast<const UINT *>(&null), reinterpret_cast<const UINT *>(&null));
+	context->IASetIndexBuffer(nullptr, DXGI_FORMAT_R16_UINT, 0);
 }
 
 void GBuffer::SetDrawLightAmbient()
@@ -285,15 +281,33 @@ void GBuffer::DrawLightPoint(const Lights::LightPoint & lightPoint)
 	DrawFullscreenPlane();
 }
 
-void GBuffer::SetDrawPostprocess()
+void GBuffer::SetDrawPostproecesses()
 {
 	ID3D11DeviceContext* context = Renderer::GetInstance()->GetDeviceContext();
+	const uintptr_t null = 0;
+	context->OMSetRenderTargets(1, reinterpret_cast<ID3D11RenderTargetView* const*>(&null), nullptr);
+	// return blend state to opaque
+	Renderer::GetInstance()->SetMainBlendState();
+}
+
+void GBuffer::DrawPostprocess(const Postprocesses::Postprocess & pp)
+{
+	ID3D11DeviceContext* context = Renderer::GetInstance()->GetDeviceContext();
+
+	pp.SetShader();
+	context->PSSetShaderResources(4, 1, &_outputA.SRV);
+	context->PSSetSamplers(4, 1, &_outputA.Sampler);
+	context->OMSetRenderTargets(1, &_outputB.View, nullptr);
+	DrawFullscreenPlane();
+	const uintptr_t null = 0;
+	context->OMSetRenderTargets(1, reinterpret_cast<ID3D11RenderTargetView* const*>(&null), nullptr);
+
 	FlipOutputs();
 }
 
 void GBuffer::EndFrame()
 {
-	Renderer::GetInstance()->SetMainBlendState();
+	ID3D11DeviceContext* context = Renderer::GetInstance()->GetDeviceContext();
 	UnsetMapData();
 }
 
@@ -340,12 +354,5 @@ inline void GBuffer::UnsetMapData()
 inline void GBuffer::DrawFullscreenPlane()
 {
 	ID3D11DeviceContext* context = Renderer::GetInstance()->GetDeviceContext();
-	uint32_t stride = sizeof(XMFLOAT3);
-	uint32_t offset = 0;
-	context->IASetVertexBuffers(0, 1, &_fullscreenPlaneVertexBuffer, &stride, &offset);
-	stride = sizeof(XMFLOAT2);
-	context->IASetVertexBuffers(1, 1, &_fullscreenPlaneUvBuffer, &stride, &offset);
-	context->IASetIndexBuffer(_fullscreenPlaneIndexBuffer, DXGI_FORMAT::DXGI_FORMAT_R16_UINT, 0);
-
-	context->DrawIndexed(6, 0, 0);
+	context->Draw(3, 0);
 }

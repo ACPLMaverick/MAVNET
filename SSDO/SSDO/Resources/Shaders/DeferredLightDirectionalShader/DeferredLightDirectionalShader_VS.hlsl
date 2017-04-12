@@ -1,9 +1,6 @@
 #include "../_global/GlobalDefines.hlsli"
 
-DPixelInput main(DVertexInput input)
+DPixelInput main(in uint vertexID : SV_VertexID)
 {
-	DPixelInput output;
-	output.Position = float4(input.Position, 1.0f);
-	output.Uv = input.Uv;
-	return output;
+	return GenerateDPixelInput(vertexID);
 }

@@ -1,10 +1,11 @@
 #pragma once
 
-#include "stdafx.h"
+#include "GlobalDefines.h"
 
 class Mesh;
 class Camera;
 class Shader;
+class Object;
 
 class Material
 {
@@ -38,7 +39,9 @@ public:
 
 	// update per frame and/or infrequent shader parameters
 	void Update();
-	void DrawMesh(const Camera& camera, const Mesh& mesh) const;
+	void DrawMesh(const Object& object, const Camera& camera, const Mesh& mesh) const;
+
+	static Material* CreateResource(const std::wstring& name);
 
 #pragma endregion
 };

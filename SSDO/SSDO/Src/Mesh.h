@@ -57,13 +57,6 @@ protected:
 
 #pragma region Protected
 
-	XMFLOAT4X4 _matWorld;
-	XMFLOAT4X4 _matWorldInvTransp;
-
-	XMFLOAT3 _rotation;
-	XMFLOAT3 _scale;
-	XMFLOAT3 _position;
-
 	Buffer<XMFLOAT3> _vPositions;
 	Buffer<XMFLOAT3> _vNormals;
 	Buffer<XMFLOAT2> _vUvs;
@@ -74,10 +67,6 @@ protected:
 	ID3D11Buffer* _fUvs = nullptr;
 	ID3D11Buffer* _fIndices = nullptr;
 
-	const Material& _myMaterial;
-
-	bool _bNeedCreateWorldMatrix = false;
-
 #pragma endregion
 
 #pragma region Functions Protected
@@ -86,9 +75,6 @@ protected:
 	inline bool Float2Equal(const XMFLOAT2& lhs, const XMFLOAT2& rhs) const;
 
 	inline void InitBuffers();
-	inline XMFLOAT4 QuaterionFromEuler(const XMFLOAT3& euler) const;
-	inline XMFLOAT3 EulerFromQuaternion(const XMFLOAT4& quat) const;
-	inline void CreateWorldMatrix();
 
 #pragma endregion
 
@@ -108,32 +94,12 @@ public:
 #pragma region Functions Public
 
 	// Creates test box
-	Mesh(const Material& mat,
-		const XMFLOAT3& pos = XMFLOAT3(0.0f, 0.0f, 0.0f), 
-		const XMFLOAT3& rot = XMFLOAT3(0.0f, 0.0f, 0.0f),
-		const XMFLOAT3& scl = XMFLOAT3(1.0f, 1.0f, 1.0f));
+	Mesh();
 	// Loads mesh from file
-	Mesh(const std::wstring& filePath,
-		const Material& mat,
-		const XMFLOAT3& pos = XMFLOAT3(0.0f, 0.0f, 0.0f),
-		const XMFLOAT3& rot = XMFLOAT3(0.0f, 0.0f, 0.0f),
-		const XMFLOAT3& scl = XMFLOAT3(1.0f, 1.0f, 1.0f));
+	Mesh(const std::wstring& filePath);
 	~Mesh();
 
-	void Update();
-	void Draw(const Camera& camera) const;
-
-#pragma region GettersSetters
-
-	inline const XMFLOAT3& GetPosition() const { return _position; }
-	inline XMFLOAT3 GetRotation() const { return _rotation; }
-	inline const XMFLOAT3& GetScale() const { return _scale; }
-	
-	inline void SetPosition(const XMFLOAT3& pos) { _position = pos; _bNeedCreateWorldMatrix = true; }
-	inline void SetRotation(const XMFLOAT3& rot) { _rotation = rot; _bNeedCreateWorldMatrix = true; }
-	inline void SetScale(const XMFLOAT3& scl) { _scale = scl; _bNeedCreateWorldMatrix = true; }
-
-#pragma endregion
+	static Mesh* CreateResource(const std::wstring& name) { return new Mesh(name); }
 
 #pragma endregion
 };

@@ -1,21 +1,13 @@
 #include "stdafx.h"
 #include "Mesh.h"
-#include "Material.h"
 #include "Renderer.h"
-#include "Timer.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
 #include <tiny_obj_loader/tiny_obj_loader.h>
 
 
-Mesh::Mesh(const Material& mat, const XMFLOAT3 & pos, const XMFLOAT3 & rot, const XMFLOAT3 & scl) :
-	_myMaterial(mat),
-	_position(pos),
-	_rotation(rot),
-	_scale(scl)
+Mesh::Mesh()
 {
-	CreateWorldMatrix();
-
 	_vPositions.Resize(8);
 	_vNormals.Resize(8);
 	_vUvs.Resize(8);
@@ -76,14 +68,8 @@ Mesh::Mesh(const Material& mat, const XMFLOAT3 & pos, const XMFLOAT3 & rot, cons
 	InitBuffers();
 }
 
-Mesh::Mesh(const std::wstring & filePath, const Material& mat, const XMFLOAT3 & pos, const XMFLOAT3 & rot, const XMFLOAT3 & scl) :
-	_myMaterial(mat),
-	_position(pos),
-	_rotation(rot),
-	_scale(scl)
+Mesh::Mesh(const std::wstring & filePath)
 {
-	CreateWorldMatrix();
-
 	std::string path = std::string(filePath.begin(), filePath.end());
 	path = "./Resources/Meshes/" + path + ".obj";
 
@@ -174,24 +160,6 @@ Mesh::~Mesh()
 	_fIndices = nullptr;
 }
 
-void Mesh::Update()
-{
-	// debug
-	XMFLOAT3 rot = GetRotation();
-	SetRotation(XMFLOAT3(rot.x, rot.y + 0.5f * Timer::GetInstance()->GetDeltaTime(), rot.z));
-
-	if (_bNeedCreateWorldMatrix)
-	{
-		CreateWorldMatrix();
-		_bNeedCreateWorldMatrix = false;
-	}
-}
-
-void Mesh::Draw(const Camera & camera) const
-{
-	_myMaterial.DrawMesh(camera, *this);
-}
-
 inline bool Mesh::Float3Equal(const XMFLOAT3 & lhs, const XMFLOAT3 & rhs) const
 {
 	return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z;
@@ -233,39 +201,4 @@ inline void Mesh::InitBuffers()
 		device->CreateBuffer(desc + i, sData + i, bufferPtrs[i]);
 		ASSERT(*bufferPtrs[i] != nullptr);
 	}
-}
-
-inline XMFLOAT4 Mesh::QuaterionFromEuler(const XMFLOAT3 & euler) const
-{
-	XMFLOAT4 quaternion;
-	XMVECTOR quat = XMQuaternionRotationRollPitchYaw(euler.x, euler.y, euler.z);
-	XMStoreFloat4(&quaternion, quat);
-	return quaternion;
-}
-
-inline XMFLOAT3 Mesh::EulerFromQuaternion(const XMFLOAT4 & quat) const
-{
-	XMFLOAT3 euler;
-	XMFLOAT3 angleX(1.0f, 0.0f, 0.0f);
-	XMFLOAT3 angleY(0.0f, 1.0f, 0.0f);
-	XMFLOAT3 angleZ(0.0f, 0.0f, 1.0f);
-	XMVECTOR x = XMLoadFloat3(&angleX);
-	XMVECTOR y = XMLoadFloat3(&angleY);
-	XMVECTOR z = XMLoadFloat3(&angleZ);
-	XMVECTOR q = XMLoadFloat4(&quat);
-	XMQuaternionToAxisAngle(&x, &euler.x, q);
-	XMQuaternionToAxisAngle(&y, &euler.y, q);
-	XMQuaternionToAxisAngle(&z, &euler.z, q);
-	return euler;
-}
-
-inline void Mesh::CreateWorldMatrix()
-{
-	XMVECTOR pos = XMLoadFloat3(&_position);
-	XMVECTOR rot = XMLoadFloat3(&_rotation);
-	XMVECTOR scl = XMLoadFloat3(&_scale);
-	XMMATRIX mat = XMMatrixScalingFromVector(scl) * XMMatrixRotationRollPitchYaw(_rotation.x, _rotation.y, _rotation.z) * XMMatrixTranslationFromVector(pos);
-	XMMATRIX matInvTransp = XMMatrixTranspose(XMMatrixInverse(nullptr, mat));
-	XMStoreFloat4x4(&_matWorld, mat);
-	XMStoreFloat4x4(&_matWorldInvTransp, matInvTransp);
 }

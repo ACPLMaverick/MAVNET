@@ -4,6 +4,9 @@
 #include "Camera.h"
 #include "Mesh.h"
 #include "Shader.h"
+#include "Object.h"
+#include "System.h"
+#include "Scenes\Scene.h"
 
 Material::Material(const Shader& shader, const XMFLOAT4 & colorBase, const XMFLOAT4 & colorSpecular, float gloss) :
 	_shader(shader),
@@ -22,7 +25,7 @@ void Material::Update()
 {
 }
 
-void Material::DrawMesh(const Camera & camera, const Mesh & mesh) const
+void Material::DrawMesh(const Object& object, const Camera & camera, const Mesh & mesh) const
 {
 	// set shader parameters
 	Shader::ColorBufferVS* bufferVs;
@@ -30,13 +33,13 @@ void Material::DrawMesh(const Camera & camera, const Mesh & mesh) const
 	ID3D11DeviceContext* deviceContext = Renderer::GetInstance()->GetDeviceContext();
 
 	XMFLOAT4X4 wvp;
-	XMMATRIX w = XMLoadFloat4x4(&mesh._matWorld);
+	XMMATRIX w = XMLoadFloat4x4(&object.GetWorldMatrix());
 	XMMATRIX vp = XMLoadFloat4x4(&camera.GetMatViewProj());
 	XMMATRIX transposedWVP = XMMatrixTranspose(w * vp);
 	XMStoreFloat4x4(&wvp, transposedWVP);
 
 	XMMATRIX transposedW = XMMatrixTranspose(w);
-	XMMATRIX transposedWInvTransp = XMMatrixTranspose(XMLoadFloat4x4(&mesh._matWorldInvTransp));
+	XMMATRIX transposedWInvTransp = XMMatrixTranspose(XMLoadFloat4x4(&object.GetWorldInvTransMatrix()));
 
 	// set vertex and index buffers
 
@@ -68,4 +71,9 @@ void Material::DrawMesh(const Camera & camera, const Mesh & mesh) const
 	deviceContext->IASetIndexBuffer(mesh._fIndices, DXGI_FORMAT_R16_UINT, 0);
 
 	deviceContext->DrawIndexed(static_cast<uint32_t>(mesh._indices.GetSize() * 3), 0, 0);
+}
+
+Material * Material::CreateResource(const std::wstring & name)
+{
+	return new Material(*System::GetInstance()->GetScene().LoadShader(name));
 }

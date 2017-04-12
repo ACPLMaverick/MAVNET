@@ -4,6 +4,7 @@
 #include "Scenes\Scene.h"
 #include "Mesh.h"
 #include "Renderer.h"
+#include "Object.h"
 
 using namespace Scenes;
 
@@ -53,7 +54,7 @@ void Camera::Draw(const Scene& scene) const
 {
 	if (Renderer::GetInstance()->GetRenderMode() == Renderer::RenderMode::FORWARD)
 	{
-		for (auto it = scene._meshes.begin(); it != scene._meshes.end(); ++it)
+		for (auto it = scene._objects.begin(); it != scene._objects.end(); ++it)
 		{
 			(*it)->Draw(*this);
 		}
@@ -61,14 +62,14 @@ void Camera::Draw(const Scene& scene) const
 	else
 	{
 		GBuffer& gBuffer = const_cast<GBuffer&>(_gBuffer);
-		// draw meshes
+		// draw objects
 		gBuffer.SetDrawMeshes();
-		for (auto it = scene._meshes.begin(); it != scene._meshes.end(); ++it)
+		for (auto it = scene._objects.begin(); it != scene._objects.end(); ++it)
 		{
 			(*it)->Draw(*this);
 		}
 
-		// enlighten meshes
+		// enlighten objects
 		gBuffer.SetDrawLights();
 
 		if (scene._lightAmbient != nullptr)
@@ -98,6 +99,11 @@ void Camera::Draw(const Scene& scene) const
 		}
 
 		// apply postprocesses
+		gBuffer.SetDrawPostproecesses();
+		for (auto it = scene._postprocesses.begin(); it != scene._postprocesses.end(); ++it)
+		{
+			gBuffer.DrawPostprocess(**it);
+		}
 
 		gBuffer.EndFrame();
 	}

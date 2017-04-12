@@ -1,4 +1,6 @@
-float4 main( float4 pos : POSITION ) : SV_POSITION
+#include "../_global/GlobalDefines.hlsli"
+
+DPixelInput main(in uint vertexID : SV_VertexID)
 {
-	return pos;
+	return GenerateDPixelInput(vertexID);
 }
