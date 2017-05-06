@@ -8,7 +8,7 @@
 #include "System.h"
 #include "Scenes\Scene.h"
 
-Material::Material(const Shader& shader, const XMFLOAT4 & colorBase, const XMFLOAT4 & colorSpecular, float gloss) :
+Material::Material(const Shader& shader, const XMFLOAT4A & colorBase, const XMFLOAT4A & colorSpecular, float gloss) :
 	_shader(shader),
 	_colorBase(colorBase),
 	_colorSpecular(colorSpecular),
@@ -32,7 +32,7 @@ void Material::DrawMesh(const Object& object, const Camera & camera, const Mesh 
 	Shader::ColorBufferPS* bufferPs;
 	ID3D11DeviceContext* deviceContext = Renderer::GetInstance()->GetDeviceContext();
 
-	XMFLOAT4X4 wvp;
+	XMFLOAT4X4A wvp;
 	XMMATRIX w = XMLoadFloat4x4(&object.GetWorldMatrix());
 	XMMATRIX vp = XMLoadFloat4x4(&camera.GetMatViewProj());
 	XMMATRIX transposedWVP = XMMatrixTranspose(w * vp);
@@ -52,8 +52,8 @@ void Material::DrawMesh(const Object& object, const Camera & camera, const Mesh 
 	_shader.UnmapVsBuffer(0);
 
 	bufferPs = reinterpret_cast<Shader::ColorBufferPS*>(_shader.MapPsBuffer(0));
-	memcpy(&bufferPs->gColBase, &_colorBase, sizeof(XMFLOAT4));
-	memcpy(&bufferPs->gColSpecular, &_colorSpecular, sizeof(XMFLOAT4));
+	memcpy(&bufferPs->gColBase, &_colorBase, sizeof(XMFLOAT4A));
+	memcpy(&bufferPs->gColSpecular, &_colorSpecular, sizeof(XMFLOAT4A));
 	bufferPs->gGloss = _gloss;
 	_shader.UnmapPsBuffer(0);
 

@@ -8,7 +8,7 @@
 
 using namespace Scenes;
 
-Camera::Camera(const XMFLOAT3 & position, const XMFLOAT3 & target, const XMFLOAT3 & up, float fov, float nearPlane, float farPlane) :
+Camera::Camera(const XMFLOAT3A & position, const XMFLOAT3A & target, const XMFLOAT3A & up, float fov, float nearPlane, float farPlane) :
 	_position(position),
 	_target(target),
 	_up(up),
@@ -109,7 +109,7 @@ void Camera::Draw(const Scene& scene) const
 	}
 }
 
-void Camera::SetDirection(const XMFLOAT3 & direction)
+void Camera::SetDirection(const XMFLOAT3A & direction)
 {
 	XMVECTOR pos = XMLoadFloat3(&_position);
 	XMVECTOR dir = XMLoadFloat3(&_target) - pos;
@@ -136,6 +136,7 @@ inline void Camera::UpdateView()
 
 	XMMATRIX mat = XMMatrixLookAtLH(pos, tgt, up);
 	XMStoreFloat4x4(&_matView, mat);
+	XMStoreFloat4x4(&_matViewInverse, XMMatrixInverse(&XMMatrixDeterminant(mat), mat));
 }
 
 inline void Camera::UpdateProjection()
@@ -145,11 +146,13 @@ inline void Camera::UpdateProjection()
 		_near, 
 		_far);
 	XMStoreFloat4x4(&_matProj, matProj);
+	XMStoreFloat4x4(&_matProjInverse, XMMatrixInverse(&XMMatrixDeterminant(matProj), matProj));
 }
 
 inline void Camera::MergeMatrices()
 {
 	XMMATRIX v = XMLoadFloat4x4(&_matView);
 	XMMATRIX p = XMLoadFloat4x4(&_matProj);
-	XMStoreFloat4x4(&_matViewProj, v * p);
+	XMMATRIX vp = v * p;
+	XMStoreFloat4x4(&_matViewProj, vp);
 }

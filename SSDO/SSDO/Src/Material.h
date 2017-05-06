@@ -15,8 +15,8 @@ protected:
 
 	const Shader& _shader;
 
-	XMFLOAT4 _colorBase;
-	XMFLOAT4 _colorSpecular;
+	XMFLOAT4A _colorBase;
+	XMFLOAT4A _colorSpecular;
 	float _gloss;
 
 #pragma endregion
@@ -32,8 +32,8 @@ public:
 #pragma region Functions Public
 
 	Material(const Shader& shader, 
-		const XMFLOAT4& colorBase = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 
-		const XMFLOAT4& colorSpecular = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+		const XMFLOAT4A& colorBase = XMFLOAT4A(1.0f, 1.0f, 1.0f, 1.0f), 
+		const XMFLOAT4A& colorSpecular = XMFLOAT4A(1.0f, 1.0f, 1.0f, 1.0f),
 		float gloss = 50.0f);
 	~Material();
 

@@ -3,7 +3,7 @@
 
 namespace Lights
 {
-	LightPoint::LightPoint(const XMFLOAT4 & color, const XMFLOAT3 & position, float range) :
+	LightPoint::LightPoint(const XMFLOAT4A & color, const XMFLOAT3A & position, float range) :
 		_color(color),
 		_position(position),
 		_range(range)

@@ -9,7 +9,7 @@ namespace Postprocesses
 {
 	Sepia::Sepia()
 	{
-		_shader = System::GetInstance()->GetScene().LoadShader(std::wstring(L"PPSepia"));
+		_shaders.push_back(System::GetInstance()->GetScene().LoadShader(std::wstring(L"PPSepia")));
 	}
 
 	Sepia::~Sepia()

@@ -8,14 +8,14 @@ namespace Lights
 	{
 	protected:
 
-		XMFLOAT4 _color;
+		XMFLOAT4A _color;
 
 	public:
-		LightAmbient(const XMFLOAT4 color);
+		LightAmbient(const XMFLOAT4A color);
 		~LightAmbient();
 
-		inline const XMFLOAT4& GetColor() const { return _color; }
-		inline void SetColor(const XMFLOAT4& col) { _color = col; }
+		inline const XMFLOAT4A& GetColor() const { return _color; }
+		inline void SetColor(const XMFLOAT4A& col) { _color = col; }
 
 		inline LightAmbient& operator=(const LightAmbient& other)
 		{

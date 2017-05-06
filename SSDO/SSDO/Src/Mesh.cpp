@@ -14,18 +14,18 @@ Mesh::Mesh()
 	_indices.Resize(12);
 
 	float s = 0.5f;
-	_vPositions[0] = XMFLOAT3(-s, -s, -s);
-	_vPositions[1] = XMFLOAT3(s, -s, -s);
-	_vPositions[2] = XMFLOAT3(-s, s, -s);
-	_vPositions[3] = XMFLOAT3(s, s, -s);
-	_vPositions[4] = XMFLOAT3(-s, -s, s);
-	_vPositions[5] = XMFLOAT3(s, -s, s);
-	_vPositions[6] = XMFLOAT3(-s, s, s);
-	_vPositions[7] = XMFLOAT3(s, s, s);
+	_vPositions[0] = XMFLOAT3A(-s, -s, -s);
+	_vPositions[1] = XMFLOAT3A(s, -s, -s);
+	_vPositions[2] = XMFLOAT3A(-s, s, -s);
+	_vPositions[3] = XMFLOAT3A(s, s, -s);
+	_vPositions[4] = XMFLOAT3A(-s, -s, s);
+	_vPositions[5] = XMFLOAT3A(s, -s, s);
+	_vPositions[6] = XMFLOAT3A(-s, s, s);
+	_vPositions[7] = XMFLOAT3A(s, s, s);
 
 	for (int i = 0; i < 8; ++i)
 	{
-		_vUvs[i] = XMFLOAT2(0.0f, 0.0f);
+		_vUvs[i] = XMFLOAT2A(0.0f, 0.0f);
 	}
 
 	_indices[0] = Triangle(0, 1, 2);
@@ -46,9 +46,9 @@ Mesh::Mesh()
 		Triangle tr = _indices[i];
 		for (int j = 0; j < 3; ++j)
 		{
-			XMFLOAT3 me = _vPositions[tr[j]];
-			XMFLOAT3 neighbour1 = _vPositions[tr[(j + 1) % 3]];
-			XMFLOAT3 neighbour2 = _vPositions[tr[(j + 2) % 3]];
+			XMFLOAT3A me = _vPositions[tr[j]];
+			XMFLOAT3A neighbour1 = _vPositions[tr[(j + 1) % 3]];
+			XMFLOAT3A neighbour2 = _vPositions[tr[(j + 2) % 3]];
 
 			XMVECTOR nrm = XMLoadFloat3(&_vNormals[tr[j]]);
 			XMVECTOR n1 = XMVector3Normalize(XMLoadFloat3(&neighbour1) - XMLoadFloat3(&me));
@@ -90,13 +90,13 @@ Mesh::Mesh(const std::wstring & filePath)
 		for (auto jt = (*it).mesh.indices.begin(); jt != (*it).mesh.indices.end(); ++jt)
 		{
 			uint16_t index = (*jt).vertex_index;
-			XMFLOAT3 normal = XMFLOAT3(attrib.normals[(*jt).normal_index * 3], attrib.normals[(*jt).normal_index * 3 + 1], attrib.normals[(*jt).normal_index * 3 + 2]);
-			XMFLOAT2 uv = XMFLOAT2(attrib.texcoords[(*jt).texcoord_index * 2], attrib.texcoords[(*jt).texcoord_index * 2 + 1]);
-			XMFLOAT3 position = XMFLOAT3(attrib.vertices[(*jt).vertex_index * 3], attrib.vertices[(*jt).vertex_index * 3 + 1], attrib.vertices[(*jt).vertex_index * 3 + 2]);
+			XMFLOAT3A normal = XMFLOAT3A(attrib.normals[(*jt).normal_index * 3], attrib.normals[(*jt).normal_index * 3 + 1], attrib.normals[(*jt).normal_index * 3 + 2]);
+			XMFLOAT2A uv = XMFLOAT2A(attrib.texcoords[(*jt).texcoord_index * 2], attrib.texcoords[(*jt).texcoord_index * 2 + 1]);
+			XMFLOAT3A position = XMFLOAT3A(attrib.vertices[(*jt).vertex_index * 3], attrib.vertices[(*jt).vertex_index * 3 + 1], attrib.vertices[(*jt).vertex_index * 3 + 2]);
 
-			XMFLOAT3 cPosition = _vPositions[index];
-			XMFLOAT3 cNormal = _vNormals[index];
-			XMFLOAT2 cUv = _vUvs[index];
+			XMFLOAT3A cPosition = _vPositions[index];
+			XMFLOAT3A cNormal = _vNormals[index];
+			XMFLOAT2A cUv = _vUvs[index];
 
 			// check if normal or uv are already assigned to this vertex
 			if (Float3Equal(cPosition, position) &&
@@ -160,12 +160,12 @@ Mesh::~Mesh()
 	_fIndices = nullptr;
 }
 
-inline bool Mesh::Float3Equal(const XMFLOAT3 & lhs, const XMFLOAT3 & rhs) const
+inline bool Mesh::Float3Equal(const XMFLOAT3A & lhs, const XMFLOAT3A & rhs) const
 {
 	return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z;
 }
 
-inline bool Mesh::Float2Equal(const XMFLOAT2 & lhs, const XMFLOAT2 & rhs) const
+inline bool Mesh::Float2Equal(const XMFLOAT2A & lhs, const XMFLOAT2A & rhs) const
 {
 	return lhs.x == rhs.x && lhs.y == rhs.y;
 }
@@ -177,14 +177,14 @@ inline void Mesh::InitBuffers()
 	ID3D11Buffer** bufferPtrs[4] = { &_fPositions, &_fNormals, &_fUvs, &_fIndices };
 
 	desc[0].BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	desc[0].ByteWidth = static_cast<uint32_t>(sizeof(XMFLOAT3) * _vPositions.GetSize());
+	desc[0].ByteWidth = static_cast<uint32_t>(sizeof(XMFLOAT3A) * _vPositions.GetSize());
 	desc[0].CPUAccessFlags = 0;
 	desc[0].MiscFlags = 0;
 	desc[0].StructureByteStride = 0;
 	desc[0].Usage = D3D11_USAGE_DEFAULT;
 
 	desc[1] = desc[2] = desc[3] = desc[0];
-	desc[2].ByteWidth = static_cast<uint32_t>(sizeof(XMFLOAT2) * _vUvs.GetSize());
+	desc[2].ByteWidth = static_cast<uint32_t>(sizeof(XMFLOAT2A) * _vUvs.GetSize());
 	desc[3].BindFlags = D3D11_BIND_INDEX_BUFFER;
 	desc[3].ByteWidth = static_cast<uint32_t>(sizeof(int16_t) * _indices.GetSize() * 3);
 

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Postprocess.h"
 #include "Shader.h"
+#include "Camera.h"
 
 namespace Postprocesses
 {
@@ -12,9 +13,14 @@ namespace Postprocesses
 	{
 	}
 
-	void Postprocess::SetShader() const
+	void Postprocess::SetPass(const Camera& camera, int passIndex) const
 	{
-		_shader->Set();
+		_shaders[passIndex]->Set();
+		Shader::LightCommonDataPS* cd = reinterpret_cast<Shader::LightCommonDataPS*>(_shaders[passIndex]->MapPsBuffer(0));
+		cd->gProjInverse = camera.GetMatProjInverse();
+		cd->gViewInverse = camera.GetMatViewInverse();
+		cd->gViewPosition = camera.GetPosition();
+		_shaders[passIndex]->UnmapPsBuffer(0);
 	}
 
 }

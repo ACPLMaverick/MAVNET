@@ -52,3 +52,16 @@ DPixelInput GenerateDPixelInput(uint vertexID)
 
 	return input;
 }
+
+float3 WorldPositionFromDepth(float4x4 projInverse, float4x4 viewInverse, float2 pixelCoord, float depth)
+{
+	float4 projectedPos = float4(
+		pixelCoord.x * 2.0f - 1.0f, 
+		(1.0f - pixelCoord.y) * 2.0f - 1.0f, 
+		depth * 2.0f - 1.0f, 
+		1.0f);
+	float4 viewSpacePos = mul(projInverse, projectedPos);
+	viewSpacePos.xyz = viewSpacePos.xyz / viewSpacePos.w;
+	return mul(viewInverse, viewSpacePos).xyz;
+	//return float3(-3.9f, 3.9f, -3.9f);
+}

@@ -3,7 +3,7 @@
 
 namespace Lights
 {
-	LightDirectional::LightDirectional(const XMFLOAT4 & color, const XMFLOAT3 & direction) :
+	LightDirectional::LightDirectional(const XMFLOAT4A & color, const XMFLOAT3A & direction) :
 		_color(color),
 		_direction(direction)
 	{

@@ -8,19 +8,19 @@ namespace Lights
 	{
 	protected:
 
-		XMFLOAT4 _color;
-		XMFLOAT3 _direction;
+		XMFLOAT4A _color;
+		XMFLOAT3A _direction;
 
 	public:
 
-		LightDirectional(const XMFLOAT4& color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
-			const XMFLOAT3& direction = XMFLOAT3(0.0f, 0.0f, 1.0f));
+		LightDirectional(const XMFLOAT4A& color = XMFLOAT4A(1.0f, 1.0f, 1.0f, 1.0f),
+			const XMFLOAT3A& direction = XMFLOAT3A(0.0f, 0.0f, 1.0f));
 		~LightDirectional();
 
-		inline const XMFLOAT4& GetColor() const { return _color; }
-		inline void SetColor(const XMFLOAT4& col) { _color = col; }
-		inline const XMFLOAT3& GetDirection() const { return _direction; }
-		inline void SetDirection(const XMFLOAT3& dir) 
+		inline const XMFLOAT4A& GetColor() const { return _color; }
+		inline void SetColor(const XMFLOAT4A& col) { _color = col; }
+		inline const XMFLOAT3A& GetDirection() const { return _direction; }
+		inline void SetDirection(const XMFLOAT3A& dir) 
 		{ 
 			XMVECTOR vDir = XMLoadFloat3(&dir);
 			vDir *= -1.0f;

@@ -57,9 +57,9 @@ protected:
 
 #pragma region Protected
 
-	Buffer<XMFLOAT3> _vPositions;
-	Buffer<XMFLOAT3> _vNormals;
-	Buffer<XMFLOAT2> _vUvs;
+	Buffer<XMFLOAT3A> _vPositions;
+	Buffer<XMFLOAT3A> _vNormals;
+	Buffer<XMFLOAT2A> _vUvs;
 	Buffer<Triangle> _indices;
 
 	ID3D11Buffer* _fPositions = nullptr;
@@ -71,8 +71,8 @@ protected:
 
 #pragma region Functions Protected
 
-	inline bool Float3Equal(const XMFLOAT3& lhs, const XMFLOAT3& rhs) const;
-	inline bool Float2Equal(const XMFLOAT2& lhs, const XMFLOAT2& rhs) const;
+	inline bool Float3Equal(const XMFLOAT3A& lhs, const XMFLOAT3A& rhs) const;
+	inline bool Float2Equal(const XMFLOAT2A& lhs, const XMFLOAT2A& rhs) const;
 
 	inline void InitBuffers();
 
@@ -84,9 +84,9 @@ public:
 
 	struct VertexDescSimple
 	{
-		XMFLOAT3 Position;
-		XMFLOAT3 Normal;
-		XMFLOAT2 Uv;
+		XMFLOAT3A Position;
+		XMFLOAT3A Normal;
+		XMFLOAT2A Uv;
 	};
 
 #pragma endregion

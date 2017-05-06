@@ -4,7 +4,7 @@
 #include "Renderer.h"
 #include "Timer.h"
 
-Object::Object(const Mesh & mesh, const Material & material, const XMFLOAT3 & pos, const XMFLOAT3 & rot, const XMFLOAT3 & scl) :
+Object::Object(const Mesh & mesh, const Material & material, const XMFLOAT3A & pos, const XMFLOAT3A & rot, const XMFLOAT3A & scl) :
 	_mesh(mesh),
 	_material(material),
 	_position(pos),

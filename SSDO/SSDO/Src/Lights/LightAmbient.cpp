@@ -3,7 +3,7 @@
 
 namespace Lights
 {
-	LightAmbient::LightAmbient(const XMFLOAT4 color) :
+	LightAmbient::LightAmbient(const XMFLOAT4A color) :
 		_color(color)
 	{
 	}

@@ -215,17 +215,22 @@ Shader * Shader::CreateResource(const std::wstring & name)
 	}
 	else if (name == L"DeferredLightDirectionalShader")
 	{
-		ConstantBufferDesc descs[2] = { sizeof(LightDirectional), sizeof(LightCommonDataPS) };
+		ConstantBufferDesc descs[2] = { sizeof(LightCommonDataPS), sizeof(LightPoint) };
 		return new Shader(name, 0, nullptr, 0, descs, 2);
 	}
 	else if (name == L"DeferredLightPointShader")
 	{
-		ConstantBufferDesc descs[2] = { sizeof(LightPoint), sizeof(LightCommonDataPS) };
+		ConstantBufferDesc descs[2] = { sizeof(LightCommonDataPS), sizeof(LightPoint) };
 		return new Shader(name, 0, nullptr, 0, descs, 2);
 	}
 	else if (name == L"PPSepia")
 	{
 		return new Shader(name, 0, nullptr, 0, nullptr, 0);
+	}
+	else if (name == L"SimpleSSAO_Base" || name == L"SimpleSSAO_BlurMerge")
+	{
+		ConstantBufferDesc descs[1] = { sizeof(LightCommonDataPS) };
+		return new Shader(name, 0, nullptr, 0, descs, 1);
 	}
 	else
 	{

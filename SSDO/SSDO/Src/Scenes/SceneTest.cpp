@@ -8,6 +8,8 @@
 #include "Lights/LightDirectional.h"
 #include "Lights/LightPoint.h"
 #include "Postprocesses/Sepia.h"
+#include "Postprocesses/SimpleSSAO.h"
+
 using namespace Lights;
 using namespace Postprocesses;
 
@@ -24,24 +26,43 @@ namespace Scenes
 
 	void SceneTest::SetupScene()
 	{
-		_mainCamera = new Camera(XMFLOAT3(0.0f, 4.0f, -5.0f));
+		_mainCamera = new Camera(XMFLOAT3A(0.0f, 4.0f, -8.0f));
 
 		Shader* shdColor = LoadShader(std::wstring(L"ColorShader"));
 
-		Material* matTest = new Material(*shdColor, XMFLOAT4(0.7f, 1.0f, 0.7f, 1.0f));
+		Material* matTest = new Material(*shdColor, XMFLOAT4A(1.0f, 1.0f, 1.0f, 1.0f));
 		_materials.emplace(L"TestMat", matTest);
 
-		Mesh* meshBox = new Mesh(L"box");
-		_meshes.emplace(L"Box", meshBox);
+		Mesh* box = new Mesh(L"box");
+		_meshes.emplace(L"Box", box);
 
-		_objects.push_back(new Object(*meshBox, *matTest));
+		Object* objFloor = new Object(*box, *matTest);
+		objFloor->SetScale(XMFLOAT3A(10.0f, 0.01f, 10.0f));
+		objFloor->SetPosition(XMFLOAT3A(0.0f, -0.0f, 0.0f));
+		_objects.push_back(objFloor);
 
-		_lightAmbient = new LightAmbient(XMFLOAT4(0.05f, 0.05f, 0.1f, 1.0f));
+		Object* objBox01 = new Object(*box, *matTest);
+		objBox01->SetPosition(XMFLOAT3A(0.0f, 2.0f, 2.0f));
+		objBox01->SetScale(XMFLOAT3A(2.0f, 2.0f, 2.0f));
+		_objects.push_back(objBox01);
 
-		_lightsDirectional.push_back(new LightDirectional(XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f), XMFLOAT3(-1.0f, -0.3f, 1.0f)));
+		Object* objBox02 = new Object(*box, *matTest);
+		objBox02->SetPosition(XMFLOAT3A(-2.0f, 1.0f, -2.0f));
+		objBox02->SetRotation(XMFLOAT3A(0.0f, -35.0f, 0.0f));
+		_objects.push_back(objBox02);
 
-		_lightsPoint.push_back(new LightPoint(XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), XMFLOAT3(-2.0f, 2.0f, -2.0f), 25.0f));
+		Object* objBox03 = new Object(*box, *matTest);
+		objBox03->SetPosition(XMFLOAT3A(2.0f, 1.0f, -2.0f));
+		objBox03->SetRotation(XMFLOAT3A(0.0f, 35.0f, 0.0f));
+		_objects.push_back(objBox03);
 
-		_postprocesses.push_back(new Sepia());
+		_lightAmbient = new LightAmbient(XMFLOAT4A(0.05f, 0.05f, 0.1f, 1.0f));
+
+		_lightsDirectional.push_back(new LightDirectional(XMFLOAT4A(0.7f, 0.5f, 0.5f, 1.0f), XMFLOAT3A(-1.0f, -0.3f, 1.0f)));
+
+		_lightsPoint.push_back(new LightPoint(XMFLOAT4A(0.6f, 1.0f, 0.9f, 1.0f), XMFLOAT3A(-3.0f, 3.0f, -3.0f), 25.0f));
+
+		//_postprocesses.push_back(new Sepia());
+		_postprocesses.push_back(new SimpleSSAO());
 	}
 }

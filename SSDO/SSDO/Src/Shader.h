@@ -25,25 +25,25 @@ public:
 	__declspec(align(16))
 		struct ColorBufferVS
 	{
-		XMFLOAT4X4 gMatWVP;
-		XMFLOAT4X4 gMatW;
-		XMFLOAT4X4 gMatWInvTransp;
+		XMFLOAT4X4A gMatWVP;
+		XMFLOAT4X4A gMatW;
+		XMFLOAT4X4A gMatWInvTransp;
 	};
 
 	__declspec(align(16))
 		struct ColorBufferPS
 	{
-		XMFLOAT4 gColBase;
-		XMFLOAT4 gColSpecular;
+		XMFLOAT4A gColBase;
+		XMFLOAT4A gColSpecular;
 		float gGloss;
 	};
 
 	__declspec(align(16))
 		struct LightCommonDataPS
 	{
-		XMFLOAT3 gViewPosition;
-		float padding1;
-		XMFLOAT4 padding2;
+		XMFLOAT4X4A gProjInverse;
+		XMFLOAT4X4A gViewInverse;
+		XMFLOAT3A gViewPosition;
 	};
 
 #pragma endregion

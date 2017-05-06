@@ -1,17 +1,20 @@
 #include "../_global/GlobalDefines.hlsli"
 #include "../_global/Lighting.hlsli"
 
-cbuffer LightPoint
+cbuffer LightCommon : register(b0)
 {
-	float4 gColor;
-	float3 gPosition;
-	float gRange;
+	float4x4 projInverse;
+	float4x4 viewInverse;
+	float4 gViewPosition;
 };
 
-cbuffer LightCommon
+cbuffer LightPoint : register(b1)
 {
-	float3 gViewPosition;
+	float4 gColor;
+	float4 gPosition;
+	float4 gRange;
 };
+
 
 Texture2D TexColor : register(t0);
 SamplerState SmpColor : register(s0);
@@ -19,11 +22,8 @@ SamplerState SmpColor : register(s0);
 Texture2D TexNormal : register(t1);
 SamplerState SmpNormal : register(s1);
 
-Texture2D TexWorldPos : register(t2);
-SamplerState SmpWorldPos : register(s2);
-
-Texture2D TexDepth : register(t3);
-SamplerState SmpDepth : register(s3);
+Texture2D TexDepth : register(t2);
+SamplerState SmpDepth : register(s2);
 
 float4 main(DPixelInput input) : SV_TARGET
 {
@@ -31,7 +31,7 @@ float4 main(DPixelInput input) : SV_TARGET
 
 	PixelInput pInput;
 	pInput.Position = input.Position;
-	pInput.PositionWorld = TexWorldPos.Sample(SmpWorldPos, input.Uv).xyz;
+	pInput.PositionWorld = WorldPositionFromDepth(projInverse, viewInverse, input.Uv, TexDepth.Sample(SmpDepth, input.Uv).r);
 	pInput.Normal = normalize(normalSample.xyz);
 	pInput.Uv = input.Uv;
 
@@ -41,9 +41,10 @@ float4 main(DPixelInput input) : SV_TARGET
 	pData.gloss = normalSample.w;
 
 	float4 inColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
-	float3 viewDir = gViewPosition - pInput.PositionWorld;
+	float3 viewDir = normalize(gViewPosition.xyz - pInput.PositionWorld);
 
-	LightPoint(pInput, gColor, gPosition, gRange, viewDir, pData, inColor);
+	LightPoint(pInput, gColor, gPosition.xyz, gRange.x, viewDir, pData, inColor);
 
 	return inColor;
+	//return float4(viewInverse[2][3], 0.0f, 0.0f, 1.0f);
 }

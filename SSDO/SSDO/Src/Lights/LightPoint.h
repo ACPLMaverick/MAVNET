@@ -8,20 +8,20 @@ namespace Lights
 	{
 	protected:
 
-		XMFLOAT4 _color;
-		XMFLOAT3 _position;
+		XMFLOAT4A _color;
+		XMFLOAT3A _position;
 		float _range;
 
 	public:
 
-		LightPoint(const XMFLOAT4& color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
-			const XMFLOAT3& position = XMFLOAT3(0.0f, 0.0f, 0.0f), float range = 10.0f);
+		LightPoint(const XMFLOAT4A& color = XMFLOAT4A(1.0f, 1.0f, 1.0f, 1.0f),
+			const XMFLOAT3A& position = XMFLOAT3A(0.0f, 0.0f, 0.0f), float range = 10.0f);
 		~LightPoint();
 
-		inline const XMFLOAT4& GetColor() const { return _color; }
-		inline void SetColor(const XMFLOAT4& col) { _color = col; }
-		inline const XMFLOAT3& GetPosition() const { return _position; }
-		inline void SetColor(const XMFLOAT3& pos) { _position = pos; }
+		inline const XMFLOAT4A& GetColor() const { return _color; }
+		inline void SetColor(const XMFLOAT4A& col) { _color = col; }
+		inline const XMFLOAT3A& GetPosition() const { return _position; }
+		inline void SetPosition(const XMFLOAT3A& pos) { _position = pos; }
 
 		inline float GetRange() const { return _range; }
 		inline void SetRange(float rng) { _range = rng; }

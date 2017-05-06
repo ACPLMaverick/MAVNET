@@ -18,16 +18,18 @@ protected:
 
 
 
-	XMFLOAT4X4 _matViewProj;
-	XMFLOAT4X4 _matView;
-	XMFLOAT4X4 _matProj;
+	XMFLOAT4X4A _matViewProj;
+	XMFLOAT4X4A _matView;
+	XMFLOAT4X4A _matProj;
+	XMFLOAT4X4A _matViewInverse;
+	XMFLOAT4X4A _matProjInverse;
 
-	XMFLOAT3 _position;
-	XMFLOAT3 _target;
-	XMFLOAT3 _up;
+	XMFLOAT3A _position;
+	XMFLOAT3A _target;
+	XMFLOAT3A _up;
 
-	XMFLOAT3 _direction;
-	XMFLOAT3 _right;
+	XMFLOAT3A _direction;
+	XMFLOAT3A _right;
 
 	float _fov;
 	float _near;
@@ -50,12 +52,12 @@ public:
 
 #pragma region Functions Public
 
-	Camera(	const XMFLOAT3& position = XMFLOAT3(5.0f, 5.0f, 5.0f),
-			const XMFLOAT3& target = XMFLOAT3(0.0f, 0.0f, 0.0f),
-			const XMFLOAT3& up = XMFLOAT3(0.0f, 1.0f, 0.0f),
+	Camera(	const XMFLOAT3A& position = XMFLOAT3A(5.0f, 5.0f, 5.0f),
+			const XMFLOAT3A& target = XMFLOAT3A(0.0f, 0.0f, 0.0f),
+			const XMFLOAT3A& up = XMFLOAT3A(0.0f, 1.0f, 0.0f),
 			float fov = 0.7f,
-			float near = 0.5f,
-			float far = 100.0f);
+			float near = 1.0f,
+			float far = 25.0f);
 	~Camera();
 
 	void Update();
@@ -65,22 +67,24 @@ public:
 
 	inline const GBuffer& GetGBuffer() const { return _gBuffer; }
 
-	inline void SetPosition(const XMFLOAT3& position) { _position = position; _bNeedUpdateView = true; }
-	inline void SetTarget(const XMFLOAT3& target) { _target = target; _bNeedUpdateView = true; }
-	inline void SetUp(const XMFLOAT3& up) { _up = up; _bNeedUpdateView = true; }
-	inline void SetDirection(const XMFLOAT3& direction);
+	inline void SetPosition(const XMFLOAT3A& position) { _position = position; _bNeedUpdateView = true; }
+	inline void SetTarget(const XMFLOAT3A& target) { _target = target; _bNeedUpdateView = true; }
+	inline void SetUp(const XMFLOAT3A& up) { _up = up; _bNeedUpdateView = true; }
+	inline void SetDirection(const XMFLOAT3A& direction);
 	inline void SetFOV(float fov) { _fov = fov; _bNeedUpdateProj = true; }
 	void SetNear(float nearPlane) { _near = nearPlane; _bNeedUpdateProj = true; }
 	void SetFar(float farPlane) { _far = farPlane; _bNeedUpdateProj = true; }
 
-	inline const XMFLOAT4X4& GetMatViewProj() const { return _matViewProj; }
-	inline const XMFLOAT4X4& GetMatView() const { return _matView; }
-	inline const XMFLOAT4X4& GetMatProj() const { return _matProj; }
-	inline const XMFLOAT3& GetPosition() const { return _position; }
-	inline const XMFLOAT3& GetTarget() const { return _target; }
-	inline const XMFLOAT3& GetUp() const { return _up; }
-	inline const XMFLOAT3& GetDirection() const { return _direction; }
-	inline const XMFLOAT3& GetRight() const { return _right; }
+	inline const XMFLOAT4X4A& GetMatViewProj() const { return _matViewProj; }
+	inline const XMFLOAT4X4A& GetMatView() const { return _matView; }
+	inline const XMFLOAT4X4A& GetMatProj() const { return _matProj; }
+	inline const XMFLOAT4X4A& GetMatViewInverse() const { return _matViewInverse; }
+	inline const XMFLOAT4X4A& GetMatProjInverse() const { return _matProjInverse; }
+	inline const XMFLOAT3A& GetPosition() const { return _position; }
+	inline const XMFLOAT3A& GetTarget() const { return _target; }
+	inline const XMFLOAT3A& GetUp() const { return _up; }
+	inline const XMFLOAT3A& GetDirection() const { return _direction; }
+	inline const XMFLOAT3A& GetRight() const { return _right; }
 	inline const float& GetFOV() const { return _fov; }
 	inline const float& GetNearPlane() const { return _near; }
 	inline const float& GetFarPlane() const { return _far; }

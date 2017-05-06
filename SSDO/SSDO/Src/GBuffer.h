@@ -96,7 +96,6 @@ protected:
 
 	RenderTarget _color;
 	RenderTarget _normal;
-	RenderTarget _worldPos;
 	RenderTargetDepthBuffer _depth;
 				
 	RenderTarget _outputA;
