@@ -12,5 +12,6 @@ namespace Postprocesses
 
 		// Inherited via Postprocess
 		virtual void Update() override;
+		virtual inline int GetPassCount() const { return 2; }
 	};
 }

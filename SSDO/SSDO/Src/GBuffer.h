@@ -100,6 +100,7 @@ protected:
 				
 	RenderTarget _outputA;
 	RenderTarget _outputB;
+	RenderTarget _postprocessBuffer;
 
 	ID3D11BlendState* _additiveBlendState;
 
@@ -114,6 +115,7 @@ protected:
 #pragma region Functions Protected
 
 	inline void FlipOutputs();
+	inline void FlipOutputsWithPostprocessBuffer();
 	inline void SetMapData();
 	inline void UnsetMapData();
 	inline void DrawFullscreenPlane();

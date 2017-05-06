@@ -19,9 +19,11 @@ SamplerState SmpDepth : register(s2);
 Texture2D TexInput : register(t3);
 SamplerState SmpInput : register(s3);
 
+Texture2D TexBuffer : register(t3);
+SamplerState SmpBuffer : register(s3);
+
 float4 main(DPixelInput input) : SV_TARGET
 {
-	//float4 inputSample = TexDepth.Sample(SmpDepth, input.Uv);
 	float4 inputSample = TexInput.Sample(SmpInput, input.Uv);
 
 	return inputSample;
