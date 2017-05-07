@@ -52,6 +52,12 @@ public:
 		XMFLOAT4A Params;
 	};
 
+	__declspec(align(16))
+		struct SSAOBlurMergePS
+	{
+		XMFLOAT2A TexelSize;
+	};
+
 #pragma endregion
 
 protected:

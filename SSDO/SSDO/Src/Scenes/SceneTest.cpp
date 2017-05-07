@@ -38,7 +38,7 @@ namespace Scenes
 
 		Object* objFloor = new Object(*box, *matTest);
 		objFloor->SetScale(XMFLOAT3A(15.0f, 0.01f, 15.0f));
-		objFloor->SetPosition(XMFLOAT3A(0.0f, -0.0f, 0.0f));
+		objFloor->SetPosition(XMFLOAT3A(0.0f, 0.0f, 0.0f));
 		_objects.push_back(objFloor);
 
 		Object* objFloor02 = new Object(*box, *matTest);

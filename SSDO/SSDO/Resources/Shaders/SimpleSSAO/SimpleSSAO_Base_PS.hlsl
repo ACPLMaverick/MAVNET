@@ -29,6 +29,23 @@ SamplerState SmpInput : register(s3);
 Texture2D TexBuffer : register(t4);
 SamplerState SmpBuffer : register(s4);
 
+float Occlusion(float distZ)
+{
+	const float EPSILON = gParams.z;
+	const float FADE_START = gParams.y;
+	const float FADE_END = gParams.x;
+
+	float occlusion = 0.0f;
+
+	if (distZ > 0.01f)
+	{
+		float fadeLength = FADE_END - FADE_START;
+		occlusion = saturate((FADE_END - distZ) / fadeLength);
+	}
+
+	return occlusion;
+}
+
 float4 main(DPixelInput input) : SV_TARGET
 {
 	float depth = TexDepth.Sample(SmpDepth, input.Uv).r;
@@ -53,10 +70,14 @@ float4 main(DPixelInput input) : SV_TARGET
 		float2 mapUv = (samplePos.xy + 1.0f) * 0.5f;
 		mapUv.y = 1.0f - mapUv.y;
 		float mapDepth = TexDepth.Sample(SmpDepth, mapUv).r;
-		//float3 mapWorldPos = WorldPositionFromDepth(projInverse, viewInverse, mapUv, mapDepth);
+		float3 mapViewPos = ViewPositionFromDepth(projInverse, mapUv, mapDepth);
+
+		float distZ = viewPos.z - mapViewPos.z;
+		float dp = max(dot(normal, normalize(mapViewPos - viewPos)), 0.0f);
+		occlusionCounter += dp * Occlusion(distZ);
 
 		//occlusionCounter += min(max(sampleDepth - mapDepth, 0.0f), maxDist) / maxDist;
-		occlusionCounter += max(sampleDepth - mapDepth, 0.0f) * 10.0f;
+		//occlusionCounter += max(sampleDepth - mapDepth, 0.0f) * 10.0f;
 
 		//float3 sampleDir = normalize(gOffsets[i]);
 	}

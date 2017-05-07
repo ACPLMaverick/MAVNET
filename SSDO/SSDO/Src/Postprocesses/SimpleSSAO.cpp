@@ -12,7 +12,9 @@ namespace Postprocesses
 {
 	SimpleSSAO::SimpleSSAO() :
 		_ssaoBuffer(nullptr),
-		_maxDistance(0.5f)
+		_maxDistance(0.5f),
+		_fadeStart(0.02f),
+		_epsilon(0.01f)
 	{
 		_shaders.push_back(System::GetInstance()->GetScene().LoadShader(std::wstring(L"SimpleSSAO_Base")));
 		_shaders.push_back(System::GetInstance()->GetScene().LoadShader(std::wstring(L"SimpleSSAO_BlurMerge")));
@@ -80,15 +82,18 @@ namespace Postprocesses
 		}
 		else if (passIndex == 1)
 		{
-
+			Shader::SSAOBlurMergePS* buffer = reinterpret_cast<Shader::SSAOBlurMergePS*>(_shaders[1]->MapPsBuffer(1));
+			buffer->TexelSize = XMFLOAT2A(1.0f / (float)System::GetInstance()->GetOptions()._windowWidth, 
+				1.0f / (float)System::GetInstance()->GetOptions()._windowHeight);
+			_shaders[1]->UnmapPsBuffer(1);
 		}
 	}
 
 	inline void SimpleSSAO::FillParams(XMFLOAT4A * paramBuffer) const
 	{
 		paramBuffer->x = _maxDistance;
-		paramBuffer->y = 0.0f;
-		paramBuffer->z = 0.0f;
+		paramBuffer->y = _fadeStart;
+		paramBuffer->z = _epsilon;
 		paramBuffer->w = 0.0f;
 	}
 }

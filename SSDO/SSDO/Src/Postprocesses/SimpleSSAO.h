@@ -12,6 +12,8 @@ namespace Postprocesses
 
 		XMFLOAT4A _offsets[SAMPLE_COUNT];
 		float _maxDistance;
+		float _fadeStart;
+		float _epsilon;
 
 		ID3D11Buffer* _ssaoBuffer;
 
