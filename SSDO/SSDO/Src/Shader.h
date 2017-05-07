@@ -46,6 +46,14 @@ public:
 		XMFLOAT3A gViewPosition;
 	};
 
+	__declspec(align(16))
+		struct SSAOBasePS
+	{
+		XMFLOAT4X4A ViewProj;
+		XMFLOAT4A Offsets[14];
+		XMFLOAT4A Params;
+	};
+
 #pragma endregion
 
 protected:

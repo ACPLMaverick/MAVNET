@@ -1,10 +1,19 @@
 #include "../_global/GlobalDefines.hlsli"
 
+#define SAMPLE_COUNT 14
+
 cbuffer LightCommon : register(b0)
 {
 	float4x4 projInverse;
 	float4x4 viewInverse;
 	float3 gViewPosition;
+};
+
+cbuffer SimpleSSAO : register(b1)
+{
+	float4x4 gViewProj;
+	float4 gOffsets[SAMPLE_COUNT];
+	float4 gParams;
 };
 
 Texture2D TexColor : register(t0);
@@ -19,12 +28,44 @@ SamplerState SmpDepth : register(s2);
 Texture2D TexInput : register(t3);
 SamplerState SmpInput : register(s3);
 
-Texture2D TexBuffer : register(t3);
-SamplerState SmpBuffer : register(s3);
+Texture2D TexBuffer : register(t4);
+SamplerState SmpBuffer : register(s4);
 
 float4 main(DPixelInput input) : SV_TARGET
 {
-	float4 inputSample = TexInput.Sample(SmpInput, input.Uv);
+	float depth = TexDepth.Sample(SmpDepth, input.Uv).r;
+	float3 normal = TexNormal.Sample(SmpNormal, input.Uv).xyz;
+	float3 worldPos = WorldPositionFromDepth(projInverse, viewInverse, input.Uv, depth);
+	float maxDist = 0.25f;
 
-	return inputSample;
+	float occlusionCounter = 0.0f;
+	float occlusionDivisor = SAMPLE_COUNT;
+
+	[unroll]
+	for (int i = 0; i < SAMPLE_COUNT; ++i)
+	{
+		//float3 offset = gOffsets[i].xyz;
+		float3 offset = gOffsets[i].xyz + float3(0.0f, 0.0f, 0.0f);
+		float3 normalizedOffset = normalize(offset);
+		float flip = sign(dot(normalizedOffset, normal));
+		float4 samplePos = float4(worldPos + maxDist * offset, 1.0f);
+		samplePos = mul(gViewProj, samplePos);
+		samplePos /= samplePos.w;
+
+		float sampleDepth = samplePos.z;
+		float2 mapUv = (samplePos.xy + 1.0f) * 0.5f;
+		mapUv.y = 1.0f - mapUv.y;
+		float mapDepth = TexDepth.Sample(SmpDepth, mapUv).r;
+		//float3 mapWorldPos = WorldPositionFromDepth(projInverse, viewInverse, mapUv, mapDepth);
+
+		//occlusionCounter += min(max(sampleDepth - mapDepth, 0.0f), maxDist) / maxDist;
+		occlusionCounter += max(sampleDepth - mapDepth, 0.0f) * 10.0f;
+
+		//float3 sampleDir = normalize(gOffsets[i]);
+	}
+
+	float occlusion = 1.0f - (occlusionCounter / occlusionDivisor);
+	occlusion = pow(occlusion, 8.0f);
+
+	return float4(occlusion, occlusion, occlusion, 1.0f);
 }

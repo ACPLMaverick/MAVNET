@@ -8,6 +8,8 @@ namespace Scenes
 	class Scene;
 }
 
+class Random;
+
 class System : public Singleton<System>
 {
 public:
@@ -46,6 +48,8 @@ protected:
 
 	Scenes::Scene* _scene = nullptr;
 
+	Random* _random = nullptr;
+
 	bool _bNeedToQuit = false;
 
 #pragma endregion
@@ -74,10 +78,11 @@ public:
 	void Run();
 	void Shutdown();
 
-	HINSTANCE GetHInst() const { return _hInst; }
-	HWND GetHWND() const { return _hwnd; }
-	const Options& GetOptions() const { return _options; }
-	Scenes::Scene& GetScene() { return *_scene; }
+	inline HINSTANCE GetHInst() const { return _hInst; }
+	inline HWND GetHWND() const { return _hwnd; }
+	inline const Options& GetOptions() const { return _options; }
+	inline Scenes::Scene& GetScene() { return *_scene; }
+	inline Random* GetRandom() const { return _random; }
 
 #pragma endregion
 };

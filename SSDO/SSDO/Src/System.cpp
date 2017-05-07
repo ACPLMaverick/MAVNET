@@ -5,6 +5,8 @@
 #include "Renderer.h"
 #include "Timer.h"
 
+#include "Random.h"
+
 #include "Scenes/SceneTest.h"
 
 System::System() :
@@ -24,6 +26,8 @@ void System::Initialize(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpC
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
 	InitInstance(hInstance, nCmdShow);
+
+	_random = new Random();
 
 	Timer::GetInstance()->Initialize();
 	Renderer::GetInstance()->Initialize();
@@ -45,10 +49,16 @@ void System::Run()
 
 void System::Shutdown()
 {
+	if (_random != nullptr)
+	{
+		delete _random;
+		_random = nullptr;
+	}
 	if (_scene != nullptr)
 	{
 		_scene->Shutdown();
 		delete _scene;
+		_random = nullptr;
 	}
 
 	Renderer::GetInstance()->Shutdown();

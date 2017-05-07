@@ -412,6 +412,7 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Src\Random.h" />
     <ClInclude Include="Src\Postprocesses\SimpleSSAO.h" />
     <ClInclude Include="Src\Object.h" />
     <ClInclude Include="Src\Postprocesses\Sepia.h" />
@@ -438,6 +439,7 @@
     <ClInclude Include="Src\Timer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Src\Random.cpp" />
     <ClCompile Include="Src\Postprocesses\SimpleSSAO.cpp" />
     <ClCompile Include="Src\Object.cpp" />
     <ClCompile Include="Src\Postprocesses\Sepia.cpp" />

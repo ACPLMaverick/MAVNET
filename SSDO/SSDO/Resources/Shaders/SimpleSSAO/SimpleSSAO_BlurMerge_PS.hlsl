@@ -24,7 +24,8 @@ SamplerState SmpBuffer : register(s4);
 
 float4 main(DPixelInput input) : SV_TARGET
 {
-	float4 inputSample = TexBuffer.Sample(SmpBuffer, input.Uv);
+	float4 inputSample = TexInput.Sample(SmpInput, input.Uv);
+	float4 aoSample = TexBuffer.Sample(SmpBuffer, input.Uv);
 
-	return inputSample;
+	return inputSample * aoSample;
 }

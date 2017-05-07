@@ -13,7 +13,7 @@ namespace Postprocesses
 	{
 	}
 
-	void Postprocess::SetPass(const Camera& camera, int passIndex) const
+	void Postprocess::SetPass(const Camera& camera, int32_t passIndex) const
 	{
 		_shaders[passIndex]->Set();
 		Shader::LightCommonDataPS* cd = reinterpret_cast<Shader::LightCommonDataPS*>(_shaders[passIndex]->MapPsBuffer(0));
