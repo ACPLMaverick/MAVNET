@@ -1,6 +1,8 @@
 #pragma once
 #include "GlobalDefines.h"
 
+class Camera;
+
 namespace Lights
 {
 	__declspec(align(16))
@@ -33,5 +35,7 @@ namespace Lights
 			_range = other._range;
 			return *this;
 		}
+
+		void ApplyToShader(const LightPoint& other, const Camera& camera);
 	};
 }

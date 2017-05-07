@@ -12,4 +12,8 @@ namespace Lights
 	{
 	}
 
+	void LightAmbient::ApplyToShader(const LightAmbient & other, const Camera & camera)
+	{
+		_color = other._color;
+	}
 }

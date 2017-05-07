@@ -3,8 +3,6 @@
 cbuffer LightCommon
 {
 	float4x4 projInverse;
-	float4x4 viewInverse;
-	float3 gViewPosition;
 };
 
 Texture2D TexColor : register(t0);

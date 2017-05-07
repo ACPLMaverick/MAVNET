@@ -3,8 +3,8 @@
 cbuffer BufferVS
 {
 	float4x4 gMatWVP;
-	float4x4 gMatW;
-	float4x4 gMatWInvTransp;
+	float4x4 gMatWV;
+	float4x4 gMatWInvTranspV;
 };
 
 // STRUCTURES
@@ -30,7 +30,7 @@ PixelInput main(VertexInput input)
 	PixelInput output;
 
 	output.Position = mul(float4(input.Position, 1.0f), gMatWVP);
-	output.Normal = mul(float4(input.Normal, 0.0f), gMatWInvTransp).xyz;
+	output.Normal = mul(float4(input.Normal, 0.0f), gMatWInvTranspV).xyz;
 	output.Uv = input.Uv;
 
 	return output;

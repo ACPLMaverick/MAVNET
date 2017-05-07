@@ -17,9 +17,8 @@ namespace Postprocesses
 	{
 		_shaders[passIndex]->Set();
 		Shader::LightCommonDataPS* cd = reinterpret_cast<Shader::LightCommonDataPS*>(_shaders[passIndex]->MapPsBuffer(0));
-		cd->gProjInverse = camera.GetMatProjInverse();
-		cd->gViewInverse = camera.GetMatViewInverse();
-		cd->gViewPosition = camera.GetPosition();
+		XMMATRIX projInv = XMLoadFloat4x4A(&camera.GetMatProjInverse());
+		XMStoreFloat4x4A(&cd->gProjInverse, XMMatrixTranspose(projInv));
 		_shaders[passIndex]->UnmapPsBuffer(0);
 	}
 

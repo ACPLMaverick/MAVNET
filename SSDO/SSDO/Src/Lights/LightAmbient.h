@@ -1,6 +1,8 @@
 #pragma once
 #include "GlobalDefines.h"
 
+class Camera;
+
 namespace Lights
 {
 	__declspec(align(16))
@@ -22,6 +24,9 @@ namespace Lights
 			_color = other._color;
 			return *this;
 		}
+
+		// This must be called on pointer received from constant buffer.
+		void ApplyToShader(const LightAmbient& other, const Camera& camera);
 	};
 
 }

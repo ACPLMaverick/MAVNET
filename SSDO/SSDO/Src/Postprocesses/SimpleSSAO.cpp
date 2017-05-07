@@ -71,7 +71,8 @@ namespace Postprocesses
 		if (passIndex == 0)
 		{
 			Shader::SSAOBasePS* buffer = reinterpret_cast<Shader::SSAOBasePS*>(_shaders[0]->MapPsBuffer(1));
-			buffer->ViewProj = camera.GetMatViewProj();
+			XMMATRIX proj = XMLoadFloat4x4A(&camera.GetMatProj());
+			XMStoreFloat4x4A(&buffer->Proj, XMMatrixTranspose(proj));
 			memcpy(&buffer->Offsets, _offsets, SAMPLE_COUNT * sizeof(XMFLOAT4A));
 			FillParams(&buffer->Params);
 

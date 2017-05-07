@@ -1,6 +1,8 @@
 #pragma once
 #include "GlobalDefines.h"
 
+class Camera;
+
 namespace Lights
 {
 	__declspec(align(16))
@@ -34,5 +36,8 @@ namespace Lights
 			_direction = other._direction;
 			return *this;
 		}
+
+		// This must be called on pointer received from constant buffer.
+		void ApplyToShader(const LightDirectional& other, const Camera& camera);
 	};
 }

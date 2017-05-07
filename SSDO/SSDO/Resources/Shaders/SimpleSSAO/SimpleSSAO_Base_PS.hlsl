@@ -5,13 +5,11 @@
 cbuffer LightCommon : register(b0)
 {
 	float4x4 projInverse;
-	float4x4 viewInverse;
-	float3 gViewPosition;
 };
 
 cbuffer SimpleSSAO : register(b1)
 {
-	float4x4 gViewProj;
+	float4x4 gProj;
 	float4 gOffsets[SAMPLE_COUNT];
 	float4 gParams;
 };
@@ -35,8 +33,8 @@ float4 main(DPixelInput input) : SV_TARGET
 {
 	float depth = TexDepth.Sample(SmpDepth, input.Uv).r;
 	float3 normal = TexNormal.Sample(SmpNormal, input.Uv).xyz;
-	float3 worldPos = WorldPositionFromDepth(projInverse, viewInverse, input.Uv, depth);
-	float maxDist = 0.25f;
+	float3 viewPos = ViewPositionFromDepth(projInverse, input.Uv, depth);
+	float maxDist = gParams.x;
 
 	float occlusionCounter = 0.0f;
 	float occlusionDivisor = SAMPLE_COUNT;
@@ -44,12 +42,11 @@ float4 main(DPixelInput input) : SV_TARGET
 	[unroll]
 	for (int i = 0; i < SAMPLE_COUNT; ++i)
 	{
-		//float3 offset = gOffsets[i].xyz;
-		float3 offset = gOffsets[i].xyz + float3(0.0f, 0.0f, 0.0f);
+		float3 offset = gOffsets[i].xyz;
 		float3 normalizedOffset = normalize(offset);
 		float flip = sign(dot(normalizedOffset, normal));
-		float4 samplePos = float4(worldPos + maxDist * offset, 1.0f);
-		samplePos = mul(gViewProj, samplePos);
+		float4 samplePos = float4(viewPos + maxDist * offset, 1.0f);
+		samplePos = mul(samplePos, gProj);
 		samplePos /= samplePos.w;
 
 		float sampleDepth = samplePos.z;
@@ -65,7 +62,7 @@ float4 main(DPixelInput input) : SV_TARGET
 	}
 
 	float occlusion = 1.0f - (occlusionCounter / occlusionDivisor);
-	occlusion = pow(occlusion, 8.0f);
+	occlusion = pow(occlusion, 4.0f);
 
 	return float4(occlusion, occlusion, occlusion, 1.0f);
 }

@@ -237,9 +237,8 @@ void GBuffer::SetDrawLightDirectional()
 	_shaderLightDirectional->Set();
 	SetMapData();
 	Shader::LightCommonDataPS* cd = reinterpret_cast<Shader::LightCommonDataPS*>(_shaderLightDirectional->MapPsBuffer(0));
-	cd->gProjInverse = _camera.GetMatProjInverse();
-	cd->gViewInverse = _camera.GetMatViewInverse();
-	cd->gViewPosition = _camera.GetPosition();
+	XMMATRIX pi = XMLoadFloat4x4A(&_camera.GetMatProjInverse());
+	XMStoreFloat4x4A(&cd->gProjInverse, XMMatrixTranspose(pi));
 	_shaderLightDirectional->UnmapPsBuffer(0);
 	context->OMSetRenderTargets(1, &_outputA.View, nullptr);
 }
@@ -250,11 +249,8 @@ void GBuffer::SetDrawLightPoint()
 	_shaderLightPoint->Set();
 	SetMapData();
 	Shader::LightCommonDataPS* cd = reinterpret_cast<Shader::LightCommonDataPS*>(_shaderLightPoint->MapPsBuffer(0));
-	//XMStoreFloat4x4A(&cd->gViewInverse, XMMatrixIdentity());
-	//XMStoreFloat4x4A(&cd->gProjInverse, XMMatrixIdentity());
-	cd->gProjInverse = _camera.GetMatProjInverse();
-	cd->gViewInverse = _camera.GetMatViewInverse();
-	cd->gViewPosition = _camera.GetPosition();
+	XMMATRIX pi = XMLoadFloat4x4A(&_camera.GetMatProjInverse());
+	XMStoreFloat4x4A(&cd->gProjInverse, XMMatrixTranspose(pi));
 	_shaderLightPoint->UnmapPsBuffer(0);
 	context->OMSetRenderTargets(1, &_outputA.View, nullptr);
 }
@@ -263,7 +259,7 @@ void GBuffer::DrawLightAmbient(const Lights::LightAmbient & lightAmbient)
 {
 	// assuming correct shader is set
 	LightAmbient* la = reinterpret_cast<LightAmbient*>(_shaderLightAmbient->MapPsBuffer(0));
-	(*la) = lightAmbient;
+	la->ApplyToShader(lightAmbient, _camera);
 	_shaderLightAmbient->UnmapPsBuffer(0);
 	DrawFullscreenPlane();
 }
@@ -272,7 +268,7 @@ void GBuffer::DrawLightDirectional(const Lights::LightDirectional & lightDirecti
 {
 	// assuming correct shader is set
 	LightDirectional* ld = reinterpret_cast<LightDirectional*>(_shaderLightDirectional->MapPsBuffer(1));
-	(*ld) = lightDirectional;
+	ld->ApplyToShader(lightDirectional, _camera);
 	_shaderLightDirectional->UnmapPsBuffer(1);
 	DrawFullscreenPlane();
 }
@@ -281,7 +277,7 @@ void GBuffer::DrawLightPoint(const Lights::LightPoint & lightPoint)
 {
 	// assuming correct shader is set
 	LightPoint* lp = reinterpret_cast<LightPoint*>(_shaderLightPoint->MapPsBuffer(1));
-	(*lp) = lightPoint;
+	lp->ApplyToShader(lightPoint, _camera);
 	_shaderLightPoint->UnmapPsBuffer(1);
 	DrawFullscreenPlane();
 }

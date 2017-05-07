@@ -4,8 +4,6 @@
 cbuffer LightCommon : register(b0)
 {
 	float4x4 projInverse;
-	float4x4 viewInverse;
-	float4 gViewPosition;
 };
 
 cbuffer LightPoint : register(b1)
@@ -31,7 +29,7 @@ float4 main(DPixelInput input) : SV_TARGET
 
 	PixelInput pInput;
 	pInput.Position = input.Position;
-	pInput.PositionWorld = WorldPositionFromDepth(projInverse, viewInverse, input.Uv, TexDepth.Sample(SmpDepth, input.Uv).r);
+	pInput.PositionView = ViewPositionFromDepth(projInverse, input.Uv, TexDepth.Sample(SmpDepth, input.Uv).r);
 	pInput.Normal = normalize(normalSample.xyz);
 	pInput.Uv = input.Uv;
 
@@ -41,7 +39,7 @@ float4 main(DPixelInput input) : SV_TARGET
 	pData.gloss = normalSample.w;
 
 	float4 inColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
-	float3 viewDir = normalize(gViewPosition.xyz - pInput.PositionWorld);
+	float3 viewDir = normalize(-pInput.PositionView);
 
 	LightPoint(pInput, gColor, gPosition.xyz, gRange.x, viewDir, pData, inColor);
 

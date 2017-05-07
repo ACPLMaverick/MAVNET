@@ -34,20 +34,22 @@ void Material::DrawMesh(const Object& object, const Camera & camera, const Mesh 
 
 	XMFLOAT4X4A wvp;
 	XMMATRIX w = XMLoadFloat4x4(&object.GetWorldMatrix());
+	XMMATRIX v = XMLoadFloat4x4(&camera.GetMatView());
 	XMMATRIX vp = XMLoadFloat4x4(&camera.GetMatViewProj());
 	XMMATRIX transposedWVP = XMMatrixTranspose(w * vp);
 	XMStoreFloat4x4(&wvp, transposedWVP);
 
-	XMMATRIX transposedW = XMMatrixTranspose(w);
-	XMMATRIX transposedWInvTransp = XMMatrixTranspose(XMLoadFloat4x4(&object.GetWorldInvTransMatrix()));
+	XMMATRIX wv = w * v;
+	XMMATRIX transposedWV = XMMatrixTranspose(wv);
+	XMMATRIX transposedWInvTranspV = XMMatrixInverse(&XMMatrixDeterminant(wv), wv);
 
 	// set vertex and index buffers
 
 	bufferVs = reinterpret_cast<Shader::ColorBufferVS*>(_shader.MapVsBuffer(0));
 
 	XMStoreFloat4x4(&bufferVs->gMatWVP, transposedWVP);
-	XMStoreFloat4x4(&bufferVs->gMatW, transposedW);
-	XMStoreFloat4x4(&bufferVs->gMatWInvTransp, transposedWInvTransp);
+	XMStoreFloat4x4(&bufferVs->gMatW, transposedWV);
+	XMStoreFloat4x4(&bufferVs->gMatWInvTransp, transposedWInvTranspV);
 
 	_shader.UnmapVsBuffer(0);
 

@@ -42,14 +42,12 @@ public:
 		struct LightCommonDataPS
 	{
 		XMFLOAT4X4A gProjInverse;
-		XMFLOAT4X4A gViewInverse;
-		XMFLOAT3A gViewPosition;
 	};
 
 	__declspec(align(16))
 		struct SSAOBasePS
 	{
-		XMFLOAT4X4A ViewProj;
+		XMFLOAT4X4A Proj;
 		XMFLOAT4A Offsets[14];
 		XMFLOAT4A Params;
 	};

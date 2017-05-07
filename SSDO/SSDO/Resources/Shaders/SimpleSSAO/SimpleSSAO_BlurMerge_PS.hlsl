@@ -3,8 +3,6 @@
 cbuffer LightCommon
 {
 	float4x4 projInverse;
-	float4x4 viewInverse;
-	float3 gViewPosition;
 };
 
 Texture2D TexColor : register(t0);
@@ -27,5 +25,5 @@ float4 main(DPixelInput input) : SV_TARGET
 	float4 inputSample = TexInput.Sample(SmpInput, input.Uv);
 	float4 aoSample = TexBuffer.Sample(SmpBuffer, input.Uv);
 
-	return inputSample * aoSample;
+	return aoSample;
 }

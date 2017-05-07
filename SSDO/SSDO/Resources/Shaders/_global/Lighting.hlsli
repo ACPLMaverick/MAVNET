@@ -4,7 +4,7 @@
 struct PixelInput
 {
 	float4 Position : SV_POSITION;
-	float3 PositionWorld : TEXCOORD1;
+	float3 PositionView : TEXCOORD1;
 	float3 Normal : NORMAL;
 	float2 Uv : TEXCOORD0;
 };
@@ -56,7 +56,7 @@ void LightPoint(PixelInput input,
 	float4 color, float3 position, float range,
 	float3 viewDir, MaterialData mData, inout float4 outColor)
 {
-	float3 dir = position - input.PositionWorld;
+	float3 dir = position - input.PositionView;
 	float att = range / (dot(dir, dir));
 	dir = normalize(dir);
 	PhongBlinn(color, att, input.Normal, dir, viewDir, mData, outColor);
@@ -66,7 +66,7 @@ void LightSpot(PixelInput input,
 	float4 color, float3 position, float3 direction, float range, float angleCos, float smooth,
 	float3 viewDir, MaterialData mData, inout float4 outColor)
 {
-	float3 dir = position - input.PositionWorld;
+	float3 dir = position - input.PositionView;
 
 	float att = range / (dot(dir, dir));
 	dir = normalize(dir);
@@ -103,7 +103,7 @@ void LightArea(PixelInput input,
 	float3 pUp = cross(pRight, pNormal);
 
 	// project onto plane and calculate direction from light center to the projection.
-	float3 projection = ProjectOnPlane(input.PositionWorld, position, pNormal);
+	float3 projection = ProjectOnPlane(input.PositionView, position, pNormal);
 	float3 dirToProjected = projection - position;
 
 	// calculate distance from area
@@ -113,7 +113,7 @@ void LightArea(PixelInput input,
 	float3 nearestPointInside = float3(position + pRight * nearest2D.x + pUp * nearest2D.y);
 
 	// real distance to area rectangle
-	float3 dir = nearestPointInside - input.PositionWorld;
+	float3 dir = nearestPointInside - input.PositionView;
 
 	float att = range / (dot(dir, dir));
 	dir = normalize(dir);
