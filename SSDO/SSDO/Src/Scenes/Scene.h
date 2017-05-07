@@ -2,6 +2,7 @@
 
 class Camera;
 class Object;
+class Controller;
 
 namespace Lights
 {
@@ -28,10 +29,13 @@ namespace Scenes
 {
 	class Scene
 	{
+		friend class Controller;
 		friend class Camera;
 	protected:
 
 #pragma region Protected
+
+		Controller* _controller = nullptr;
 
 		Camera* _mainCamera = nullptr;
 

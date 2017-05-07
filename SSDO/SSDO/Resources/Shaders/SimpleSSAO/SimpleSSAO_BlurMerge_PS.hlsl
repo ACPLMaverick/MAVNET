@@ -74,5 +74,5 @@ float4 main(DPixelInput input) : SV_TARGET
 	ao = ao / weightSum;
 
 	float4 inputSample = TexInput.Sample(SmpInput, input.Uv);
-	return ao * inputSample;
+	return saturate(ao) * inputSample;
 }

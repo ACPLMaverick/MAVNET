@@ -57,7 +57,7 @@ public:
 			const XMFLOAT3A& up = XMFLOAT3A(0.0f, 1.0f, 0.0f),
 			float fov = 0.7f,
 			float near = 1.0f,
-			float far = 25.0f);
+			float far = 100.0f);
 	~Camera();
 
 	void Update();
@@ -70,7 +70,11 @@ public:
 	inline void SetPosition(const XMFLOAT3A& position) { _position = position; _bNeedUpdateView = true; }
 	inline void SetTarget(const XMFLOAT3A& target) { _target = target; _bNeedUpdateView = true; }
 	inline void SetUp(const XMFLOAT3A& up) { _up = up; _bNeedUpdateView = true; }
-	inline void SetDirection(const XMFLOAT3A& direction);
+	void SetDirection(const XMFLOAT3A& direction);
+	inline void SetPosition(const XMVECTOR& position) { XMStoreFloat3A(&_position, position); _bNeedUpdateView = true; }
+	inline void SetTarget(const XMVECTOR& target) { XMStoreFloat3A(&_target, target); _bNeedUpdateView = true; }
+	inline void SetUp(const XMVECTOR& up) { XMStoreFloat3A(&_up, up); _bNeedUpdateView = true; }
+	void SetDirection(const XMVECTOR& direction);
 	inline void SetFOV(float fov) { _fov = fov; _bNeedUpdateProj = true; }
 	void SetNear(float nearPlane) { _near = nearPlane; _bNeedUpdateProj = true; }
 	void SetFar(float farPlane) { _far = farPlane; _bNeedUpdateProj = true; }

@@ -13,6 +13,7 @@ namespace Postprocesses
 	protected:
 
 		std::vector<Shader*> _shaders;
+		bool _bEnabled = true;
 
 	public:
 
@@ -23,5 +24,8 @@ namespace Postprocesses
 		virtual void SetPass(const Camera& camera, int32_t passIndex = 0) const;
 		virtual inline int GetPassCount() const { return 1; }
 		virtual inline Shader* GetShader(int32_t passIndex = 0) const { return const_cast<Shader*>(_shaders[passIndex]); }
+		inline bool GetEnabled() const { return _bEnabled; }
+		inline void SetEnabled(bool enabled) { _bEnabled = enabled; }
+		inline void ToggleEnabled() { _bEnabled = !_bEnabled; }
 	};
 }

@@ -4,6 +4,7 @@
 #include "Mesh.h"
 #include "Material.h"
 #include "Object.h"
+#include "Controller.h"
 #include "Lights/LightAmbient.h"
 #include "Lights/LightDirectional.h"
 #include "Lights/LightPoint.h"
@@ -26,10 +27,17 @@ namespace Scenes
 	void Scene::Initialize()
 	{
 		SetupScene();
+		if(_controller != nullptr) _controller->Initialize();
 	}
 
 	void Scene::Shutdown()
 	{
+		if (_controller != nullptr)
+		{
+			_controller->Shutdown();
+			delete _controller;
+		}
+
 		if (_mainCamera != nullptr)
 		{
 			delete _mainCamera;
@@ -95,6 +103,11 @@ namespace Scenes
 		for (auto it = _objects.begin(); it != _objects.end(); ++it)
 		{
 			(*it)->Update();
+		}
+
+		if (_controller != nullptr)
+		{
+			_controller->Update();
 		}
 	}
 

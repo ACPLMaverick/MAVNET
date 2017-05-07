@@ -4,6 +4,7 @@
 
 #include "Renderer.h"
 #include "Timer.h"
+#include "Input.h"
 
 #include "Random.h"
 
@@ -16,6 +17,7 @@ System::System() :
 
 System::~System()
 {
+	Input::DestroyInstance();
 	Renderer::DestroyInstance();
 	Timer::DestroyInstance();
 }
@@ -31,6 +33,7 @@ void System::Initialize(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpC
 
 	Timer::GetInstance()->Initialize();
 	Renderer::GetInstance()->Initialize();
+	Input::GetInstance()->Initialize();
 
 	_scene = new Scenes::SceneTest();
 	_scene->Initialize();
@@ -42,13 +45,16 @@ void System::Run()
 	{
 		_scene->Update();
 		Renderer::GetInstance()->Run();
-		RunMessageLoop();
 		Timer::GetInstance()->Run();
+		Input::GetInstance()->Update();
+		RunMessageLoop();
 	}
 }
 
 void System::Shutdown()
 {
+	DestroyWindow(_hwnd);
+
 	if (_random != nullptr)
 	{
 		delete _random;
@@ -61,8 +67,14 @@ void System::Shutdown()
 		_random = nullptr;
 	}
 
+	Input::GetInstance()->Shutdown();
 	Renderer::GetInstance()->Shutdown();
 	Timer::GetInstance()->Shutdown();
+}
+
+void System::Exit()
+{
+	_bNeedToQuit = true;
 }
 
 ATOM System::MyRegisterClass(HINSTANCE _hInstance)
@@ -77,7 +89,8 @@ ATOM System::MyRegisterClass(HINSTANCE _hInstance)
 	wcex.cbWndExtra = 0;
 	wcex.hInstance = _hInstance;
 	wcex.hIcon = LoadIcon(_hInstance, MAKEINTRESOURCE(IDI_SSDO));
-	wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+	//wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+	wcex.hCursor = NULL;
 	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 	wcex.lpszMenuName = MAKEINTRESOURCEW(IDC_SSDO);
 	wcex.lpszClassName = _szWindowClass;
@@ -143,7 +156,6 @@ LRESULT CALLBACK System::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 		{
 		case IDM_EXIT:
 			System::GetInstance()->_bNeedToQuit = true;
-			DestroyWindow(hWnd);
 			break;
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
@@ -161,6 +173,12 @@ LRESULT CALLBACK System::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 	case WM_DESTROY:
 		System::GetInstance()->_bNeedToQuit = true;
 		PostQuitMessage(0);
+		break;
+	case WM_SETCURSOR:
+		SetCursor(NULL);
+		break;
+	case WM_INPUT:
+		Input::GetInstance()->Update((HRAWINPUT)lParam);
 		break;
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);

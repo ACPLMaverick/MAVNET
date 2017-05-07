@@ -77,6 +77,7 @@ public:
 		_In_ int       nCmdShow);
 	void Run();
 	void Shutdown();
+	void Exit();
 
 	inline HINSTANCE GetHInst() const { return _hInst; }
 	inline HWND GetHWND() const { return _hwnd; }

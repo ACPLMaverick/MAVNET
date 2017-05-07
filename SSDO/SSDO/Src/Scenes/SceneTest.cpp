@@ -4,6 +4,7 @@
 #include "Mesh.h"
 #include "Material.h"
 #include "Object.h"
+#include "Controller.h"
 #include "Lights/LightAmbient.h"
 #include "Lights/LightDirectional.h"
 #include "Lights/LightPoint.h"
@@ -26,6 +27,8 @@ namespace Scenes
 
 	void SceneTest::SetupScene()
 	{
+		_controller = new Controller(this);
+
 		_mainCamera = new Camera(XMFLOAT3A(0.0f, 4.0f, -8.0f));
 
 		Shader* shdColor = LoadShader(std::wstring(L"ColorShader"));

@@ -5,6 +5,7 @@
 #include "Mesh.h"
 #include "Renderer.h"
 #include "Object.h"
+#include "Postprocesses/Postprocess.h"
 
 using namespace Scenes;
 
@@ -102,7 +103,10 @@ void Camera::Draw(const Scene& scene) const
 		gBuffer.SetDrawPostproecesses();
 		for (auto it = scene._postprocesses.begin(); it != scene._postprocesses.end(); ++it)
 		{
-			gBuffer.DrawPostprocess(**it);
+			if ((*it)->GetEnabled())
+			{
+				gBuffer.DrawPostprocess(**it);
+			}
 		}
 
 		gBuffer.EndFrame();
@@ -116,6 +120,19 @@ void Camera::SetDirection(const XMFLOAT3A & direction)
 
 	XMVECTOR len = XMVector3Length(dir);
 	XMVECTOR nTgt = pos + XMVector3Normalize(XMLoadFloat3(&direction)) * len;
+
+	XMStoreFloat3(&_target, nTgt);
+
+	_bNeedUpdateView = true;
+}
+
+void Camera::SetDirection(const XMVECTOR & direction)
+{
+	XMVECTOR pos = XMLoadFloat3(&_position);
+	XMVECTOR dir = XMLoadFloat3(&_target) - pos;
+
+	XMVECTOR len = XMVector3Length(dir);
+	XMVECTOR nTgt = pos + XMVector3Normalize(direction) * len;
 
 	XMStoreFloat3(&_target, nTgt);
 
