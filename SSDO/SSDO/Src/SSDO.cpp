@@ -5,6 +5,10 @@
 #include "SSDO.h"
 #include "System.h"
 
+extern "C" {
+	_declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+}
+
 int APIENTRY wWinMain(_In_ HINSTANCE _hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
                      _In_ LPWSTR    lpCmdLine,

@@ -39,7 +39,7 @@ void Renderer::Initialize()
 
 	ASSERT(dxgiFactory != nullptr);
 
-	_device->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, 4, &_sampleQuality);
+	//_device->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, 4, &_sampleQuality);
 
 	DXGI_SWAP_CHAIN_DESC swapChainDesc;
 	swapChainDesc.BufferDesc.Width = System::GetInstance()->GetOptions()._windowWidth;
