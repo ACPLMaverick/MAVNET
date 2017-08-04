@@ -30,7 +30,7 @@ protected:
 #pragma region Protected
 
 	RenderMode _renderMode;
-	uint32_t _sampleQuality = 0;
+	uint32_t _sampleQuality = 1;
 
 	ID3D11Device* _device = nullptr;
 	ID3D11DeviceContext* _deviceContext = nullptr;
