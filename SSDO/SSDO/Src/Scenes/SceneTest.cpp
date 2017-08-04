@@ -5,6 +5,7 @@
 #include "Material.h"
 #include "Object.h"
 #include "Controller.h"
+#include "Text.h"
 #include "Lights/LightAmbient.h"
 #include "Lights/LightDirectional.h"
 #include "Lights/LightPoint.h"
@@ -73,5 +74,7 @@ namespace Scenes
 
 		//_postprocesses.push_back(new Sepia());
 		_postprocesses.push_back(new SimpleSSAO());
+
+		_texts.push_back(new Text());
 	}
 }

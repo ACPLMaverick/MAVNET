@@ -3,6 +3,7 @@
 class Camera;
 class Object;
 class Controller;
+class Text;
 
 namespace Lights
 {
@@ -21,6 +22,7 @@ namespace Postprocesses
 #include "Shader.h"
 #include "Mesh.h"
 #include "Material.h"
+#include "Font.h"
 
 #include <vector>
 #include <map>
@@ -39,11 +41,14 @@ namespace Scenes
 
 		Camera* _mainCamera = nullptr;
 
+		Shader* _textShader = nullptr;
+
 		// scene elems
 		std::vector<Object*> _objects;
 		std::vector<Lights::LightDirectional*> _lightsDirectional;
 		std::vector<Lights::LightPoint*> _lightsPoint;
 		std::vector<Postprocesses::Postprocess*> _postprocesses;
+		std::vector<Text*> _texts;
 
 		Lights::LightAmbient* _lightAmbient;
 
@@ -51,6 +56,7 @@ namespace Scenes
 		std::map<const std::wstring, Shader*> _shaders;
 		std::map<const std::wstring, Mesh*> _meshes;
 		std::map<const std::wstring, Material*> _materials;
+		std::map<const std::wstring, Font*> _fonts;
 
 #pragma endregion
 
@@ -91,11 +97,15 @@ namespace Scenes
 		inline Shader* LoadShader(const std::wstring& name) { return GetResource<Shader>(name, _shaders); }
 		inline Mesh* LoadMesh(const std::wstring& name) { return GetResource<Mesh>(name, _meshes); }
 		inline Material* LoadMaterial(const std::wstring& name) { return GetResource<Material>(name, _materials); }
+		inline Font* LoadFont(const std::wstring& name) { return GetResource<Font>(name, _fonts); }
 
 		inline const Lights::LightAmbient* GetLightAmbient() const { return _lightAmbient; }
 		inline const std::vector<Lights::LightDirectional*>& GetLightsDirectional() const { return _lightsDirectional; }
 		inline const std::vector<Lights::LightPoint*>& GetLightsPoint() const { return _lightsPoint; }
 		inline const std::vector<Postprocesses::Postprocess*>& GetPostprocesses() const { return _postprocesses; }
+		inline const std::vector<Text*>& GetTexts() const { return _texts; }
+
+		inline const Shader* GetTextShader() const { return _textShader; }
 
 #pragma endregion
 	};

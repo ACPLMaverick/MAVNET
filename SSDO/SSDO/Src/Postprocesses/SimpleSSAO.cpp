@@ -16,8 +16,8 @@ namespace Postprocesses
 		_fadeStart(0.02f),
 		_epsilon(0.01f)
 	{
-		_shaders.push_back(System::GetInstance()->GetScene().LoadShader(std::wstring(L"SimpleSSAO_Base")));
-		_shaders.push_back(System::GetInstance()->GetScene().LoadShader(std::wstring(L"SimpleSSAO_BlurMerge")));
+		_shaders.push_back(System::GetInstance()->GetScene()->LoadShader(std::wstring(L"SimpleSSAO_Base")));
+		_shaders.push_back(System::GetInstance()->GetScene()->LoadShader(std::wstring(L"SimpleSSAO_BlurMerge")));
 
 		ID3D11Device* device = Renderer::GetInstance()->GetDevice();
 

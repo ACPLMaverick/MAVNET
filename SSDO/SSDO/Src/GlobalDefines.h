@@ -10,10 +10,18 @@ using namespace std;
 
 #include "System.h"
 
+#define ZERO(arg) ZeroMemory(&arg, sizeof(arg))
+#define ZEROM(argPtr, sizeBytes) ZeroMemory(argPtr, sizeBytes)
+
+#define CLAMP(val, vmin, vmax) max(min(val, vmin), vmax)
+
+#define CRASH() \
+*(reinterpret_cast<int32_t*>(0)) = 0xF0BA2;
+
 #ifdef _DEBUG
 
 #define ASSERT_D(expression, message) \
-if(!(expression)) { MessageBox(System::GetInstance()->GetHWND(), message, L"Assertion error!", MB_ICONERROR | MB_OK); exit(-1); } 
+if(!(expression)) { MessageBox(System::GetInstance()->GetHWND(), message, L"Assertion error!", MB_ICONERROR | MB_OK); CRASH(); } 
 
 #define ASSERT(expression) ASSERT_D(expression, L"Assertion error!")
 
@@ -22,6 +30,8 @@ if(!(expression)) { MessageBox(System::GetInstance()->GetHWND(), message, L"Asse
 #define DEBUG(text) \
 std::wstring d_text(text + L"\n"); \
 OutputDebugString(d_text.c_str());
+
+#define ZERO_ON_DEBUG(arg) ZERO(arg)
 
 #else
 
@@ -32,5 +42,7 @@ OutputDebugString(d_text.c_str());
 #define ASSERT_X(func) func
 
 #define DEBUG(text)
+
+#define ZERO_ON_DEBUG(arg)
 
 #endif

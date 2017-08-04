@@ -203,6 +203,11 @@ Shader * Shader::CreateResource(const std::wstring & name)
 		ConstantBufferDesc psDesc(sizeof(ColorBufferPS));
 		return new Shader(name, 3, &vsDesc, 1, &psDesc, 1);
 	}
+	else if (name == L"TextShader")
+	{
+		ConstantBufferDesc vsDesc(sizeof(TextConstantBuffer));
+		return new Shader(name, 2, &vsDesc, 1, nullptr, 0);
+	}
 	else if (name == L"DeferredDrawShader" || 
 		name == L"DeferredLightMergeShader")
 	{

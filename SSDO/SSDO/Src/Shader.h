@@ -31,6 +31,13 @@ public:
 	};
 
 	__declspec(align(16))
+		struct TextConstantBuffer
+	{
+		XMFLOAT4A Color = XMFLOAT4A(1.0f, 1.0f, 1.0f, 1.0f);
+		XMFLOAT4A PositionScale = XMFLOAT4A(0.0f, 0.0f, 1.0f, 1.0f);
+	};
+
+	__declspec(align(16))
 		struct ColorBufferPS
 	{
 		XMFLOAT4A gColBase;

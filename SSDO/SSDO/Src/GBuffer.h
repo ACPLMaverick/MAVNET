@@ -148,6 +148,8 @@ public:
 
 	void DrawPostprocess(const Postprocesses::Postprocess& pp);
 
+	void SetDrawTexts();
+
 	void EndFrame();
 
 	void Draw() const;

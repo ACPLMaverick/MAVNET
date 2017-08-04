@@ -4,7 +4,9 @@
 #include "Mesh.h"
 #include "Material.h"
 #include "Object.h"
+#include "Text.h"
 #include "Controller.h"
+#include "Renderer.h"
 #include "Lights/LightAmbient.h"
 #include "Lights/LightDirectional.h"
 #include "Lights/LightPoint.h"
@@ -26,6 +28,9 @@ namespace Scenes
 
 	void Scene::Initialize()
 	{
+		_textShader = LoadShader(L"TextShader");
+		_shaders.emplace(L"TextShader", _textShader);
+
 		SetupScene();
 		if(_controller != nullptr) _controller->Initialize();
 	}
@@ -63,10 +68,16 @@ namespace Scenes
 			delete *it;
 		}
 
+		for (auto it = _texts.begin(); it != _texts.end(); ++it)
+		{
+			delete *it;
+		}
+
 		_objects.clear();
 		_lightsPoint.clear();
 		_lightsDirectional.clear();
 		_postprocesses.clear();
+		_texts.clear();
 
 		if (_lightAmbient != nullptr) delete _lightAmbient;
 
@@ -74,7 +85,6 @@ namespace Scenes
 		{
 			delete (*it).second;
 		}
-
 
 		for (auto it = _materials.begin(); it != _materials.end(); ++it)
 		{
@@ -86,9 +96,15 @@ namespace Scenes
 			delete (*it).second;
 		}
 
+		for (auto it = _fonts.begin(); it != _fonts.end(); ++it)
+		{
+			delete (*it).second;
+		}
+
 		_materials.clear();
 		_meshes.clear();
 		_shaders.clear();
+		_fonts.clear();
 	}
 
 	void Scene::Update()

@@ -119,6 +119,7 @@ public:
 
 	inline T* GetDataPtr() { return _data; }
 	inline size_t GetSize() const { return _size; }
+	inline size_t GetSizeBytes() const { return GetSize() * sizeof(T); }
 	inline bool IsAllocated() const { return _data != nullptr; }
 
 	inline Iterator<T> GetIterator() { return Iterator<T>(*this, 0); }

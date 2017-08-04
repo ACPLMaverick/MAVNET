@@ -142,11 +142,11 @@ GBuffer::GBuffer(const Camera& camera) :
 	ASSERT(_additiveBlendState != nullptr);
 
 
-	_shaderDraw = System::GetInstance()->GetScene().LoadShader(std::wstring(SHADER_DRAW));
-	_shaderMerge = System::GetInstance()->GetScene().LoadShader(std::wstring(SHADER_MERGE));
-	_shaderLightAmbient = System::GetInstance()->GetScene().LoadShader(std::wstring(SHADER_L_AMBIENT));
-	_shaderLightDirectional = System::GetInstance()->GetScene().LoadShader(std::wstring(SHADER_L_DIRECTIONAL));
-	_shaderLightPoint = System::GetInstance()->GetScene().LoadShader(std::wstring(SHADER_L_POINT));
+	_shaderDraw = System::GetInstance()->GetScene()->LoadShader(std::wstring(SHADER_DRAW));
+	_shaderMerge = System::GetInstance()->GetScene()->LoadShader(std::wstring(SHADER_MERGE));
+	_shaderLightAmbient = System::GetInstance()->GetScene()->LoadShader(std::wstring(SHADER_L_AMBIENT));
+	_shaderLightDirectional = System::GetInstance()->GetScene()->LoadShader(std::wstring(SHADER_L_DIRECTIONAL));
+	_shaderLightPoint = System::GetInstance()->GetScene()->LoadShader(std::wstring(SHADER_L_POINT));
 
 
 	XMFLOAT3A fpVertices[4];
@@ -316,6 +316,12 @@ void GBuffer::DrawPostprocess(const Postprocesses::Postprocess & pp)
 			FlipOutputsWithPostprocessBuffer();
 		}
 	}
+}
+
+void GBuffer::SetDrawTexts()
+{
+	ID3D11DeviceContext* context = Renderer::GetInstance()->GetDeviceContext();
+	context->OMSetRenderTargets(1, &_outputA.View, nullptr);
 }
 
 void GBuffer::EndFrame()

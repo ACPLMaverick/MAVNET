@@ -31,6 +31,9 @@ void System::Initialize(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpC
 
 	_random = new Random();
 
+	FT_Error error = FT_Init_FreeType(&_ftLibrary);
+	ASSERT_D(!error, L"Could not initialize FreeType library.");
+
 	Timer::GetInstance()->Initialize();
 	Renderer::GetInstance()->Initialize();
 	Input::GetInstance()->Initialize();
@@ -70,6 +73,9 @@ void System::Shutdown()
 	Input::GetInstance()->Shutdown();
 	Renderer::GetInstance()->Shutdown();
 	Timer::GetInstance()->Shutdown();
+
+	FT_Error error = FT_Done_FreeType(_ftLibrary);
+	ASSERT_D(!error, L"Could not destroy FreeType library.");
 }
 
 void System::Exit()

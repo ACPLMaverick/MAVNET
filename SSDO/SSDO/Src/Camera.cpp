@@ -6,6 +6,7 @@
 #include "Renderer.h"
 #include "Object.h"
 #include "Postprocesses/Postprocess.h"
+#include "Text.h"
 
 using namespace Scenes;
 
@@ -59,6 +60,13 @@ void Camera::Draw(const Scene& scene) const
 		{
 			(*it)->Draw(*this);
 		}
+
+		scene.GetTextShader()->Set();
+
+		for (auto it = scene._texts.begin(); it != scene._texts.end(); ++it)
+		{
+			(*it)->Draw();
+		}
 	}
 	else
 	{
@@ -107,6 +115,15 @@ void Camera::Draw(const Scene& scene) const
 			{
 				gBuffer.DrawPostprocess(**it);
 			}
+		}
+
+		gBuffer.SetDrawTexts();
+
+		scene.GetTextShader()->Set();
+
+		for (auto it = scene._texts.begin(); it != scene._texts.end(); ++it)
+		{
+			(*it)->Draw();
 		}
 
 		gBuffer.EndFrame();

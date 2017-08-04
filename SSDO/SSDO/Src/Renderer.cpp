@@ -181,11 +181,14 @@ void Renderer::Run()
 	_deviceContext->ClearDepthStencilView(_vDepthStencilBuffer, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 
 		DEFAULT_CLEAR_DEPTH, DEFAULT_CLEAR_STENCIL);
 
-	System::GetInstance()->GetScene().Draw();
-
-	if (_renderMode == RenderMode::DEFERRED)
+	if (System::GetInstance()->GetScene() != nullptr)
 	{
-		System::GetInstance()->GetScene().GetMainCamera()->GetGBuffer().Draw();
+		System::GetInstance()->GetScene()->Draw();
+
+		if (_renderMode == RenderMode::DEFERRED)
+		{
+			System::GetInstance()->GetScene()->GetMainCamera()->GetGBuffer().Draw();
+		}
 	}
 	
 	_swapChain->Present(0, 0);

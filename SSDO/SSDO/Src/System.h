@@ -3,6 +3,9 @@
 #include "stdafx.h"
 #include "Singleton.h"
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 namespace Scenes
 {
 	class Scene;
@@ -50,6 +53,8 @@ protected:
 
 	Random* _random = nullptr;
 
+	FT_Library _ftLibrary;
+
 	bool _bNeedToQuit = false;
 
 #pragma endregion
@@ -82,8 +87,9 @@ public:
 	inline HINSTANCE GetHInst() const { return _hInst; }
 	inline HWND GetHWND() const { return _hwnd; }
 	inline const Options& GetOptions() const { return _options; }
-	inline Scenes::Scene& GetScene() { return *_scene; }
+	inline Scenes::Scene* GetScene() { return _scene; }
 	inline Random* GetRandom() const { return _random; }
+	inline FT_Library GetFreeTypeLibrary() { return _ftLibrary; }
 
 #pragma endregion
 };
