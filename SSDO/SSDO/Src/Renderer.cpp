@@ -5,7 +5,8 @@
 #include "Camera.h"
 
 Renderer::Renderer() : 
-	_renderMode(RenderMode::DEFERRED)
+	_renderMode(RenderMode::DEFERRED),
+	_blendMode(BlendMode::SOLID)
 {
 }
 
@@ -119,7 +120,7 @@ void Renderer::Initialize()
 	
 	_deviceContext->OMSetRenderTargets(1, &_vMainRenderTarget, _vDepthStencilBuffer);
 
-	// create blend state
+	// create multiple blend states
 
 	D3D11_BLEND_DESC blendDesc;
 	D3D11_RENDER_TARGET_BLEND_DESC rbDesc;
@@ -138,8 +139,19 @@ void Renderer::Initialize()
 	for(int i = 0; i < 8; ++i)
 		blendDesc.RenderTarget[i] = rbDesc;
 
-	_device->CreateBlendState(&blendDesc, &_blendState);
-	ASSERT(_blendState != nullptr);
+	_device->CreateBlendState(&blendDesc, &_arrayBlendStates[0]);
+	ASSERT(_arrayBlendStates[0] != nullptr);
+
+	rbDesc.BlendEnable = true;
+	rbDesc.SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	rbDesc.DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+	for (int i = 0; i < 8; ++i)
+		blendDesc.RenderTarget[i] = rbDesc;
+
+	_device->CreateBlendState(&blendDesc, &_arrayBlendStates[1]);
+	ASSERT(_arrayBlendStates[1] != nullptr);
+
+	_blendState = _arrayBlendStates[0];
 	_deviceContext->OMSetBlendState(_blendState, nullptr, 0xFFFFFFFF);
 
 	// create rasterizer state

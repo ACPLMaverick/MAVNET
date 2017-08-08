@@ -81,6 +81,7 @@ protected:
 	ID3D11Buffer* _fIndices = nullptr;
 
 	bool _bufferReinitFlag = false;
+	bool _bReadOnly = true;
 	uint16_t _lastTextSize = 0;
 
 #pragma endregion
@@ -109,9 +110,9 @@ public:
 #pragma region Functions Public
 
 	// Creates dummy mesh without initializing buffers
-	Mesh();
+	Mesh(bool bReadOnly);
 	// Loads mesh from file
-	Mesh(const std::wstring& filePath);
+	Mesh(const std::wstring& filePath, bool bReadOnly);
 	~Mesh();
 
 	void DrawBuffers() const;
@@ -136,13 +137,14 @@ public:
 	inline XMFLOAT3A* GetNormalsData() { return _vNormals.GetDataPtr(); }
 	inline XMFLOAT2A* GetUvsData() { return _vUvs.GetDataPtr(); }
 	inline Triangle* GetIndexData() { return _indices.GetDataPtr(); }
+	inline bool GetReadOnly() { return _bReadOnly; }
 
 	void ReinitBuffers();
 
 	// Creates new mesh suitable for rendering a given text with a given font. Avoids reinitializing buffers if possible.
 	void UpdateDataFromText(const std::string& text, const Font& font);
 
-	static Mesh* CreateResource(const std::wstring& name) { return new Mesh(name); }
+	static Mesh* CreateResource(const std::wstring& name) { return new Mesh(name, true); }
 
 #pragma endregion
 };

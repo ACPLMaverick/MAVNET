@@ -9,25 +9,27 @@
 
 void Font::LoadFont(std::wstring fileName)
 {
-	const int32_t aTabSize = 128;
+	std::string sFileName(fileName.begin(), fileName.end());
+	sFileName = "./Resources/Fonts/" + sFileName + ".ttf";
+	const size_t aTabSize = 256;
 	_alignmentTab.Allocate(aTabSize);
 	_alignmentTab.Resize(aTabSize);
 
 	// R8_UNORM format
-	const int32_t rawDataSize = 2 * aTabSize * _charSize * _charSize * sizeof(uint8_t);
-	const int32_t rawDataPitch = static_cast<int32_t>(sqrt(rawDataSize) + 0.1);
+	const size_t rawDataSize = aTabSize * _charSize * _charSize * sizeof(uint8_t);
+	const size_t rawDataPitch = static_cast<size_t>(sqrt(static_cast<uint32_t>(rawDataSize)));
 	const float rawDataPitchRec = 1.0f / ((float)rawDataPitch);
 
 	_texture.GetRawData().Allocate(rawDataSize);
 	_texture.GetRawData().Resize(rawDataSize);
-	ZEROM(_texture.GetRawData().GetDataPtr(), _texture.GetRawData().GetSize());
-	ZEROM(_alignmentTab.GetDataPtr(), _alignmentTab.GetSizeBytes());
+	ZEROM(_texture.GetRawData().GetDataPtr(), rawDataSize);
+	//for (size_t i = 0; i < rawDataSize; ++i)
+	//	_texture.GetRawData()[i] = 0xFF;
+	ZEROM(_alignmentTab.GetDataPtr(), aTabSize * sizeof(XMFLOAT4A));
 
 	FT_Face face;
 	FT_Error error;
-	std::string pathComplete(fileName.begin(), fileName.end());
-	pathComplete = "./Resources/Fonts/" + pathComplete + ".ttf";
-	error = FT_New_Face(Lib(), pathComplete.c_str(), 0, &face);
+	error = FT_New_Face(Lib(), sFileName.c_str(), 0, &face);
 	ASSERT(!error);
 
 	_name = face->family_name;
@@ -39,9 +41,8 @@ void Font::LoadFont(std::wstring fileName)
 	ASSERT(!error);
 
 	// calculate min max variables
-	uint32_t maxWidth = 0, maxHeight = 0;
-	int32_t minLeft = INT32_MAX, minTop = INT32_MAX;
-	for (int32_t c = 0; c < aTabSize; ++c)
+	int64_t maxWidth = INT64_MIN, maxHeight = INT64_MIN, minLeft = INT64_MAX, minTop = INT64_MAX;
+	for (size_t c = 0; c < aTabSize; ++c)
 	{
 		if (FT_Load_Char(face, static_cast<FT_ULong>(c), FT_LOAD_RENDER))
 		{
@@ -67,10 +68,10 @@ void Font::LoadFont(std::wstring fileName)
 	}
 
 
-	int32_t advX = 0, advY = 0;
-	int32_t pxOffset = 3;
+	int64_t advX = 0, advY = 0;
+	int64_t pxOffset = 16;
 	// load glyphs to raw data (R8_UNORM format)
-	for (int32_t c = 0; c < aTabSize; ++c)
+	for (size_t c = 0; c < aTabSize; ++c)
 	{
 		if (FT_Load_Char(face, static_cast<FT_ULong>(c), FT_LOAD_RENDER))
 		{
@@ -80,35 +81,32 @@ void Font::LoadFont(std::wstring fileName)
 
 		FT_GlyphSlot g = face->glyph;
 
-		int32_t baseX = advX + g->bitmap_left - minLeft;
-		int32_t baseY = advY + (_charSize - (g->bitmap_top + minTop));
-		int32_t lastX = (baseX + g->bitmap.width);
-		int32_t lastY = (baseY + g->bitmap.rows);
-		ASSERT(baseX >= 0 && baseY >= 0 && baseY < static_cast<int32_t>(rawDataPitch));
+		int64_t baseX = advX + g->bitmap_left - minLeft;
+		int64_t baseY = advY + (_charSize - (g->bitmap_top + minTop));
+		int64_t lastX = (baseX + g->bitmap.width);
+		int64_t lastY = (baseY + g->bitmap.rows);
+		ASSERT(baseX >= 0 && baseY >= 0 && baseY < static_cast<int64_t>(rawDataPitch));
 
-		if (lastX >= static_cast<int32_t>(rawDataPitch) || baseX >= static_cast<int32_t>(rawDataPitch))
+		if (lastX >= static_cast<int64_t>(rawDataPitch) || baseX >= static_cast<int64_t>(rawDataPitch))
 		{
 			advX = CLAMP(static_cast<int32_t>(advX - rawDataPitch), 0, static_cast<int32_t>(rawDataPitch));
 			advY += _charSize;
 
 			baseX = advX + g->bitmap_left - minLeft;
 			baseY = advY + (_charSize - (g->bitmap_top + minTop));
-			lastX = min((baseX + static_cast<int32_t>(g->bitmap.width)), rawDataPitch);
-			lastY = min((baseY + static_cast<int32_t>(g->bitmap.rows)), rawDataPitch);
+			lastX = (baseX + g->bitmap.width);
+			lastY = (baseY + g->bitmap.rows);
 		}
 
-		if (lastY > rawDataPitch)
-			lastY = rawDataPitch;
-
 		// copy from bitmap buffer to raw data at correct position
-		for (int32_t i = baseY, ib = 0; i < lastY; ++i, ++ib)
+		for (int64_t i = baseY, ib = 0; i < lastY; ++i, ++ib)
 		{
-			for (int32_t j = baseX, jb = 0; j < lastX; ++j, ++jb)
+			for (int64_t j = baseX, jb = 0; j < lastX; ++j, ++jb)
 			{
 				// convert j and i to 1D index
-				int32_t indexRawData = j + (rawDataPitch - i) * rawDataPitch;
-				int32_t indexBitmap = jb + ib * g->bitmap.width;
-				ASSERT(indexRawData > 0 && indexRawData < static_cast<int32_t>(_texture.GetRawData().GetSize()) && indexBitmap < static_cast<int32_t>(g->bitmap.width * g->bitmap.rows));
+				int64_t indexRawData = j + (rawDataPitch - i) * rawDataPitch;
+				int64_t indexBitmap = jb + ib * g->bitmap.width;
+				ASSERT(indexRawData < static_cast<int64_t>(_texture.GetRawData().GetSize()) && indexBitmap < g->bitmap.width * g->bitmap.rows);
 
 				_texture.GetRawData()[indexRawData] = g->bitmap.buffer[indexBitmap];
 			}
@@ -116,8 +114,8 @@ void Font::LoadFont(std::wstring fileName)
 
 		// load character alignment for this char
 
-		int32_t currentAdvX = (g->advance.x >> 6);
-		int32_t currentAdvY = (g->advance.y >> 6);
+		int64_t currentAdvX = (g->advance.x >> 6);
+		int64_t currentAdvY = (g->advance.y >> 6);
 
 		_alignmentTab[c] = CharAlignment
 		(
@@ -131,7 +129,7 @@ void Font::LoadFont(std::wstring fileName)
 		advX += currentAdvX + pxOffset;
 		advY += currentAdvY;
 
-		if (advX >= static_cast<int32_t>(rawDataPitch))
+		if (advX >= static_cast<int64_t>(rawDataPitch))
 		{
 			advX -= rawDataPitch;
 			advY += _charSize;
@@ -139,18 +137,10 @@ void Font::LoadFont(std::wstring fileName)
 	}
 
 	// Create texture resource
-	_texture.SetWidth(rawDataPitch);
+	_texture.SetWidth(static_cast<int32_t>(rawDataPitch));
 	_texture.SetMipmapped(true);
 	_texture.SetBPP(8);
 	_texture.SetFormat(DXGI_FORMAT::DXGI_FORMAT_R8_UNORM);
-
-	/*size_t siz = _texture.GetRawData().GetSize();
-	for (size_t i = 0; i < siz; ++i)
-	{
-		uint8_t data = _texture.GetRawData()[i];
-		std::wstring ds(to_wstring(data) + L"\n");
-		OutputDebugString(ds.c_str());
-	}*/
 
 	_texture.InitResources(true);
 }

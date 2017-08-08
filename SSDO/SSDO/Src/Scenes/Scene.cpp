@@ -16,7 +16,8 @@ using namespace Postprocesses;
 
 namespace Scenes
 {
-	Scene::Scene()
+	Scene::Scene() : 
+		_controller(this)
 	{
 
 	}
@@ -32,16 +33,12 @@ namespace Scenes
 		_shaders.emplace(L"TextShader", _textShader);
 
 		SetupScene();
-		if(_controller != nullptr) _controller->Initialize();
+		_controller.Initialize();
 	}
 
 	void Scene::Shutdown()
 	{
-		if (_controller != nullptr)
-		{
-			_controller->Shutdown();
-			delete _controller;
-		}
+		_controller.Shutdown();
 
 		if (_mainCamera != nullptr)
 		{
@@ -121,15 +118,25 @@ namespace Scenes
 			(*it)->Update();
 		}
 
-		if (_controller != nullptr)
-		{
-			_controller->Update();
-		}
+		_controller.Update();
 	}
 
-	void Scene::Draw() const
+	void Scene::Draw()
 	{
 		_mainCamera->Draw(*this);
+	}
+
+	void Scene::SetLightAmbient(Lights::LightAmbient * obj)
+	{
+		if (obj == nullptr)
+			return;
+
+		if (_lightAmbient != nullptr)
+		{
+			delete _lightAmbient;
+		}
+
+		_lightAmbient = obj;
 	}
 
 }

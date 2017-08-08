@@ -6,17 +6,17 @@
 
 #include <functional>
 
-Text::Text()
-{
-	ASSERT(System::GetInstance()->GetScene() != nullptr);
-	_font = System::GetInstance()->GetScene()->LoadFont(L"arial");
-	InitCommon();
-}
-
-Text::Text(const std::string & text, Font * font) : 
+Text::Text(const std::string & text, bool bReadOnly, Font * font, const XMFLOAT2A& position, const XMFLOAT2A& scale) :
 	_text(text),
-	_font(font)
+	_font(font),
+	_mesh(bReadOnly)
 {
+	SetPosition(position);
+	SetScale(scale);
+
+	ASSERT(System::GetInstance()->GetScene() != nullptr);
+	if(_font == nullptr)
+		_font = System::GetInstance()->GetScene()->LoadFont(L"arial");
 	InitCommon();
 }
 
@@ -42,22 +42,28 @@ void Text::Draw()
 
 void Text::SetText(const std::string & text)
 {
-	size_t current(std::hash<std::string>{}(_text));
-	size_t other(std::hash<std::string>{}(text));
-
-	if (current != other)
+	if (!_mesh.GetReadOnly())
 	{
-		_text = text;
-		_mesh.UpdateDataFromText(_text, *_font);
+		size_t current(std::hash<std::string>{}(_text));
+		size_t other(std::hash<std::string>{}(text));
+
+		if (current != other)
+		{
+			_text = text;
+			_mesh.UpdateDataFromText(_text, *_font);
+		}
 	}
 }
 
 void Text::SetFont(Font * font)
 {
-	if (_font != font)
+	if (!_mesh.GetReadOnly())
 	{
-		_font = font;
-		_mesh.UpdateDataFromText(_text, *_font);
+		if (_font != font)
+		{
+			_font = font;
+			_mesh.UpdateDataFromText(_text, *_font);
+		}
 	}
 }
 

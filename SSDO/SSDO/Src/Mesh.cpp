@@ -7,7 +7,8 @@
 #include <tiny_obj_loader/tiny_obj_loader.h>
 
 
-Mesh::Mesh()
+Mesh::Mesh(bool bReadOnly) : 
+	_bReadOnly(bReadOnly)
 {
 	/*
 	_vPositions.Resize(8);
@@ -71,8 +72,10 @@ Mesh::Mesh()
 	*/
 }
 
-Mesh::Mesh(const std::wstring & filePath)
+Mesh::Mesh(const std::wstring & filePath, bool bReadOnly)
 {
+	_bReadOnly = bReadOnly;
+
 	std::string path = std::string(filePath.begin(), filePath.end());
 	path = "./Resources/Meshes/" + path + ".obj";
 
@@ -180,7 +183,7 @@ void Mesh::DrawBuffers() const
 }
 
 void Mesh::UpdateDataFromText(const std::string & text, const Font& font)
-{
+{/*
 	_vPositions.Resize(4);
 	_vNormals.Resize(4);
 	_vUvs.Resize(4);
@@ -202,8 +205,8 @@ void Mesh::UpdateDataFromText(const std::string & text, const Font& font)
 	_indices[1] = Triangle(3, 2, 1);
 
 	ReinitBuffers();
-
-	/*
+*/
+	
 	uint16_t textSize = static_cast<uint16_t>(text.length());
 	bool bSameLength = textSize == _lastTextSize;
 	_lastTextSize = textSize;
@@ -311,7 +314,7 @@ void Mesh::UpdateDataFromText(const std::string & text, const Font& font)
 
 	_bufferReinitFlag = !bSameLength;
 	ReinitBuffers();
-	*/
+	
 }
 
 inline bool Mesh::Float3Equal(const XMFLOAT3A & lhs, const XMFLOAT3A & rhs) const
@@ -351,25 +354,25 @@ inline void Mesh::ReinitBuffers()
 			// update existing buffers
 			D3D11_MAPPED_SUBRESOURCE sr;
 
-			deviceContext->Map(_fPositions, 0, D3D11_MAP_WRITE, 0, &sr);
+			deviceContext->Map(_fPositions, 0, D3D11_MAP_WRITE_DISCARD, 0, &sr);
 			ASSERT(sr.pData != nullptr);
 			memcpy(sr.pData, _vPositions.GetDataPtr(), _vPositions.GetSizeBytes());
 			deviceContext->Unmap(_fPositions, 0);
 			ZERO_ON_DEBUG(sr);
 
-			deviceContext->Map(_fNormals, 0, D3D11_MAP_WRITE, 0, &sr);
+			deviceContext->Map(_fNormals, 0, D3D11_MAP_WRITE_DISCARD, 0, &sr);
 			ASSERT(sr.pData != nullptr);
 			memcpy(sr.pData, _vNormals.GetDataPtr(), _vNormals.GetSizeBytes());
 			deviceContext->Unmap(_fNormals, 0);
 			ZERO_ON_DEBUG(sr);
 
-			deviceContext->Map(_fUvs, 0, D3D11_MAP_WRITE, 0, &sr);
+			deviceContext->Map(_fUvs, 0, D3D11_MAP_WRITE_DISCARD, 0, &sr);
 			ASSERT(sr.pData != nullptr);
 			memcpy(sr.pData, _vUvs.GetDataPtr(), _vUvs.GetSizeBytes());
 			deviceContext->Unmap(_fUvs, 0);
 			ZERO_ON_DEBUG(sr);
 
-			deviceContext->Map(_fIndices, 0, D3D11_MAP_WRITE, 0, &sr);
+			deviceContext->Map(_fIndices, 0, D3D11_MAP_WRITE_DISCARD, 0, &sr);
 			ASSERT(sr.pData != nullptr);
 			memcpy(sr.pData, _indices.GetDataPtr(), _indices.GetSizeBytes());
 			deviceContext->Unmap(_fIndices, 0);
@@ -387,10 +390,10 @@ inline void Mesh::ReinitBuffers()
 
 	desc[0].BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	desc[0].ByteWidth = static_cast<uint32_t>(sizeof(XMFLOAT3A) * _vPositions.GetSize());
-	desc[0].CPUAccessFlags = 0;
+	desc[0].CPUAccessFlags = _bReadOnly ? 0 : D3D11_CPU_ACCESS_WRITE;
 	desc[0].MiscFlags = 0;
 	desc[0].StructureByteStride = 0;
-	desc[0].Usage = D3D11_USAGE_DEFAULT;
+	desc[0].Usage = _bReadOnly ? D3D11_USAGE_IMMUTABLE : D3D11_USAGE_DYNAMIC;
 
 	desc[1] = desc[2] = desc[3] = desc[0];
 	desc[1].ByteWidth = static_cast<uint32_t>(sizeof(XMFLOAT2A) * _vUvs.GetSize());

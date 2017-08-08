@@ -52,14 +52,18 @@ void Camera::Update()
 	}
 }
 
-void Camera::Draw(const Scene& scene) const
+void Camera::Draw(Scene& scene) const
 {
 	if (Renderer::GetInstance()->GetRenderMode() == Renderer::RenderMode::FORWARD)
 	{
+		Renderer::GetInstance()->SetBlendMode(Renderer::BlendMode::SOLID);
+
 		for (auto it = scene._objects.begin(); it != scene._objects.end(); ++it)
 		{
 			(*it)->Draw(*this);
 		}
+
+		Renderer::GetInstance()->SetBlendMode(Renderer::BlendMode::ALPHA);
 
 		scene.GetTextShader()->Set();
 
@@ -70,6 +74,8 @@ void Camera::Draw(const Scene& scene) const
 	}
 	else
 	{
+		Renderer::GetInstance()->SetBlendMode(Renderer::BlendMode::SOLID);
+
 		GBuffer& gBuffer = const_cast<GBuffer&>(_gBuffer);
 		// draw objects
 		gBuffer.SetDrawMeshes();
@@ -108,6 +114,9 @@ void Camera::Draw(const Scene& scene) const
 		}
 
 		// apply postprocesses
+
+		scene.GetController()->GetProfiler()->UpdatePostprocessBegin();
+
 		gBuffer.SetDrawPostproecesses();
 		for (auto it = scene._postprocesses.begin(); it != scene._postprocesses.end(); ++it)
 		{
@@ -117,7 +126,11 @@ void Camera::Draw(const Scene& scene) const
 			}
 		}
 
+		scene.GetController()->GetProfiler()->UpdatePostprocessEnd();
+
 		gBuffer.SetDrawTexts();
+
+		Renderer::GetInstance()->SetBlendMode(Renderer::BlendMode::ALPHA);
 
 		scene.GetTextShader()->Set();
 
@@ -125,6 +138,8 @@ void Camera::Draw(const Scene& scene) const
 		{
 			(*it)->Draw();
 		}
+
+		Renderer::GetInstance()->SetBlendMode(Renderer::BlendMode::SOLID);
 
 		gBuffer.EndFrame();
 	}

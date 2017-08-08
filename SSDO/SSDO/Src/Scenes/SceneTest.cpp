@@ -28,8 +28,6 @@ namespace Scenes
 
 	void SceneTest::SetupScene()
 	{
-		_controller = new Controller(this);
-
 		_mainCamera = new Camera(XMFLOAT3A(0.0f, 4.0f, -8.0f));
 
 		Shader* shdColor = LoadShader(std::wstring(L"ColorShader"));
@@ -37,7 +35,7 @@ namespace Scenes
 		Material* matTest = new Material(*shdColor, XMFLOAT4A(1.0f, 1.0f, 1.0f, 1.0f));
 		_materials.emplace(L"TestMat", matTest);
 
-		Mesh* box = new Mesh(L"box");
+		Mesh* box = new Mesh(L"box", true);
 		_meshes.emplace(L"Box", box);
 
 		Object* objFloor = new Object(*box, *matTest);
@@ -75,6 +73,9 @@ namespace Scenes
 		//_postprocesses.push_back(new Sepia());
 		_postprocesses.push_back(new SimpleSSAO());
 
-		_texts.push_back(new Text());
+		Text* helpTxt = new Text("Press V to cycle through post processes. Use WSAD to move camera. Use mouse with RMB pressed to rotate camera.");
+		helpTxt->SetScale(0.2f);
+		helpTxt->SetPosition(XMFLOAT2A(0.0f, -0.9f));
+		_texts.push_back(helpTxt);
 	}
 }

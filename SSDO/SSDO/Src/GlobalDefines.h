@@ -13,7 +13,7 @@ using namespace std;
 #define ZERO(arg) ZeroMemory(&arg, sizeof(arg))
 #define ZEROM(argPtr, sizeBytes) ZeroMemory(argPtr, sizeBytes)
 
-#define CLAMP(val, vmin, vmax) max(min(val, vmin), vmax)
+#define CLAMP(val, vmin, vmax) min(max(val, vmin), vmax)
 
 #define CRASH() \
 *(reinterpret_cast<int32_t*>(0)) = 0xF0BA2;

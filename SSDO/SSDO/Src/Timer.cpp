@@ -25,10 +25,7 @@ void Timer::Initialize()
 
 void Timer::Run()
 {
-	int64_t counts;
-	QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&counts));
-
-	float currentTime = static_cast<float>(counts) / static_cast<float>(_frequency);
+	float currentTime = GetNowTime();
 	_prevTotalTime = _totalTime;
 	_totalTime = currentTime - _startTime;
 	_deltaTime = _totalTime - _prevTotalTime;
@@ -38,4 +35,20 @@ void Timer::Run()
 
 void Timer::Shutdown()
 {
+}
+
+double Timer::GetNowTimeDouble() const
+{
+	LARGE_INTEGER counts;
+	QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&counts));
+
+	return static_cast<double>(counts.QuadPart) / static_cast<double>(_frequency);
+}
+
+float Timer::GetNowTime() const
+{
+	LARGE_INTEGER counts;
+	QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&counts));
+
+	return static_cast<float>(static_cast<double>(counts.QuadPart) / static_cast<double>(_frequency));
 }

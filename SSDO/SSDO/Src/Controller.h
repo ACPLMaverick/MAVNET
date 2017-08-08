@@ -12,9 +12,13 @@ namespace Postprocesses
 	class Postprocess;
 }
 
+class Profiler;
+
 class Controller
 {
 protected:
+
+	Profiler* _profiler;
 
 	Scenes::Scene* _scene;
 	Postprocesses::Postprocess* _ssao;
@@ -31,5 +35,7 @@ public:
 	virtual void Initialize();
 	virtual void Update();
 	virtual void Shutdown();
+
+	inline Profiler* GetProfiler() { return _profiler; }
 };
 

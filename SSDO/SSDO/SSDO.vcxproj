@@ -444,6 +444,7 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Src\Profiler.h" />
     <ClInclude Include="Src\Font.h" />
     <ClInclude Include="Src\Controller.h" />
     <ClInclude Include="Src\Input.h" />
@@ -476,6 +477,7 @@
     <ClInclude Include="Src\Texture.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Src\Profiler.cpp" />
     <ClCompile Include="Src\Font.cpp" />
     <ClCompile Include="Src\Controller.cpp" />
     <ClCompile Include="Src\Input.cpp" />

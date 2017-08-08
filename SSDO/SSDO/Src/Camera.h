@@ -61,7 +61,7 @@ public:
 	~Camera();
 
 	void Update();
-	void Draw(const Scenes::Scene& scene) const;
+	void Draw(Scenes::Scene& scene) const;
 
 #pragma region GettersSetters
 

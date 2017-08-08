@@ -16,6 +16,7 @@ void Texture::InitResources(bool bMakeReadOnly)
 	Shutdown();
 
 	ID3D11Device* device = Renderer::GetInstance()->GetDevice();
+	ID3D11DeviceContext* deviceContext = Renderer::GetInstance()->GetDeviceContext();
 
 	uint8_t realMipmapCount = _bMipmapped ? 0 : 1;
 	D3D11_TEXTURE2D_DESC desc;
@@ -31,13 +32,15 @@ void Texture::InitResources(bool bMakeReadOnly)
 	desc.SampleDesc.Count = 1;
 	desc.SampleDesc.Quality = 0;
 
-	D3D11_SUBRESOURCE_DATA sData;
-	sData.pSysMem = _rawData.GetDataPtr();
-	sData.SysMemPitch = _width * (_bpp / 8);
-	sData.SysMemSlicePitch = 0;
+	//D3D11_SUBRESOURCE_DATA sData;
+	//sData.pSysMem = _rawData.GetDataPtr();
+	//sData.SysMemPitch = _width * (_bpp / 8);
+	//sData.SysMemSlicePitch = 0;
 
-	device->CreateTexture2D(&desc, &sData, &_fTexture);
+	device->CreateTexture2D(&desc, nullptr, &_fTexture);
 	ASSERT_D(_fTexture != nullptr, L"GraphicsDevice: An error occured while creating texture 2D resource.");
+
+	deviceContext->UpdateSubresource(_fTexture, 0, NULL, _rawData.GetDataPtr(), _width * (_bpp / 8), 0);
 
 	D3D11_SAMPLER_DESC sDesc;
 	ZERO(sDesc);

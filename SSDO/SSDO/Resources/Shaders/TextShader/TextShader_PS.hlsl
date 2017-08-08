@@ -26,6 +26,7 @@ PixelOutput main(PixelInput input)
 	float fColor = TexFont.Sample(SmpFont, input.Uv).r;
 
 	PixelOutput output;
-	output.Color = input.Color * fColor;
+	output.Color = input.Color;
+	output.Color.a = fColor;
 	return output;
 }

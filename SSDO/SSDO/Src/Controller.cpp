@@ -6,6 +6,7 @@
 #include "Camera.h"
 #include "Timer.h"
 #include "Postprocesses/SimpleSSAO.h"
+#include "Profiler.h"
 
 using namespace Scenes;
 using namespace Postprocesses;
@@ -20,6 +21,9 @@ Controller::~Controller()
 
 void Controller::Initialize()
 {
+	_profiler = new Profiler(_scene);
+	_profiler->Initialize();
+
 	for (auto it = _scene->_postprocesses.begin(); it != _scene->_postprocesses.end(); ++it)
 	{
 		if ((_ssao = dynamic_cast<SimpleSSAO*>(*it)) != nullptr)
@@ -31,6 +35,8 @@ void Controller::Initialize()
 
 void Controller::Update()
 {
+	_profiler->Update();
+
 	// Base controls
 	if (Input::GetInstance()->GetKey(VK_ESCAPE))
 	{
@@ -69,39 +75,41 @@ void Controller::Update()
 			currentBoost = _cameraBoost;
 		}
 
+		bool bPositionChanged = false;
+
 		if (Input::GetInstance()->GetKey('Q'))	// up
 		{
 			vPos = vPos + vUp * currentBoost * _cameraSpeed * Timer::GetInstance()->GetDeltaTime();
-			cam->SetPosition(vPos);
-			cam->SetDirection(vDir);
+			bPositionChanged = true;
 		}
 		if (Input::GetInstance()->GetKey('E')) // down
 		{
 			vPos = vPos - vUp * currentBoost * _cameraSpeed * Timer::GetInstance()->GetDeltaTime();
-			cam->SetPosition(vPos);
-			cam->SetDirection(vDir);
+			bPositionChanged = true;
 		}
 		if (Input::GetInstance()->GetKey('A')) // left
 		{
 			vPos = vPos - vRight * currentBoost * _cameraSpeed * Timer::GetInstance()->GetDeltaTime();
-			cam->SetPosition(vPos);
-			cam->SetDirection(vDir);
+			bPositionChanged = true;
 		}
 		if (Input::GetInstance()->GetKey('D')) // right
 		{
 			vPos = vPos + vRight * currentBoost * _cameraSpeed * Timer::GetInstance()->GetDeltaTime();
-			cam->SetPosition(vPos);
-			cam->SetDirection(vDir);
+			bPositionChanged = true;
 		}
 		if (Input::GetInstance()->GetKey('W')) // forwards
 		{
 			vPos = vPos + vDir * currentBoost * _cameraSpeed * Timer::GetInstance()->GetDeltaTime();
-			cam->SetPosition(vPos);
-			cam->SetDirection(vDir);
+			bPositionChanged = true;
 		}
 		if (Input::GetInstance()->GetKey('S')) // backwards
 		{
 			vPos = vPos - vDir * currentBoost * _cameraSpeed * Timer::GetInstance()->GetDeltaTime();
+			bPositionChanged = true;
+		}
+
+		if (bPositionChanged)
+		{
 			cam->SetPosition(vPos);
 			cam->SetDirection(vDir);
 		}
@@ -119,4 +127,6 @@ void Controller::Update()
 
 void Controller::Shutdown()
 {
+	_profiler->Shutdown();
+	delete _profiler;
 }
