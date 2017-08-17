@@ -111,6 +111,9 @@
     <ClInclude Include="Src\Profiler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Postprocesses\SSDOBase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\Camera.cpp">
@@ -194,6 +197,9 @@
     <ClCompile Include="Src\Profiler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Src\Postprocesses\SSDOBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\RC\SSDO.ico">
@@ -229,6 +235,8 @@
     <FxCompile Include="Resources\Shaders\SimpleSSAO\SimpleSSAO_BlurMerge_PS.hlsl" />
     <FxCompile Include="Resources\Shaders\TextShader\TextShader_PS.hlsl" />
     <FxCompile Include="Resources\Shaders\TextShader\TextShader_VS.hlsl" />
+    <FxCompile Include="Resources\Shaders\SSDOBase\SSDOBase_Base_PS.hlsl" />
+    <FxCompile Include="Resources\Shaders\SSDOBase\SSDOBase_Base_VS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\_global\GlobalDefines.hlsli" />

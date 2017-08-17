@@ -1,8 +1,16 @@
 #pragma once
 #include "Postprocess.h"
 
+class Texture;
+
 namespace Postprocesses
 {
+	class RandomVectorsGenerator
+	{
+	public:
+		static void Generate(Texture** tex, uint32_t width);
+	};
+
 	class SimpleSSAO :
 		public Postprocess
 	{
@@ -16,6 +24,7 @@ namespace Postprocesses
 		float _epsilon;
 
 		ID3D11Buffer* _ssaoBuffer;
+		Texture* _randomVectorTexture;
 
 		inline void FillParams(XMFLOAT4A* paramBuffer) const;
 

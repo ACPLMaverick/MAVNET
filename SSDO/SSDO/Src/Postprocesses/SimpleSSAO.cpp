@@ -7,15 +7,24 @@
 #include "System.h"
 #include "Random.h"
 #include "Camera.h"
+#include "Texture.h"
+
+#include <DirectXPackedVector.h>
+using namespace DirectX::PackedVector;
+#define HALF_MIN 6.10352e-5f
+#define HALF_MAX 65504.f
 
 namespace Postprocesses
 {
 	SimpleSSAO::SimpleSSAO() :
 		_ssaoBuffer(nullptr),
+		_randomVectorTexture(nullptr),
 		_maxDistance(0.5f),
 		_fadeStart(0.02f),
 		_epsilon(0.01f)
 	{
+		RandomVectorsGenerator::Generate(&_randomVectorTexture, 1024);
+
 		_shaders.push_back(System::GetInstance()->GetScene()->LoadShader(std::wstring(L"SimpleSSAO_Base")));
 		_shaders.push_back(System::GetInstance()->GetScene()->LoadShader(std::wstring(L"SimpleSSAO_BlurMerge")));
 
@@ -60,6 +69,7 @@ namespace Postprocesses
 
 	SimpleSSAO::~SimpleSSAO()
 	{
+		delete _randomVectorTexture;
 	}
 
 	void SimpleSSAO::Update()
@@ -79,6 +89,8 @@ namespace Postprocesses
 			FillParams(&buffer->Params);
 
 			_shaders[0]->UnmapPsBuffer(1);
+
+			_randomVectorTexture->Set(5);
 		}
 		else if (passIndex == 1)
 		{
@@ -95,5 +107,52 @@ namespace Postprocesses
 		paramBuffer->y = _fadeStart;
 		paramBuffer->z = _epsilon;
 		paramBuffer->w = 0.0f;
+	}
+
+	void RandomVectorsGenerator::Generate(Texture ** tex, uint32_t width)
+	{
+		const uint32_t singlePixelSize = sizeof(HALF) * 4;
+
+		(*tex) = new Texture();
+
+		Buffer<uint8_t>& buf = (*tex)->GetRawData();
+		const uint32_t pixelCount = width * width;
+		const uint32_t allPixelsSize = pixelCount * singlePixelSize;
+		buf.Allocate(allPixelsSize);
+		buf.Resize(allPixelsSize);
+		XMVECTOR pixelVector;
+		HALF pixelHalf[4];
+		ZeroMemory(pixelHalf, singlePixelSize);
+
+		(*tex)->SetWidth(width);
+		(*tex)->SetBPP(singlePixelSize);
+		(*tex)->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R16G16B16A16_FLOAT);
+		(*tex)->SetMipmapped(false);
+
+		for (uint32_t i = 0; i < pixelCount; ++i)
+		{
+			// Create random vector (fill pixelHalf).
+			for (uint32_t j = 0; j < 3; ++j)
+			{
+				pixelVector.m128_f32[j] = System::GetInstance()->GetRandom()->GetFloat(-HALF_MAX, HALF_MAX);
+			}
+			pixelVector.m128_f32[3] = 0.0f;
+
+			// normalize random vector
+			pixelVector = XMVector3Normalize(pixelVector);
+
+			for (uint32_t j = 0; j < 3; ++j)
+			{
+				pixelHalf[j] = XMConvertFloatToHalf(pixelVector.m128_f32[j]);
+			}
+			
+			// copy to buffer data
+			size_t offset = i * singlePixelSize;
+			ASSERT(offset < buf.GetSizeBytes());
+
+			memcpy(buf.GetDataPtr() + offset, pixelHalf, singlePixelSize);
+		}
+
+		(*tex)->InitResources(true);
 	}
 }
