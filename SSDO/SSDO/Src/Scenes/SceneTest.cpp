@@ -77,8 +77,8 @@ namespace Scenes
 
 		_lightsPoint.push_back(new LightPoint(XMFLOAT4A(0.6f, 1.0f, 0.9f, 1.0f), XMFLOAT3A(0.0f, 4.0f, -5.0f), 10.0f));
 
+		_postprocesses.push_back(new SSDOBase());
 		_postprocesses.push_back(new SimpleSSAO());
-		//_postprocesses.push_back(new SSDOBase());
 
 		Text* helpTxt = new Text("Press V to cycle through post processes. Use WSAD to move camera. Use mouse with RMB pressed to rotate camera.");
 		helpTxt->SetScale(0.2f);

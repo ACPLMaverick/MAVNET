@@ -65,6 +65,20 @@ public:
 		XMFLOAT2A TexelSize;
 	};
 
+	__declspec(align(16))
+		struct SSDOBasePS
+	{
+		XMFLOAT4X4A Proj;
+		XMFLOAT4A Offsets[14];
+		XMFLOAT4A Params;
+	};
+
+	__declspec(align(16))
+		struct SSDOBlurMergePS
+	{
+		XMFLOAT2A TexelSize;
+	};
+
 #pragma endregion
 
 protected:

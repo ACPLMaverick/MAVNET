@@ -244,8 +244,13 @@ Shader * Shader::CreateResource(const std::wstring & name)
 	}
 	else if (name == L"SSDOBase_Base")
 	{
-		ConstantBufferDesc descs[1] = { sizeof(LightCommonDataPS) };
-		return new Shader(name, 0, nullptr, 0, descs, 1);
+		ConstantBufferDesc descs[2] = { sizeof(LightCommonDataPS), sizeof(SSAOBasePS) };
+		return new Shader(name, 0, nullptr, 0, descs, 2);
+	}
+	else if (name == L"SSDOBase_BlurMerge")
+	{
+		ConstantBufferDesc descs[2] = { sizeof(LightCommonDataPS), sizeof(SSAOBlurMergePS) };
+		return new Shader(name, 0, nullptr, 0, descs, 2);
 	}
 	else
 	{

@@ -21,7 +21,7 @@ protected:
 	Profiler* _profiler;
 
 	Scenes::Scene* _scene;
-	Postprocesses::Postprocess* _ssao;
+	size_t _postprocessCounter;
 
 	float _cameraSpeed;
 	float _cameraBoost;

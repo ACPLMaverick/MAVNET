@@ -21,17 +21,21 @@ void Profiler::Initialize()
 {
 	_tLblFPS = new Text("FPS: ");
 	_tLblMsGlobal = new Text("Global DT: ");
-	_tLblMsPostprocess = new Text("SSDO DT: ");
+	_tLblMsPostprocess = new Text("Postprocess DT: ");
+	_tLblPostprocessName = new Text("Current postprocess: ");
 	_tValFPS = new Text("Value", false);
 	_tValMsGlobal = new Text("Value", false);
 	_tValMsPostprocess = new Text("Value", false);
+	_tValPostprocessName = new Text("Value", false);
 
 	_allTexts[0] = _tLblFPS;
 	_allTexts[1] = _tLblMsGlobal;
 	_allTexts[2] = _tLblMsPostprocess;
-	_allTexts[3] = _tValFPS;
-	_allTexts[4] = _tValMsGlobal;
-	_allTexts[5] = _tValMsPostprocess;
+	_allTexts[3] = _tLblPostprocessName;
+	_allTexts[4] = _tValFPS;
+	_allTexts[5] = _tValMsGlobal;
+	_allTexts[6] = _tValMsPostprocess;
+	_allTexts[7] = _tValPostprocessName;
 
 	const float xBasePos(-0.9f);
 	const float yBasePos(0.9f);
@@ -55,6 +59,14 @@ void Profiler::Initialize()
 
 
 	_tLblFPS->SetPosition(XMFLOAT2A(_tLblFPS->GetPosition().x - 0.032f, _tLblFPS->GetPosition().y));
+	_tLblMsPostprocess->SetPosition(XMFLOAT2A(_tLblMsPostprocess->GetPosition().x + 0.04f, _tLblMsPostprocess->GetPosition().y));
+
+	const float ppNameSpacing = 0.06f;
+	const XMFLOAT4A ppNameColor(XMFLOAT4A(0.8f, 0.8f, 0.2f, 1.0f));
+	_tLblPostprocessName->SetPosition(XMFLOAT2A(_tLblPostprocessName->GetPosition().x + 0.065f, _tLblPostprocessName->GetPosition().y - ppNameSpacing));
+	_tValPostprocessName->SetPosition(XMFLOAT2A(_tValPostprocessName->GetPosition().x, _tValPostprocessName->GetPosition().y - ppNameSpacing));
+	_tLblPostprocessName->SetColor(ppNameColor);
+	_tValPostprocessName->SetColor(ppNameColor);
 }
 
 void Profiler::Update()
@@ -66,7 +78,6 @@ void Profiler::Update()
 	_tValFPS->SetText(to_string(fps));
 	_tValMsGlobal->SetText(to_string(_baseTime.GetAveragedValue()));
 	_tValMsPostprocess->SetText(to_string(_postprocessTime.GetAveragedValue()));
-	//OutputDebugString((L"Dupsko " + to_wstring(_postprocessTime.GetAveragedValue()) + L"\n").c_str());
 }
 
 void Profiler::UpdatePostprocessBegin()
@@ -81,6 +92,24 @@ void Profiler::UpdatePostprocessEnd()
 
 void Profiler::Shutdown()
 {
+}
+
+void Profiler::RegisterPostprocessName(const std::string & name)
+{
+	_postprocessNames.push_back(name);
+}
+
+void Profiler::SwitchPostprocessName(size_t index)
+{
+	if (index == -1)
+	{
+		_tValPostprocessName->SetText("None");
+	}
+	else
+	{
+		ASSERT(index < _postprocessNames.size());
+		_tValPostprocessName->SetText(_postprocessNames[index]);
+	}
 }
 
 AveragedTime::AveragedTime(Timer * timer, UpdateFuncPtr funcPtr, float averagePeriod) :

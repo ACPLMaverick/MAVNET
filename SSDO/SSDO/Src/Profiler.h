@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GlobalDefines.h"
+#include <vector>
 
 namespace Scenes
 {
@@ -44,10 +45,12 @@ class Profiler
 {
 protected:
 
-	static const size_t TEXT_COUNT = 6;
+	static const size_t TEXT_COUNT = 8;
 
 	AveragedTime _baseTime;
 	AveragedTime _postprocessTime;
+
+	std::vector<std::string> _postprocessNames;
 
 	Scenes::Scene* _scene;
 
@@ -58,15 +61,20 @@ protected:
 	Text* _tValMsGlobal = nullptr;
 	Text* _tLblMsPostprocess = nullptr;
 	Text* _tValMsPostprocess = nullptr;
+	Text* _tLblPostprocessName = nullptr;
+	Text* _tValPostprocessName = nullptr;
 
 public:
 	Profiler(Scenes::Scene* scene);
 	~Profiler();
 
-	virtual void Initialize();
-	virtual void Update();
-	virtual void UpdatePostprocessBegin();
-	virtual void UpdatePostprocessEnd();
-	virtual void Shutdown();
+	void Initialize();
+	void Update();
+	void UpdatePostprocessBegin();
+	void UpdatePostprocessEnd();
+	void Shutdown();
+
+	void RegisterPostprocessName(const std::string& name);
+	void SwitchPostprocessName(size_t index);
 };
 

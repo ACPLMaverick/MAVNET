@@ -6,6 +6,8 @@
 #include "Camera.h"
 #include "Timer.h"
 #include "Postprocesses/SimpleSSAO.h"
+#include "Postprocesses/SSDOBase.h"
+#include "Postprocesses/Sepia.h"
 #include "Profiler.h"
 
 using namespace Scenes;
@@ -24,13 +26,38 @@ void Controller::Initialize()
 	_profiler = new Profiler(_scene);
 	_profiler->Initialize();
 
+	_postprocessCounter = 0;
 	for (auto it = _scene->_postprocesses.begin(); it != _scene->_postprocesses.end(); ++it)
 	{
-		if ((_ssao = dynamic_cast<SimpleSSAO*>(*it)) != nullptr)
+		// enable only first postprocess in scene
+		if (it != _scene->_postprocesses.begin())
 		{
-			break;
+			(*it)->SetEnabled(false);
+		}
+		else
+		{
+			(*it)->SetEnabled(true);
+		}
+
+		// assign names to postprocesses in profiler
+		if (dynamic_cast<SimpleSSAO*>(*it) != nullptr)
+		{
+			_profiler->RegisterPostprocessName("SSAO");
+		}
+		else if (dynamic_cast<SSDOBase*>(*it) != nullptr)
+		{
+			_profiler->RegisterPostprocessName("SSDO");
+		}
+		else if (dynamic_cast<Sepia*>(*it) != nullptr)
+		{
+			_profiler->RegisterPostprocessName("Sepia");
+		}
+		else
+		{
+			_profiler->RegisterPostprocessName("Unknown");
 		}
 	}
+	_profiler->SwitchPostprocessName(_postprocessCounter);
 }
 
 void Controller::Update()
@@ -116,11 +143,26 @@ void Controller::Update()
 	}
 
 	// Component controls
-	if (_ssao != nullptr)
+	if (_scene->_postprocesses.size() > 0)
 	{
-		if (Input::GetInstance()->GetKeyDown('V')) // backwards
+		// switch postprocess to next, disable all if reached max count
+		if (Input::GetInstance()->GetKeyDown('V'))	
 		{
-			_ssao->ToggleEnabled();
+			++_postprocessCounter;
+			if (_postprocessCounter >= _scene->_postprocesses.size())
+			{
+				_scene->_postprocesses[_postprocessCounter - 1]->ToggleEnabled();
+				// overflow
+				_postprocessCounter = -1;
+			}
+			else
+			{
+				if(_postprocessCounter != 0)
+					_scene->_postprocesses[_postprocessCounter - 1]->ToggleEnabled();
+
+				_scene->_postprocesses[_postprocessCounter]->ToggleEnabled();
+			}
+			_profiler->SwitchPostprocessName(_postprocessCounter);
 		}
 	}
 }

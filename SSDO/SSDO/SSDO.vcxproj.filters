@@ -237,6 +237,8 @@
     <FxCompile Include="Resources\Shaders\TextShader\TextShader_VS.hlsl" />
     <FxCompile Include="Resources\Shaders\SSDOBase\SSDOBase_Base_PS.hlsl" />
     <FxCompile Include="Resources\Shaders\SSDOBase\SSDOBase_Base_VS.hlsl" />
+    <FxCompile Include="Resources\Shaders\SSDOBase\SSDOBase_BlurMerge_PS.hlsl" />
+    <FxCompile Include="Resources\Shaders\SSDOBase\SSDOBase_BlurMerge_VS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\_global\GlobalDefines.hlsli" />
