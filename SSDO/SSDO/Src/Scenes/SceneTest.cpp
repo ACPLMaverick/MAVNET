@@ -71,11 +71,12 @@ namespace Scenes
 		objBox03->SetRotation(XMFLOAT3A(0.0f, 35.0f, 0.0f));
 		_objects.push_back(objBox03);
 
-		_lightAmbient = new LightAmbient(XMFLOAT4A(0.05f, 0.05f, 0.1f, 1.0f));
+		//_lightAmbient = new LightAmbient(XMFLOAT4A(0.05f, 0.05f, 0.1f, 1.0f));
 
-		_lightsDirectional.push_back(new LightDirectional(XMFLOAT4A(1.0f, 0.8f, 0.7f, 1.0f), XMFLOAT3A(-1.0f, -0.3f, 1.0f)));
+		const float dirBoost = 1.0f;
+		_lightsDirectional.push_back(new LightDirectional(XMFLOAT4A(1.0f * dirBoost, 0.95f * dirBoost, 0.9f * dirBoost, 1.0f), XMFLOAT3A(-1.0f, -0.3f, 1.0f)));
 
-		_lightsPoint.push_back(new LightPoint(XMFLOAT4A(0.6f, 1.0f, 0.9f, 1.0f), XMFLOAT3A(0.0f, 4.0f, -5.0f), 10.0f));
+		//_lightsPoint.push_back(new LightPoint(XMFLOAT4A(0.6f, 1.0f, 0.9f, 1.0f), XMFLOAT3A(0.0f, 4.0f, -5.0f), 10.0f));
 
 		_postprocesses.push_back(new SSDOBase());
 		_postprocesses.push_back(new SimpleSSAO());

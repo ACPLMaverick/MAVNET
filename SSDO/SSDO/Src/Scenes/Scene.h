@@ -57,7 +57,7 @@ namespace Scenes
 
 		Shader* _textShader = nullptr;
 
-		Lights::LightAmbient* _lightAmbient;
+		Lights::LightAmbient* _lightAmbient = nullptr;
 
 
 #pragma endregion

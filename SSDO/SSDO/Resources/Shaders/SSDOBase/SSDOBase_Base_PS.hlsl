@@ -7,11 +7,13 @@ cbuffer LightCommon : register(b0)
 	float4x4 projInverse;
 };
 
-cbuffer SimpleSSAO : register(b1)
+cbuffer SSDOBase : register(b1)
 {
 	float4x4 gProj;
 	float4 gOffsets[SAMPLE_COUNT];
 	float4 gParams;
+	float4 gLightColor;
+	float3 gLightDirection;
 };
 
 Texture2D TexColor : register(t0);
@@ -31,6 +33,21 @@ SamplerState SmpBuffer : register(s4);
 
 Texture2D TexRandomVectors : register(t5);
 SamplerState SmpRandomVectors : register(s5);
+
+float3 ColorFactor(float2 mapUv, float distZ)
+{
+	const float FADE_END = gParams.x;
+
+	// Get color of sample
+	float3 mapColor = TexColor.Sample(SmpColor, mapUv).rgb;
+	// Compute scale factor: 1 if this sample is above surface, 0 if below
+	float colorScale = sign(max(distZ, 0.0f));
+
+	if (distZ > FADE_END)
+		colorScale = 0.0f;
+	
+	return mapColor * colorScale;
+}
 
 float Occlusion(float distZ)
 {
@@ -55,7 +72,9 @@ float4 main(DPixelInput input) : SV_TARGET
 	float3 normal = TexNormal.Sample(SmpNormal, input.Uv).xyz;
 	float3 viewPos = ViewPositionFromDepth(projInverse, input.Uv, depth);
 	float3 randomVec = TexRandomVectors.Sample(SmpRandomVectors, input.Uv).xyz;
-	float maxDist = gParams.x;
+	const float maxDist = gParams.x;
+	const float powFactor = gParams.w;
+	float3 colorFactor = float3(0.0f, 0.0f, 0.0f);
 
 	float occlusionCounter = 0.0f;
 	float occlusionDivisor = SAMPLE_COUNT;
@@ -83,17 +102,20 @@ float4 main(DPixelInput input) : SV_TARGET
 
 		// Compute occlusion for this sample
 		float distZ = viewPos.z - mapViewPos.z;
+		// Directional scale factor for occlusion (based on angle between normal and sample point direction)
 		float dp = max(dot(normal, normalize(mapViewPos - viewPos)), 0.0f);
 		occlusionCounter += dp * Occlusion(distZ);
 
-		//occlusionCounter += min(max(sampleDepth - mapDepth, 0.0f), maxDist) / maxDist;
-		//occlusionCounter += max(sampleDepth - mapDepth, 0.0f) * 10.0f;
-
-		//float3 sampleDir = normalize(gOffsets[i]);
+		// Compute color factor for sample and add mix with global variable
+		colorFactor += ColorFactor(mapUv, distZ);
 	}
 
-	float occlusion = 1.0f - (occlusionCounter / occlusionDivisor);
-	occlusion = pow(occlusion, 8.0f);
+	float occlusion = 1.0f - (1.0f * occlusionCounter / occlusionDivisor);
+	occlusion = pow(occlusion, powFactor);
 
-	return float4(occlusion, occlusion, occlusion, 1.0f);
+	// Mix occlusion with color factor
+	colorFactor = saturate(normalize(colorFactor));
+	float4 final = saturate(float4(occlusion, occlusion, occlusion, 1.0f) + float4(colorFactor.x, colorFactor.y, colorFactor.z, 0.0f));
+
+	return final;
 }

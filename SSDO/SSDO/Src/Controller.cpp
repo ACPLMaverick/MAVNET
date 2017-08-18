@@ -9,6 +9,7 @@
 #include "Postprocesses/SSDOBase.h"
 #include "Postprocesses/Sepia.h"
 #include "Profiler.h"
+#include "Lights/LightDirectional.h"
 
 using namespace Scenes;
 using namespace Postprocesses;
@@ -58,6 +59,7 @@ void Controller::Initialize()
 		}
 	}
 	_profiler->SwitchPostprocessName(_postprocessCounter);
+	SwitchDirectionalLight();
 }
 
 void Controller::Update()
@@ -163,6 +165,7 @@ void Controller::Update()
 				_scene->_postprocesses[_postprocessCounter]->ToggleEnabled();
 			}
 			_profiler->SwitchPostprocessName(_postprocessCounter);
+			SwitchDirectionalLight();
 		}
 	}
 }
@@ -171,4 +174,21 @@ void Controller::Shutdown()
 {
 	_profiler->Shutdown();
 	delete _profiler;
+}
+
+inline void Controller::SwitchDirectionalLight()
+{
+	if (_scene->GetLightsDirectional().size() <= 0)
+	{
+		return;
+	}
+
+	if (_postprocessCounter == 0)
+	{
+		_scene->GetLightsDirectional()[0]->SetEnabled(false);
+	}
+	else
+	{
+		_scene->GetLightsDirectional()[0]->SetEnabled(true);
+	}
 }

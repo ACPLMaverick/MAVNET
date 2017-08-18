@@ -16,6 +16,7 @@ namespace Postprocesses
 		float _maxDistance;
 		float _fadeStart;
 		float _epsilon;
+		float _powFactor;
 
 		ID3D11Buffer* _dataBuffer;
 		Texture* _randomVectorTexture;
@@ -29,7 +30,7 @@ namespace Postprocesses
 		// Inherited via Postprocess
 		virtual void Update() override;
 		virtual void SetPass(const Camera& camera, int32_t passIndex = 0) const;
-		virtual inline int GetPassCount() const { return 2; }
+		virtual inline int GetPassCount() const { return 1; }
 	};
 
 }

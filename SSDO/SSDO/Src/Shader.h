@@ -71,6 +71,8 @@ public:
 		XMFLOAT4X4A Proj;
 		XMFLOAT4A Offsets[14];
 		XMFLOAT4A Params;
+		XMFLOAT4A LightColor;
+		XMFLOAT3A LightDirection;
 	};
 
 	__declspec(align(16))

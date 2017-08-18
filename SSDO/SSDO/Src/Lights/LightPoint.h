@@ -13,6 +13,7 @@ namespace Lights
 		XMFLOAT4A _color;
 		XMFLOAT3A _position;
 		float _range;
+		bool _enabled;
 
 	public:
 
@@ -22,6 +23,9 @@ namespace Lights
 
 		inline const XMFLOAT4A& GetColor() const { return _color; }
 		inline void SetColor(const XMFLOAT4A& col) { _color = col; }
+		inline bool GetEnabled() const { return _enabled; }
+		inline void SetEnabled(bool enabled) { _enabled = enabled; }
+		inline void ToggleEnabled() { _enabled = !_enabled; }
 		inline const XMFLOAT3A& GetPosition() const { return _position; }
 		inline void SetPosition(const XMFLOAT3A& pos) { _position = pos; }
 

@@ -7,6 +7,9 @@
 #include "Object.h"
 #include "Postprocesses/Postprocess.h"
 #include "Text.h"
+#include "Lights/LightAmbient.h"
+#include "Lights/LightDirectional.h"
+#include "Lights/LightPoint.h"
 
 using namespace Scenes;
 
@@ -87,7 +90,7 @@ void Camera::Draw(Scene& scene) const
 		// enlighten objects
 		gBuffer.SetDrawLights();
 
-		if (scene._lightAmbient != nullptr)
+		if (scene._lightAmbient != nullptr && scene._lightAmbient->GetEnabled())
 		{
 			gBuffer.SetDrawLightAmbient();
 			gBuffer.DrawLightAmbient(*scene._lightAmbient);
@@ -99,7 +102,8 @@ void Camera::Draw(Scene& scene) const
 
 			for (auto it = scene._lightsDirectional.begin(); it != scene._lightsDirectional.end(); ++it)
 			{
-				gBuffer.DrawLightDirectional(**it);
+				if((*it)->GetEnabled())
+					gBuffer.DrawLightDirectional(**it);
 			}
 		}
 
@@ -109,7 +113,8 @@ void Camera::Draw(Scene& scene) const
 
 			for (auto it = scene._lightsPoint.begin(); it != scene._lightsPoint.end(); ++it)
 			{
-				gBuffer.DrawLightPoint(**it);
+				if ((*it)->GetEnabled())
+					gBuffer.DrawLightPoint(**it);
 			}
 		}
 

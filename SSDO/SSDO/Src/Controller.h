@@ -28,6 +28,8 @@ protected:
 	float _cameraRotateSpeedX;
 	float _cameraRotateSpeedY;
 
+	inline void SwitchDirectionalLight();
+
 public:
 	Controller(Scenes::Scene* scene);
 	~Controller();
