@@ -100,6 +100,7 @@ float4 main(DPixelInput input) : SV_TARGET
 		float3 sampleDirection = normalize(viewSamplePos - mapViewPos);
 		// Directional scale factor for occlusion (based on angle between normal and sample point direction)
 		float dp = max(dot(normal, offset), 0.0f);
+		occlusionCounter += dp * Occlusion(-distZ);
 
 		// Lit from this sample
 		float4 lit = float4(0.0f, 0.0f, 0.0f, 1.0f);
@@ -113,22 +114,22 @@ float4 main(DPixelInput input) : SV_TARGET
 		
 		// take this sample into consideration or not, depending whether it is above surface or not.
 		float litFactor = sign(max(distZ, 0.0f));
-		//litFactor *= max(dot(normal, sampleDirection), 0.0f);
 		litFactor *= (dp);
 		lit *= litFactor;
 
-		//if (abs(distZ) > maxDist)
-		//	lit = float4(1.0f, 1.0f, 1.0f, 1.0f);
+		if (abs(distZ) > (5.0f * maxDist))
+			lit = 1.0f;
 
 		final += saturate(lit);
 	}
 
-
-	//final = final / litCounter;
+	float occlusion = 1.0f - saturate(10.0f * (occlusionCounter / occlusionDivisor));
+	occlusion = pow(occlusion, powFactor);
+	//final.y = final.z = final.x = occlusion;
+	final += occlusion;
 
 	final = pow(final, powFactor);
 	final = saturate(final);
-	//final.y = final.z = final.x;
 
 	return final;
 }

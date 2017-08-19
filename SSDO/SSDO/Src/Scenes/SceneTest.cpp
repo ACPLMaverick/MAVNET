@@ -29,7 +29,7 @@ namespace Scenes
 
 	void SceneTest::SetupScene()
 	{
-		_mainCamera = new Camera(XMFLOAT3A(0.0f, 4.0f, -8.0f));
+		_mainCamera = new Camera(XMFLOAT3A(8.0f, 4.0f, -8.0f));
 
 		Shader* shdColor = LoadShader(std::wstring(L"ColorShader"));
 
@@ -71,7 +71,7 @@ namespace Scenes
 		objBox03->SetRotation(XMFLOAT3A(0.0f, 35.0f, 0.0f));
 		_objects.push_back(objBox03);
 
-		//_lightAmbient = new LightAmbient(XMFLOAT4A(0.05f, 0.05f, 0.1f, 1.0f));
+		_lightAmbient = new LightAmbient(XMFLOAT4A(0.3f, 0.3f, 0.3f, 1.0f));
 
 		const float dirBoost = 1.0f;
 		_lightsDirectional.push_back(new LightDirectional(XMFLOAT4A(1.0f * dirBoost, 0.75f * dirBoost, 0.6f * dirBoost, 1.0f), XMFLOAT3A(1.0f, -0.3f, 1.0f)));

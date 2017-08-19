@@ -14,7 +14,8 @@
 using namespace Scenes;
 using namespace Postprocesses;
 
-Controller::Controller(Scene* scene) : _scene(scene), _cameraSpeed(1.0f), _cameraBoost(30.0f), _cameraRotateSpeedX(1.0f), _cameraRotateSpeedY(1.0f)
+Controller::Controller(Scene* scene) : _scene(scene), _cameraSpeed(1.0f), _cameraBoost(30.0f), _cameraRotateSpeedX(1.0f), _cameraRotateSpeedY(1.0f),
+										_lightRotationAngle(0.0f)
 {
 }
 
@@ -167,6 +168,22 @@ void Controller::Update()
 			_profiler->SwitchPostprocessName(_postprocessCounter);
 			SwitchDirectionalLight();
 		}
+	}
+
+	// Light rotation
+	if (_scene->GetLightsDirectional().size() > 0)
+	{
+		Lights::LightDirectional* lDir(_scene->GetLightsDirectional()[0]);
+		const float rotationSpeed(25.0f);
+		XMFLOAT3A rotationTemp(XMFLOAT3A(0.0f, 0.0f, 1.0f));
+		const XMVECTOR rotationAxeVec(XMLoadFloat3A(&rotationTemp));
+
+		const float lightRotationAngle = rotationSpeed * Timer::GetInstance()->GetDeltaTime();
+		
+		XMVECTOR direction(-XMLoadFloat3A(&lDir->GetDirection()));
+		direction = XMVector3Rotate(direction, XMQuaternionRotationAxis(rotationAxeVec, XMConvertToRadians(lightRotationAngle)));
+		XMStoreFloat3A(&rotationTemp, direction);
+		lDir->SetDirection(rotationTemp);
 	}
 }
 
