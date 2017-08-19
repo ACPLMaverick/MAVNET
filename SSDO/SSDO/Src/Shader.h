@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GlobalDefines.h"
+#include "Postprocesses/SSDOBase.h"
 
 class Shader
 {
@@ -69,7 +70,7 @@ public:
 		struct SSDOBasePS
 	{
 		XMFLOAT4X4A Proj;
-		XMFLOAT4A Offsets[14];
+		XMFLOAT4A Offsets[Postprocesses::SSDOBase::SAMPLE_COUNT];
 		XMFLOAT4A Params;
 		XMFLOAT4A LightColor;
 		XMFLOAT3A LightDirection;

@@ -134,7 +134,7 @@ namespace Postprocesses
 			// Create random vector (fill pixelHalf).
 			for (uint32_t j = 0; j < 3; ++j)
 			{
-				pixelVector.m128_f32[j] = System::GetInstance()->GetRandom()->GetFloat(-HALF_MAX, HALF_MAX);
+				pixelVector.m128_f32[j] = System::GetInstance()->GetRandom()->GetFloat(0.0001f, HALF_MAX);
 			}
 			pixelVector.m128_f32[3] = 0.0f;
 

@@ -178,6 +178,8 @@ void Controller::Shutdown()
 
 inline void Controller::SwitchDirectionalLight()
 {
+	return;	// !!!!!!
+
 	if (_scene->GetLightsDirectional().size() <= 0)
 	{
 		return;

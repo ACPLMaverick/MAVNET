@@ -8,9 +8,12 @@ namespace Postprocesses
 	class SSDOBase :
 		public Postprocess
 	{
-	protected:
+	public:
 
 		static const int32_t SAMPLE_COUNT = 14;
+
+	protected:
+
 
 		XMFLOAT4A _offsets[SAMPLE_COUNT];
 		float _maxDistance;
@@ -30,7 +33,7 @@ namespace Postprocesses
 		// Inherited via Postprocess
 		virtual void Update() override;
 		virtual void SetPass(const Camera& camera, int32_t passIndex = 0) const;
-		virtual inline int GetPassCount() const { return 1; }
+		virtual inline int GetPassCount() const { return 2; }
 	};
 
 }

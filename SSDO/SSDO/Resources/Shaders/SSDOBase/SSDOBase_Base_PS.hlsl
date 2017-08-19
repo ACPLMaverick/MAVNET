@@ -1,4 +1,5 @@
 #include "../_global/GlobalDefines.hlsli"
+#include "../_global/Lighting.hlsli"
 
 #define SAMPLE_COUNT 14
 
@@ -34,21 +35,6 @@ SamplerState SmpBuffer : register(s4);
 Texture2D TexRandomVectors : register(t5);
 SamplerState SmpRandomVectors : register(s5);
 
-float3 ColorFactor(float2 mapUv, float distZ)
-{
-	const float FADE_END = gParams.x;
-
-	// Get color of sample
-	float3 mapColor = TexColor.Sample(SmpColor, mapUv).rgb;
-	// Compute scale factor: 1 if this sample is above surface, 0 if below
-	float colorScale = sign(max(distZ, 0.0f));
-
-	if (distZ > FADE_END)
-		colorScale = 0.0f;
-	
-	return mapColor * colorScale;
-}
-
 float Occlusion(float distZ)
 {
 	const float EPSILON = gParams.z;
@@ -69,15 +55,22 @@ float Occlusion(float distZ)
 float4 main(DPixelInput input) : SV_TARGET
 {
 	float depth = TexDepth.Sample(SmpDepth, input.Uv).r;
-	float3 normal = TexNormal.Sample(SmpNormal, input.Uv).xyz;
+	float4 normalSample = TexNormal.Sample(SmpNormal, input.Uv);
+	float3 normal = normalSample.xyz;
 	float3 viewPos = ViewPositionFromDepth(projInverse, input.Uv, depth);
 	float3 randomVec = TexRandomVectors.Sample(SmpRandomVectors, input.Uv).xyz;
 	const float maxDist = gParams.x;
 	const float powFactor = gParams.w;
-	float3 colorFactor = float3(0.0f, 0.0f, 0.0f);
 
 	float occlusionCounter = 0.0f;
 	float occlusionDivisor = SAMPLE_COUNT;
+
+	MaterialData pData;
+	pData.colBase = float4(1.0f, 1.0f, 1.0f, 1.0f);
+	pData.colSpecular = float4(1.0f, 1.0f, 1.0f, 1.0f);
+	pData.gloss = normalSample.w;
+
+	float4 final = float4(0.0f, 0.0f, 0.0f, 1.0f);
 
 	[unroll]
 	for (int i = 0; i < SAMPLE_COUNT; ++i)
@@ -85,9 +78,11 @@ float4 main(DPixelInput input) : SV_TARGET
 		// Acquire sample position
 		// Reflecting an offset by a random normal will give random but uniformly distributed vectors.
 		float3 offset = reflect(gOffsets[i].xyz, randomVec);
-		float3 normalizedOffset = normalize(offset);
-		float flip = sign(dot(normalizedOffset, normal));
+		offset = normalize(offset);
+		float flip = sign(dot(offset, normal));
+		offset = offset * flip;
 		float4 samplePos = float4(viewPos + maxDist * offset, 1.0f);
+		float3 viewSamplePos = samplePos.xyz;
 
 		// Go from view position to screen position (so the depth buffer could be directly used)
 		samplePos = mul(samplePos, gProj);
@@ -101,21 +96,39 @@ float4 main(DPixelInput input) : SV_TARGET
 		float3 mapViewPos = ViewPositionFromDepth(projInverse, mapUv, mapDepth);
 
 		// Compute occlusion for this sample
-		float distZ = viewPos.z - mapViewPos.z;
+		float distZ = mapViewPos.z - viewSamplePos.z;
+		float3 sampleDirection = normalize(viewSamplePos - mapViewPos);
 		// Directional scale factor for occlusion (based on angle between normal and sample point direction)
-		float dp = max(dot(normal, normalize(mapViewPos - viewPos)), 0.0f);
-		occlusionCounter += dp * Occlusion(distZ);
+		float dp = max(dot(normal, offset), 0.0f);
 
-		// Compute color factor for sample and add mix with global variable
-		colorFactor += ColorFactor(mapUv, distZ);
+		// Lit from this sample
+		float4 lit = float4(0.0f, 0.0f, 0.0f, 1.0f);
+		PhongBlinn(gLightColor,
+			1.0f,
+			normalize(viewSamplePos - viewPos),
+			gLightDirection,
+			-normalize(viewSamplePos),
+			pData,
+			lit);
+		
+		// take this sample into consideration or not, depending whether it is above surface or not.
+		float litFactor = sign(max(distZ, 0.0f));
+		//litFactor *= max(dot(normal, sampleDirection), 0.0f);
+		litFactor *= (dp);
+		lit *= litFactor;
+
+		//if (abs(distZ) > maxDist)
+		//	lit = float4(1.0f, 1.0f, 1.0f, 1.0f);
+
+		final += saturate(lit);
 	}
 
-	float occlusion = 1.0f - (1.0f * occlusionCounter / occlusionDivisor);
-	occlusion = pow(occlusion, powFactor);
 
-	// Mix occlusion with color factor
-	colorFactor = saturate(normalize(colorFactor));
-	float4 final = saturate(float4(occlusion, occlusion, occlusion, 1.0f) + float4(colorFactor.x, colorFactor.y, colorFactor.z, 0.0f));
+	//final = final / litCounter;
+
+	final = pow(final, powFactor);
+	final = saturate(final);
+	//final.y = final.z = final.x;
 
 	return final;
 }

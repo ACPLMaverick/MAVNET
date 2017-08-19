@@ -13,15 +13,15 @@ namespace Postprocesses
 	SSDOBase::SSDOBase() :
 		_dataBuffer(nullptr),
 		_randomVectorTexture(nullptr),
-		_maxDistance(1.0f),
+		_maxDistance(0.7f),
 		_fadeStart(0.02f),
 		_epsilon(0.01f),
-		_powFactor(16.0f)
+		_powFactor(1.0f)
 	{
 		RandomVectorsGenerator::Generate(&_randomVectorTexture, 1024);
 
 		_shaders.push_back(System::GetInstance()->GetScene()->LoadShader(std::wstring(L"SSDOBase_Base")));
-		//_shaders.push_back(System::GetInstance()->GetScene()->LoadShader(std::wstring(L"SSDOBase_BlurMerge")));
+		_shaders.push_back(System::GetInstance()->GetScene()->LoadShader(std::wstring(L"SSDOBase_BlurMerge")));
 
 		ID3D11Device* device = Renderer::GetInstance()->GetDevice();
 
@@ -75,27 +75,29 @@ namespace Postprocesses
 	{
 		Postprocess::SetPass(camera, passIndex);
 
-		//if (passIndex == 0)
-		//{
+		if (passIndex == 0)
+		{
 			Shader::SSDOBasePS* buffer = reinterpret_cast<Shader::SSDOBasePS*>(_shaders[0]->MapPsBuffer(1));
 			XMMATRIX proj = XMLoadFloat4x4A(&camera.GetMatProj());
 			XMStoreFloat4x4A(&buffer->Proj, XMMatrixTranspose(proj));
 			memcpy(&buffer->Offsets, _offsets, SAMPLE_COUNT * sizeof(XMFLOAT4A));
 			FillParams(&buffer->Params);
-			buffer->LightColor = System::GetInstance()->GetScene()->GetLightsDirectional()[0]->GetColor();
-			buffer->LightDirection = System::GetInstance()->GetScene()->GetLightsDirectional()[0]->GetDirection();
+			reinterpret_cast<Lights::LightDirectional*>(&buffer->LightColor)->ApplyToShader(
+				*System::GetInstance()->GetScene()->GetLightsDirectional()[0],
+				camera
+			);
 
 			_shaders[0]->UnmapPsBuffer(1);
 
 			_randomVectorTexture->Set(5);
-		//}
-		//else if (passIndex == 1)
-		//{
-		//	Shader::SSDOBlurMergePS* buffer = reinterpret_cast<Shader::SSDOBlurMergePS*>(_shaders[1]->MapPsBuffer(1));
-		//	buffer->TexelSize = XMFLOAT2A(1.0f / (float)System::GetInstance()->GetOptions()._windowWidth,
-		//		1.0f / (float)System::GetInstance()->GetOptions()._windowHeight);
-		//	_shaders[1]->UnmapPsBuffer(1);
-		//}
+		}
+		else if (passIndex == 1)
+		{
+			Shader::SSDOBlurMergePS* buffer = reinterpret_cast<Shader::SSDOBlurMergePS*>(_shaders[1]->MapPsBuffer(1));
+			buffer->TexelSize = XMFLOAT2A(1.0f / (float)System::GetInstance()->GetOptions()._windowWidth,
+				1.0f / (float)System::GetInstance()->GetOptions()._windowHeight);
+			_shaders[1]->UnmapPsBuffer(1);
+		}
 	}
 
 	inline void SSDOBase::FillParams(XMFLOAT4A * paramBuffer) const

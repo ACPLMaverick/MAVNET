@@ -68,7 +68,8 @@ float4 main(DPixelInput input) : SV_TARGET
 		float3 offset = reflect(gOffsets[i].xyz, randomVec);
 		float3 normalizedOffset = normalize(offset);
 		float flip = sign(dot(normalizedOffset, normal));
-		float4 samplePos = float4(viewPos + maxDist * offset, 1.0f);
+		float4 samplePos = float4(viewPos + maxDist * offset * flip, 1.0f);
+		float3 viewSamplePos = samplePos.xyz;
 
 		// Go from view position to screen position (so the depth buffer could be directly used)
 		samplePos = mul(samplePos, gProj);
@@ -82,8 +83,8 @@ float4 main(DPixelInput input) : SV_TARGET
 		float3 mapViewPos = ViewPositionFromDepth(projInverse, mapUv, mapDepth);
 
 		// Compute occlusion for this sample
-		float distZ = viewPos.z - mapViewPos.z;
-		float dp = max(dot(normal, normalize(mapViewPos - viewPos)), 0.0f);
+		float distZ = viewSamplePos.z - mapViewPos.z;
+		float dp = max(dot(normal, normalize(mapViewPos - viewSamplePos)), 0.0f);
 		occlusionCounter += dp * Occlusion(distZ);
 
 		//occlusionCounter += min(max(sampleDepth - mapDepth, 0.0f), maxDist) / maxDist;
