@@ -40,12 +40,20 @@ SamplerState SmpInput : register(s3);
 Texture2D TexBuffer : register(t4);
 SamplerState SmpBuffer : register(s4);
 
+Texture2D TexBufferB : register(t5);
+SamplerState SmpBufferB : register(s5);
+
+Texture2D TexRandomVectors : register(t6);
+SamplerState SmpRandomVectors : register(s6);
+
 float4 main(DPixelInput input) : SV_TARGET
 {
 	float3 normal = TexNormal.Sample(SmpNormal, input.Uv).xyz;
 	float depth = TexDepth.Sample(SmpDepth, input.Uv).r;
 	float4 baseAO = TexBuffer.Sample(SmpBuffer, input.Uv);
 	float4 ao = weights[2][2] * baseAO;
+	float4 baseIndirect = TexBufferB.Sample(SmpBufferB, input.Uv);
+	float4 indirect = weights[2][2] * baseIndirect;
 	float weightSum = weights[2][2];
 
 	[unroll]
@@ -60,6 +68,7 @@ float4 main(DPixelInput input) : SV_TARGET
 			float2 offset = float2(gTexelSize.x * j, gTexelSize.y * i) * KERNEL_RADIUS;
 			float weight = weights[j + KERNEL_SIZE][i + KERNEL_SIZE];
 			float4 aoSample = TexBuffer.Sample(SmpBuffer, input.Uv + offset);
+			float4 indirectSample = TexBufferB.Sample(SmpBufferB, input.Uv + offset);
 			float3 normalSample = TexNormal.Sample(SmpNormal, input.Uv + offset).xyz;
 			float depthSample = TexDepth.Sample(SmpDepth, input.Uv + offset).r;
 
@@ -67,14 +76,18 @@ float4 main(DPixelInput input) : SV_TARGET
 				continue;
 
 			ao += aoSample * weight;
+			indirect += indirectSample * weight;
 			weightSum += weight;
 		}
 	}
 
 	ao = ao / weightSum;
+	indirect = indirect / weightSum;
 
 	float4 inputSample = TexInput.Sample(SmpInput, input.Uv);
-	return saturate(ao) * inputSample;
+	return saturate(ao) * inputSample + indirect;
+	//return indirect;
+	//return baseIndirect;
 	//return saturate(ao);
 	//return baseAO;
 }

@@ -101,6 +101,7 @@ protected:
 	RenderTarget _outputA;
 	RenderTarget _outputB;
 	RenderTarget _postprocessBuffer;
+	RenderTarget _postprocessBufferB;
 
 	ID3D11BlendState* _additiveBlendState;
 

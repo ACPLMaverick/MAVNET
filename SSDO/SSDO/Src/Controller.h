@@ -28,7 +28,7 @@ protected:
 	float _cameraRotateSpeedX;
 	float _cameraRotateSpeedY;
 
-	float _lightRotationAngle;
+	bool _bRotateLight;
 
 	inline void SwitchDirectionalLight();
 

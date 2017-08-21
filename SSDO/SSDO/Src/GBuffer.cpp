@@ -91,6 +91,7 @@ GBuffer::GBuffer(const Camera& camera) :
 	ASSERT(device->CreateTexture2D(&descTexture, nullptr, &_outputA.Texture) == S_OK);
 	ASSERT(device->CreateTexture2D(&descTexture, nullptr, &_outputB.Texture) == S_OK);
 	ASSERT(device->CreateTexture2D(&descTexture, nullptr, &_postprocessBuffer.Texture) == S_OK);
+	ASSERT(device->CreateTexture2D(&descTexture, nullptr, &_postprocessBufferB.Texture) == S_OK);
 	ASSERT(device->CreateTexture2D(&descDs, nullptr, &_depth.Texture) == S_OK);
 
 	ASSERT(device->CreateRenderTargetView(_color.Texture, nullptr, &_color.View) == S_OK);
@@ -98,6 +99,7 @@ GBuffer::GBuffer(const Camera& camera) :
 	ASSERT(device->CreateRenderTargetView(_outputA.Texture, nullptr, &_outputA.View) == S_OK);
 	ASSERT(device->CreateRenderTargetView(_outputB.Texture, nullptr, &_outputB.View) == S_OK);
 	ASSERT(device->CreateRenderTargetView(_postprocessBuffer.Texture, nullptr, &_postprocessBuffer.View) == S_OK);
+	ASSERT(device->CreateRenderTargetView(_postprocessBufferB.Texture, nullptr, &_postprocessBufferB.View) == S_OK);
 
 	ASSERT(device->CreateSamplerState(&descSampler, &_color.Sampler) == S_OK);
 	ASSERT(device->CreateSamplerState(&descSampler, &_normal.Sampler) == S_OK);
@@ -105,12 +107,14 @@ GBuffer::GBuffer(const Camera& camera) :
 	ASSERT(device->CreateSamplerState(&descSampler, &_outputB.Sampler) == S_OK);
 	ASSERT(device->CreateSamplerState(&descSampler, &_depth.Sampler) == S_OK);
 	ASSERT(device->CreateSamplerState(&descSampler, &_postprocessBuffer.Sampler) == S_OK);
+	ASSERT(device->CreateSamplerState(&descSampler, &_postprocessBufferB.Sampler) == S_OK);
 
 	ASSERT(device->CreateShaderResourceView(_color.Texture, &descSrv, &_color.SRV) == S_OK);
 	ASSERT(device->CreateShaderResourceView(_normal.Texture, &descSrvNormals, &_normal.SRV) == S_OK);
 	ASSERT(device->CreateShaderResourceView(_outputA.Texture, &descSrv, &_outputA.SRV) == S_OK);
 	ASSERT(device->CreateShaderResourceView(_outputB.Texture, &descSrv, &_outputB.SRV) == S_OK);
 	ASSERT(device->CreateShaderResourceView(_postprocessBuffer.Texture, &descSrv, &_postprocessBuffer.SRV) == S_OK);
+	ASSERT(device->CreateShaderResourceView(_postprocessBufferB.Texture, &descSrv, &_postprocessBufferB.SRV) == S_OK);
 	descSrv.Format = formatDepthSrv;
 	ASSERT(device->CreateShaderResourceView(_depth.Texture, &descSrv, &_depth.SRV) == S_OK);
 
@@ -188,6 +192,8 @@ GBuffer::~GBuffer()
 	_depth.Shutdown();
 	_outputA.Shutdown();
 	_outputB.Shutdown();
+	_postprocessBuffer.Shutdown();
+	_postprocessBufferB.Shutdown();
 }
 
 void GBuffer::SetDrawMeshes()
@@ -302,7 +308,23 @@ void GBuffer::DrawPostprocess(const Postprocesses::Postprocess & pp)
 		context->PSSetSamplers(3, 1, &_outputA.Sampler);
 		context->PSSetShaderResources(4, 1, &_postprocessBuffer.SRV);
 		context->PSSetSamplers(4, 1, &_postprocessBuffer.Sampler);
-		context->OMSetRenderTargets(1, &_outputB.View, nullptr);
+
+
+		if (!(i % 2))
+		{
+			void* n[1] = { nullptr };
+			context->PSSetShaderResources(5, 1, reinterpret_cast<ID3D11ShaderResourceView**>(n));
+			context->PSSetSamplers(5, 1, reinterpret_cast<ID3D11SamplerState**>(n));
+			ID3D11RenderTargetView* rts[2] = { _outputB.View, _postprocessBufferB.View };
+			context->OMSetRenderTargets(2, rts, nullptr);
+		}
+		else
+		{
+			context->OMSetRenderTargets(1, &_outputB.View, nullptr);
+			context->PSSetShaderResources(5, 1, &_postprocessBufferB.SRV);
+			context->PSSetSamplers(5, 1, &_postprocessBufferB.Sampler);
+		}
+
 		DrawFullscreenPlane();
 		const uintptr_t null = 0;
 		context->OMSetRenderTargets(1, reinterpret_cast<ID3D11RenderTargetView* const*>(&null), nullptr);

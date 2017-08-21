@@ -14,8 +14,13 @@
 using namespace Scenes;
 using namespace Postprocesses;
 
-Controller::Controller(Scene* scene) : _scene(scene), _cameraSpeed(1.0f), _cameraBoost(30.0f), _cameraRotateSpeedX(1.0f), _cameraRotateSpeedY(1.0f),
-										_lightRotationAngle(0.0f)
+Controller::Controller(Scene* scene) : 
+	_scene(scene), 
+	_cameraSpeed(1.0f), 
+	_cameraBoost(30.0f), 
+	_cameraRotateSpeedX(1.0f), 
+	_cameraRotateSpeedY(1.0f),
+	_bRotateLight(false)
 {
 }
 
@@ -171,7 +176,7 @@ void Controller::Update()
 	}
 
 	// Light rotation
-	if (_scene->GetLightsDirectional().size() > 0)
+	if (_bRotateLight && _scene->GetLightsDirectional().size() > 0)
 	{
 		Lights::LightDirectional* lDir(_scene->GetLightsDirectional()[0]);
 		const float rotationSpeed(25.0f);

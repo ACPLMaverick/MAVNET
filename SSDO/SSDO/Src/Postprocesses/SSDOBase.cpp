@@ -89,7 +89,7 @@ namespace Postprocesses
 
 			_shaders[0]->UnmapPsBuffer(1);
 
-			_randomVectorTexture->Set(5);
+			_randomVectorTexture->Set(6);
 		}
 		else if (passIndex == 1)
 		{

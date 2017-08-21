@@ -17,6 +17,12 @@ cbuffer SSDOBase : register(b1)
 	float3 gLightDirection;
 };
 
+struct PixelOutput
+{
+	float4 direct : SV_TARGET0;
+	float4 indirectAdd : SV_TARGET1;
+};
+
 Texture2D TexColor : register(t0);
 SamplerState SmpColor : register(s0);
 
@@ -32,8 +38,11 @@ SamplerState SmpInput : register(s3);
 Texture2D TexBuffer : register(t4);
 SamplerState SmpBuffer : register(s4);
 
-Texture2D TexRandomVectors : register(t5);
-SamplerState SmpRandomVectors : register(s5);
+Texture2D TexBufferB : register(t5);
+SamplerState SmpBufferB : register(s5);
+
+Texture2D TexRandomVectors : register(t6);
+SamplerState SmpRandomVectors : register(s6);
 
 float Occlusion(float distZ)
 {
@@ -52,7 +61,7 @@ float Occlusion(float distZ)
 	return occlusion;
 }
 
-float4 main(DPixelInput input) : SV_TARGET
+PixelOutput main(DPixelInput input)
 {
 	float depth = TexDepth.Sample(SmpDepth, input.Uv).r;
 	float4 normalSample = TexNormal.Sample(SmpNormal, input.Uv);
@@ -70,7 +79,10 @@ float4 main(DPixelInput input) : SV_TARGET
 	pData.colSpecular = float4(1.0f, 1.0f, 1.0f, 1.0f);
 	pData.gloss = normalSample.w;
 
-	float4 final = float4(0.0f, 0.0f, 0.0f, 1.0f);
+	PixelOutput output;
+
+	output.direct = float4(0.0f, 0.0f, 0.0f, 1.0f);
+	output.indirectAdd = float4(0.0f, 0.0f, 0.0f, 1.0f);
 
 	[unroll]
 	for (int i = 0; i < SAMPLE_COUNT; ++i)
@@ -100,36 +112,68 @@ float4 main(DPixelInput input) : SV_TARGET
 		float3 sampleDirection = normalize(viewSamplePos - mapViewPos);
 		// Directional scale factor for occlusion (based on angle between normal and sample point direction)
 		float dp = max(dot(normal, offset), 0.0f);
-		occlusionCounter += dp * Occlusion(-distZ);
+		float finalOcclusion = dp * Occlusion(-distZ);
+		occlusionCounter += finalOcclusion;
 
 		// Lit from this sample
-		float4 lit = float4(0.0f, 0.0f, 0.0f, 1.0f);
+		float4 smpColor = 0.0f;
+		float4 smpBaseColor = TexColor.Sample(SmpColor, mapUv);
+		//pData.colBase = smpBaseColor;
+
 		PhongBlinn(gLightColor,
 			1.0f,
 			normalize(viewSamplePos - viewPos),
 			gLightDirection,
 			-normalize(viewSamplePos),
 			pData,
-			lit);
+			smpColor);
 		
 		// take this sample into consideration or not, depending whether it is above surface or not.
+		float4 lit = smpColor;
 		float litFactor = sign(max(distZ, 0.0f));
 		litFactor *= (dp);
-		lit *= litFactor;
 
+		// calculate indirecity
+		float3 mapNormal = normalize(TexNormal.Sample(SmpNormal, mapUv).xyz);
+		float indFactor = -sign(min(distZ, 0.0f));
+
+		float3 transmittanceDirection = -(viewPos - mapViewPos);
+		float tdLength = length(transmittanceDirection);
+		transmittanceDirection /= tdLength;
+		float dotSender = max(dot(-mapNormal, transmittanceDirection), 0.0f);
+		float dotReceiver = max(dot(normal, transmittanceDirection), 0.0f);
+		float dPowTwoRec = max(tdLength, 0.001f);
+		dPowTwoRec = 1.0f / (dPowTwoRec * dPowTwoRec);
+		float a = 5.0f;
+
+		indFactor *= a * dotSender * dotReceiver * dPowTwoRec;
+		indFactor *= max(dot(mapNormal, gLightDirection), 0.0f);
+
+		// if maximum distance is exceeded, add to lit factor to avoid "shadow / light bleeding"
 		if (abs(distZ) > (5.0f * maxDist))
-			lit = 1.0f;
+		{
+			litFactor += 0.5f;
+			indFactor = 0.0f;
+		}
 
-		final += saturate(lit);
+		// add to global vars
+
+		lit *= litFactor;
+		output.direct += lit;
+
+		output.indirectAdd += indFactor * smpBaseColor * gLightColor;
 	}
 
 	float occlusion = 1.0f - saturate(10.0f * (occlusionCounter / occlusionDivisor));
 	occlusion = pow(occlusion, powFactor);
 	//final.y = final.z = final.x = occlusion;
-	final += occlusion;
+	output.direct += occlusion;
 
-	final = pow(final, powFactor);
-	final = saturate(final);
+	output.direct = pow(output.direct, powFactor);
+	output.direct = saturate(output.direct);
 
-	return final;
+	output.indirectAdd *= occlusion;
+	output.indirectAdd = (output.indirectAdd / SAMPLE_COUNT);
+
+	return output;
 }

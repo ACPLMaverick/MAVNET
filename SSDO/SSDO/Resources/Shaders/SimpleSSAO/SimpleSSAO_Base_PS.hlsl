@@ -29,8 +29,8 @@ SamplerState SmpInput : register(s3);
 Texture2D TexBuffer : register(t4);
 SamplerState SmpBuffer : register(s4);
 
-Texture2D TexRandomVectors : register(t5);
-SamplerState SmpRandomVectors : register(s5);
+Texture2D TexRandomVectors : register(t6);
+SamplerState SmpRandomVectors : register(s6);
 
 float Occlusion(float distZ)
 {

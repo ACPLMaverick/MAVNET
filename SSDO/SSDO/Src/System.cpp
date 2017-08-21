@@ -120,6 +120,8 @@ void System::InitInstance(HINSTANCE hInstance, int nCmdShow)
 	ASSERT_D(_hwnd, L"HWND is null");
 
 	ShowWindow(_hwnd, nCmdShow);
+	SetForegroundWindow(_hwnd);
+	SetFocus(_hwnd);
 	UpdateWindow(_hwnd);
 }
 
@@ -130,7 +132,7 @@ void System::RunMessageLoop()
 	MSG msg;
 
 	// Main message loop:
-	if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+	while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE) != NULL)
 	{
 		if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
 		{

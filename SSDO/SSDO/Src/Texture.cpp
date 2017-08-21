@@ -11,7 +11,7 @@ Texture::Texture(const std::string & fileName, bool bMakeReadOnly)
 	ASSERT_D(false, L"Not implemented.");
 }
 
-void Texture::InitResources(bool bMakeReadOnly)
+void Texture::InitResources(bool bMakeReadOnly, bool bIsRenderTarget)
 {
 	Shutdown();
 
@@ -21,14 +21,14 @@ void Texture::InitResources(bool bMakeReadOnly)
 	uint8_t realMipmapCount = _bMipmapped ? 0 : 1;
 	D3D11_TEXTURE2D_DESC desc;
 	desc.ArraySize = 1;
-	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | (_bMipmapped ? D3D11_BIND_RENDER_TARGET : 0);
+	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | ((_bMipmapped || bIsRenderTarget) ? D3D11_BIND_RENDER_TARGET : 0);
 	desc.CPUAccessFlags = 0;
 	desc.Format = _format;
 	desc.MipLevels = realMipmapCount;
 	desc.MiscFlags = _bMipmapped ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0;
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.Width = _width;
-	desc.Height = _width;
+	desc.Height = _height == 0 ? _width : _height;
 	desc.SampleDesc.Count = 1;
 	desc.SampleDesc.Quality = 0;
 
@@ -40,7 +40,8 @@ void Texture::InitResources(bool bMakeReadOnly)
 	device->CreateTexture2D(&desc, nullptr, &_fTexture);
 	ASSERT_D(_fTexture != nullptr, L"GraphicsDevice: An error occured while creating texture 2D resource.");
 
-	deviceContext->UpdateSubresource(_fTexture, 0, NULL, _rawData.GetDataPtr(), _width * (_bpp / 8), 0);
+	if(_rawData.IsAllocated())
+		deviceContext->UpdateSubresource(_fTexture, 0, NULL, _rawData.GetDataPtr(), _width * (_bpp / 8), 0);
 
 	D3D11_SAMPLER_DESC sDesc;
 	ZERO(sDesc);
@@ -77,7 +78,14 @@ void Texture::InitResources(bool bMakeReadOnly)
 
 	if (bMakeReadOnly)
 	{
-		_rawData.Destroy();
+		MakeReadOnly();
+	}
+
+	_bIsRenderTarget = bIsRenderTarget;
+	if (bIsRenderTarget)
+	{
+		device->CreateRenderTargetView(_fTexture, nullptr, &_fRTV);
+		ASSERT(_fRTV != nullptr);
 	}
 }
 
@@ -89,11 +97,25 @@ void Texture::Set(int32_t slot)
 	deviceContext->PSSetSamplers(slot, 1, &_fSampler);
 }
 
+void Texture::SetAsRenderTarget(int32_t slot)
+{
+	ASSERT(_bIsRenderTarget);
+
+	ID3D11DeviceContext* deviceContext = Renderer::GetInstance()->GetDeviceContext();
+	deviceContext->OMSetRenderTargets(1, &_fRTV, nullptr);
+}
+
 void Texture::Shutdown()
 {
 	if (_fSRV == nullptr)
 	{
 		return;
+	}
+
+	if (_fRTV != nullptr)
+	{
+		_fRTV->Release();
+		_fRTV = nullptr;
 	}
 
 	_fSRV->Release();
@@ -104,4 +126,10 @@ void Texture::Shutdown()
 
 	_fTexture->Release();
 	_fTexture = nullptr;
+}
+
+void Texture::ClearTextureSlot(int32_t slot)
+{
+	ID3D11DeviceContext* deviceContext = Renderer::GetInstance()->GetDeviceContext();
+	deviceContext->PSSetShaderResources(slot, 1, nullptr);
 }
