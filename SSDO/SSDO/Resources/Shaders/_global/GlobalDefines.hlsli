@@ -1,13 +1,15 @@
 /*
 *	Deferred map manual:
-*	COLOR		(RGB - color) (A - transparency)
-*	NORMAL		(XYZ - normal) (W - gloss)
-*	WORLDPOS	(XYZ - worldPos)
-*	DEPTH		(R - depth)
+*	COLOR		(RGB - color)
+*	NORMAL		(XYZ - normal) (W - depth)
 */
 
-
-#define MULTISAMPLE_COUNT 4
+#define BASE_TEXTURES \
+Texture2D TexColor : register(t0); \
+SamplerState SmpColor : register(s0); \
+\
+Texture2D TexNormalDepth : register(t1); \
+SamplerState SmpNormalDepth : register(s1);
 
 struct DVertexInput
 {
@@ -55,6 +57,7 @@ DPixelInput GenerateDPixelInput(uint vertexID)
 
 float3 ViewPositionFromDepth(float4x4 projInverse, float2 pixelCoord, float depth)
 {
+	depth = 1.0f - depth;
 	float4 projectedPos = float4(
 		pixelCoord.x * 2.0f - 1.0f, 
 		(1.0f - pixelCoord.y) * 2.0f - 1.0f, 

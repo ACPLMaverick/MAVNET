@@ -23,14 +23,7 @@ struct PixelOutput
 	float4 indirectAdd : SV_TARGET1;
 };
 
-Texture2D TexColor : register(t0);
-SamplerState SmpColor : register(s0);
-
-Texture2D TexNormal : register(t1);
-SamplerState SmpNormal : register(s1);
-
-Texture2D TexDepth : register(t2);
-SamplerState SmpDepth : register(s2);
+BASE_TEXTURES;
 
 Texture2D TexInput : register(t3);
 SamplerState SmpInput : register(s3);
@@ -63,8 +56,8 @@ float Occlusion(float distZ)
 
 PixelOutput main(DPixelInput input)
 {
-	float depth = TexDepth.Sample(SmpDepth, input.Uv).r;
-	float4 normalSample = TexNormal.Sample(SmpNormal, input.Uv);
+	float4 normalSample = TexNormalDepth.Sample(SmpNormalDepth, input.Uv);
+	float depth = normalSample.w;
 	float3 normal = normalSample.xyz;
 	float3 viewPos = ViewPositionFromDepth(projInverse, input.Uv, depth);
 	float3 randomVec = TexRandomVectors.Sample(SmpRandomVectors, input.Uv).xyz;
@@ -104,7 +97,8 @@ PixelOutput main(DPixelInput input)
 		float sampleDepth = samplePos.z;
 		float2 mapUv = (samplePos.xy + 1.0f) * 0.5f;
 		mapUv.y = 1.0f - mapUv.y;
-		float mapDepth = TexDepth.Sample(SmpDepth, mapUv).r;
+		float4 mapNormalSample = TexNormalDepth.Sample(SmpNormalDepth, mapUv);
+		float mapDepth = mapNormalSample.w;
 		float3 mapViewPos = ViewPositionFromDepth(projInverse, mapUv, mapDepth);
 
 		// Compute occlusion for this sample
@@ -134,7 +128,7 @@ PixelOutput main(DPixelInput input)
 		litFactor *= (dp);
 
 		// calculate indirecity
-		float3 mapNormal = normalize(TexNormal.Sample(SmpNormal, mapUv).xyz);
+		float3 mapNormal = mapNormalSample.xyz;
 		float indFactor = -sign(min(distZ, 0.0f));
 
 		float3 transmittanceDirection = -(viewPos - mapViewPos);

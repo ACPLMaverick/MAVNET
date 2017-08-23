@@ -13,30 +13,24 @@ cbuffer LightPoint : register(b1)
 	float4 gRange;
 };
 
-
-Texture2D TexColor : register(t0);
-SamplerState SmpColor : register(s0);
-
-Texture2D TexNormal : register(t1);
-SamplerState SmpNormal : register(s1);
-
-Texture2D TexDepth : register(t2);
-SamplerState SmpDepth : register(s2);
+BASE_TEXTURES
 
 float4 main(DPixelInput input) : SV_TARGET
 {
-	float4 normalSample = TexNormal.Sample(SmpNormal, input.Uv);
+	float4 normalDepth = TexNormalDepth.Sample(SmpNormalDepth, input.Uv);
+	float depth = normalDepth.w;
+	float3 normal = normalDepth.xyz;
 
 	PixelInput pInput;
 	pInput.Position = input.Position;
-	pInput.PositionView = ViewPositionFromDepth(projInverse, input.Uv, TexDepth.Sample(SmpDepth, input.Uv).r);
-	pInput.Normal = normalize(normalSample.xyz);
+	pInput.PositionView = ViewPositionFromDepth(projInverse, input.Uv, normalDepth.w);
+	pInput.Normal = normalize(normalDepth.xyz);
 	pInput.Uv = input.Uv;
 
 	MaterialData pData;
 	pData.colBase = TexColor.Sample(SmpColor, input.Uv);
 	pData.colSpecular = float4(1.0f, 1.0f, 1.0f, 1.0f);
-	pData.gloss = normalSample.w;
+	pData.gloss = 50.0f;
 
 	float4 inColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	float3 viewDir = normalize(-pInput.PositionView);

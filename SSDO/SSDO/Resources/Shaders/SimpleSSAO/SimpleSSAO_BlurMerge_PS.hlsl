@@ -25,14 +25,7 @@ cbuffer BlurMergeConst
 	};
 };
 
-Texture2D TexColor : register(t0);
-SamplerState SmpColor : register(s0);
-
-Texture2D TexNormal : register(t1);
-SamplerState SmpNormal : register(s1);
-
-Texture2D TexDepth : register(t2);
-SamplerState SmpDepth : register(s2);
+BASE_TEXTURES
 
 Texture2D TexInput : register(t3);
 SamplerState SmpInput : register(s3);
@@ -42,8 +35,9 @@ SamplerState SmpBuffer : register(s4);
 
 float4 main(DPixelInput input) : SV_TARGET
 {
-	float3 normal = TexNormal.Sample(SmpNormal, input.Uv).xyz;
-	float depth = TexDepth.Sample(SmpDepth, input.Uv).r;
+	float4 normalDepth = TexNormalDepth.Sample(SmpNormalDepth, input.Uv);
+	float depth = normalDepth.w;
+	float3 normal = normalDepth.xyz;
 	float4 baseAO = TexBuffer.Sample(SmpBuffer, input.Uv);
 	float4 ao = weights[2][2] * baseAO;
 	float weightSum = weights[2][2];
@@ -60,8 +54,9 @@ float4 main(DPixelInput input) : SV_TARGET
 			float2 offset = float2(gTexelSize.x * j, gTexelSize.y * i) * KERNEL_RADIUS;
 			float weight = weights[j + KERNEL_SIZE][i + KERNEL_SIZE];
 			float4 aoSample = TexBuffer.Sample(SmpBuffer, input.Uv + offset);
-			float3 normalSample = TexNormal.Sample(SmpNormal, input.Uv + offset).xyz;
-			float depthSample = TexDepth.Sample(SmpDepth, input.Uv + offset).r;
+			float4 normalDepthSample = TexNormalDepth.Sample(SmpNormalDepth, input.Uv);
+			float depthSample = normalDepthSample.w;
+			float3 normalSample = normalDepthSample.xyz;
 
 			if (dot(normalSample, normal) < 0.8f || abs(depthSample - depth) > 0.2f)
 				continue;

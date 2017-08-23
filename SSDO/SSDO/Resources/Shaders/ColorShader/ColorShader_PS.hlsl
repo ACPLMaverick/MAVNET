@@ -22,6 +22,11 @@ struct PixelOutput
 	float4 Normal	: SV_Target1;
 };
 
+// FUNCTIONS
+float CalculateDepth(PixelInput input)
+{
+	return 1.0f - input.Position.z;
+}
 
 // MAIN
 
@@ -29,6 +34,7 @@ PixelOutput main(PixelInput input)
 {
 	PixelOutput output;
 	output.Color = gColBase;
-	output.Normal = float4(normalize(input.Normal), gGloss);
+	output.Color.w = gGloss;
+	output.Normal = float4(normalize(input.Normal), CalculateDepth(input));
 	return output;
 }

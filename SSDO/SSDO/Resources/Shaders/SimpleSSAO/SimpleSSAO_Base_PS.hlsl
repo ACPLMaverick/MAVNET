@@ -14,14 +14,7 @@ cbuffer SimpleSSAO : register(b1)
 	float4 gParams;
 };
 
-Texture2D TexColor : register(t0);
-SamplerState SmpColor : register(s0);
-
-Texture2D TexNormal : register(t1);
-SamplerState SmpNormal : register(s1);
-
-Texture2D TexDepth : register(t2);
-SamplerState SmpDepth : register(s2);
+BASE_TEXTURES
 
 Texture2D TexInput : register(t3);
 SamplerState SmpInput : register(s3);
@@ -51,8 +44,9 @@ float Occlusion(float distZ)
 
 float4 main(DPixelInput input) : SV_TARGET
 {
-	float depth = TexDepth.Sample(SmpDepth, input.Uv).r;
-	float3 normal = TexNormal.Sample(SmpNormal, input.Uv).xyz;
+	float4 normalDepth = TexNormalDepth.Sample(SmpNormalDepth, input.Uv);
+	float depth = normalDepth.w;
+	float3 normal = normalDepth.xyz;
 	float3 viewPos = ViewPositionFromDepth(projInverse, input.Uv, depth);
 	float3 randomVec = TexRandomVectors.Sample(SmpRandomVectors, input.Uv).xyz;
 	float maxDist = gParams.x;
@@ -79,7 +73,7 @@ float4 main(DPixelInput input) : SV_TARGET
 		float sampleDepth = samplePos.z;
 		float2 mapUv = (samplePos.xy + 1.0f) * 0.5f;
 		mapUv.y = 1.0f - mapUv.y;
-		float mapDepth = TexDepth.Sample(SmpDepth, mapUv).r;
+		float mapDepth = TexNormalDepth.Sample(SmpNormalDepth, mapUv).w;
 		float3 mapViewPos = ViewPositionFromDepth(projInverse, mapUv, mapDepth);
 
 		// Compute occlusion for this sample

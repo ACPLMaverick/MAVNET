@@ -28,14 +28,7 @@ struct PixelOutput
 	float4 indirect : SV_TARGET1;
 };
 
-Texture2D TexColor : register(t0);
-SamplerState SmpColor : register(s0);
-
-Texture2D TexNormal : register(t1);
-SamplerState SmpNormal : register(s1);
-
-Texture2D TexDepth : register(t2);
-SamplerState SmpDepth : register(s2);
+BASE_TEXTURES;
 
 Texture2D TexInput : register(t3);
 SamplerState SmpInput : register(s3);
@@ -53,8 +46,9 @@ PixelOutput main(DPixelInput input)
 {
 	PixelOutput output;
 
-	float3 normal = TexNormal.Sample(SmpNormal, input.Uv).xyz;
-	float depth = TexDepth.Sample(SmpDepth, input.Uv).r;
+	float4 normalDepthSample = TexNormalDepth.Sample(SmpNormalDepth, input.Uv);
+	float3 normal = normalDepthSample.xyz;
+	float depth = normalDepthSample.w;
 	float4 baseAO = TexBuffer.Sample(SmpBuffer, input.Uv);
 	output.ao = gWeights[5] * baseAO;
 	float4 baseIndirect = TexBufferB.Sample(SmpBufferB, input.Uv);
@@ -77,8 +71,9 @@ PixelOutput main(DPixelInput input)
 			continue;
 
 		float2 neighUv = input.Uv + 2.0f * i * texOffset;
-		float3 neighNormal = TexNormal.Sample(SmpNormal, neighUv).xyz;
-		float neighDepth = TexDepth.Sample(SmpDepth, neighUv).r;
+		float4 neighNormalDepthSample = TexNormalDepth.Sample(SmpNormalDepth, input.Uv);
+		float3 neighNormal = neighNormalDepthSample.xyz;
+		float neighDepth = neighNormalDepthSample.w;
 
 		
 		if (dot(neighNormal, normal) >= 0.8f && abs(neighDepth - depth) <= 0.2f)

@@ -5,14 +5,7 @@ cbuffer LightCommon
 	float4x4 projInverse;
 };
 
-Texture2D TexColor : register(t0);
-SamplerState SmpColor : register(s0);
-
-Texture2D TexNormal : register(t1);
-SamplerState SmpNormal : register(s1);
-
-Texture2D TexDepth : register(t2);
-SamplerState SmpDepth : register(s2);
+BASE_TEXTURES
 
 Texture2D TexInput : register(t3);
 SamplerState SmpInput : register(s3);
