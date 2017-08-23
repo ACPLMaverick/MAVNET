@@ -122,7 +122,7 @@ void Camera::Draw(Scene& scene) const
 
 		scene.GetController()->GetProfiler()->UpdatePostprocessBegin();
 
-		gBuffer.SetDrawPostproecesses();
+		gBuffer.SetDrawPostprocesses();
 		for (auto it = scene._postprocesses.begin(); it != scene._postprocesses.end(); ++it)
 		{
 			if ((*it)->GetEnabled())

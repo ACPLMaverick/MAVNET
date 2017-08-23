@@ -1,6 +1,6 @@
 #include "../_global/GlobalDefines.hlsli"
 
-#define KERNEL_SIZE 2
+#define KERNEL_SIZE 5
 #define KERNEL_RADIUS 5.0f
 
 cbuffer LightCommon : register(b0)
@@ -11,18 +11,21 @@ cbuffer LightCommon : register(b0)
 cbuffer BlurMerge : register(b1)
 {
 	float2 gTexelSize;
+	bool gHorizontalBlur;
 }
 
 cbuffer BlurMergeConst
 {
-	static float weights[5][5] =
+	static float gWeights[11] =
 	{
-		0.01f, 0.02f, 0.04f, 0.02f, 0.01f,
-		0.02f, 0.04f, 0.08f, 0.04f, 0.02f,
-		0.04f, 0.08f, 0.16f, 0.08f, 0.04f,
-		0.02f, 0.04f, 0.08f, 0.04f, 0.02f,
-		0.01f, 0.02f, 0.04f, 0.02f, 0.01f
+		0.05f, 0.05f, 0.1f, 0.1f, 0.1f, 0.2f, 0.1f, 0.1f, 0.1f, 0.05f, 0.05f
 	};
+};
+
+struct PixelOutput
+{
+	float4 ao : SV_TARGET0;
+	float4 indirect : SV_TARGET1;
 };
 
 Texture2D TexColor : register(t0);
@@ -46,16 +49,63 @@ SamplerState SmpBufferB : register(s5);
 Texture2D TexRandomVectors : register(t6);
 SamplerState SmpRandomVectors : register(s6);
 
-float4 main(DPixelInput input) : SV_TARGET
+PixelOutput main(DPixelInput input)
 {
+	PixelOutput output;
+
 	float3 normal = TexNormal.Sample(SmpNormal, input.Uv).xyz;
 	float depth = TexDepth.Sample(SmpDepth, input.Uv).r;
 	float4 baseAO = TexBuffer.Sample(SmpBuffer, input.Uv);
-	float4 ao = weights[2][2] * baseAO;
+	output.ao = gWeights[5] * baseAO;
 	float4 baseIndirect = TexBufferB.Sample(SmpBufferB, input.Uv);
-	float4 indirect = weights[2][2] * baseIndirect;
-	float weightSum = weights[2][2];
+	output.indirect = gWeights[5] * baseIndirect;
+	float totalWeight = gWeights[5];
 
+	float2 texOffset;
+	if (gHorizontalBlur)
+	{
+		texOffset = float2(gTexelSize.x, 0.0f);
+	}
+	else
+	{
+		texOffset = float2(0.0f, gTexelSize.y);
+	}
+
+	for (float i = -KERNEL_RADIUS; i <= KERNEL_RADIUS; ++i)
+	{
+		if (i == 0)
+			continue;
+
+		float2 neighUv = input.Uv + 2.0f * i * texOffset;
+		float3 neighNormal = TexNormal.Sample(SmpNormal, neighUv).xyz;
+		float neighDepth = TexDepth.Sample(SmpDepth, neighUv).r;
+
+		
+		if (dot(neighNormal, normal) >= 0.8f && abs(neighDepth - depth) <= 0.2f)
+		{
+			float4 neighAo = TexBuffer.Sample(SmpBuffer, neighUv);
+			float4 neighIndirect = TexBufferB.Sample(SmpBufferB, neighUv);
+			float weight = gWeights[i + KERNEL_RADIUS];
+
+			output.ao += weight * neighAo;
+			output.indirect += weight * neighIndirect;
+
+			totalWeight += weight;
+		}
+	}
+
+	output.ao /= totalWeight;
+	output.indirect /= totalWeight;
+
+	// perform merge with first output when finishing blur
+	if (gHorizontalBlur)
+	{
+		float4 inputSample = TexInput.Sample(SmpInput, input.Uv);
+		output.ao = saturate(output.ao) * inputSample + output.indirect;
+	}
+
+	return output;
+	/*
 	[unroll]
 	for (int i = -KERNEL_SIZE; i <= KERNEL_SIZE; ++i)
 	{
@@ -90,4 +140,5 @@ float4 main(DPixelInput input) : SV_TARGET
 	//return baseIndirect;
 	//return saturate(ao);
 	//return baseAO;
+	*/
 }

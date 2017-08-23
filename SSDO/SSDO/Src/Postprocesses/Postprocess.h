@@ -5,6 +5,7 @@
 
 class Shader;
 class Camera;
+class GBuffer;
 
 namespace Postprocesses
 {
@@ -21,7 +22,7 @@ namespace Postprocesses
 		~Postprocess();
 
 		virtual void Update() = 0;
-		virtual void SetPass(const Camera& camera, int32_t passIndex = 0) const;
+		virtual void SetPass(GBuffer& gBuffer, const Camera& camera, int32_t passIndex = 0) const;
 		virtual inline int GetPassCount() const { return 1; }
 		virtual inline Shader* GetShader(int32_t passIndex = 0) const { return const_cast<Shader*>(_shaders[passIndex]); }
 		inline bool GetEnabled() const { return _bEnabled; }

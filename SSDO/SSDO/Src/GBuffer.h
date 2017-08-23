@@ -20,7 +20,7 @@ namespace Lights
 
 class GBuffer
 {
-protected:
+public:
 
 #pragma region Structs
 
@@ -90,6 +90,16 @@ protected:
 
 #pragma endregion
 
+#pragma region Public Const
+
+	static const size_t PP_BUFFER_COUNT = 4;
+	static const uint32_t PP_BUFFER_SIZE_DIVISOR = 1;
+
+#pragma endregion
+
+
+protected:
+
 #pragma region Protected
 
 	const Camera& _camera;
@@ -100,8 +110,7 @@ protected:
 				
 	RenderTarget _outputA;
 	RenderTarget _outputB;
-	RenderTarget _postprocessBuffer;
-	RenderTarget _postprocessBufferB;
+	RenderTarget _postprocessBuffers[PP_BUFFER_COUNT];
 
 	ID3D11BlendState* _additiveBlendState;
 
@@ -116,7 +125,6 @@ protected:
 #pragma region Functions Protected
 
 	inline void FlipOutputs();
-	inline void FlipOutputsWithPostprocessBuffer();
 	inline void SetMapData();
 	inline void UnsetMapData();
 	inline void DrawFullscreenPlane();
@@ -145,9 +153,20 @@ public:
 	// Before calling this function, SetDrawLightPoint must be called.
 	void DrawLightPoint(const Lights::LightPoint& lightAmbient);
 
-	void SetDrawPostproecesses();
+	void SetDrawPostprocesses();
 
 	void DrawPostprocess(const Postprocesses::Postprocess& pp);
+
+	// Postprocess interface
+
+	inline const RenderTarget* PPGetBuffers() const { return _postprocessBuffers; }
+	inline const RenderTarget* PPGetOutputBuffer() const { return &_outputA; }
+	void PPSetBuffersAsInput(const RenderTarget** bufferPtrArray, const int32_t slotArray[], size_t bufferCount);
+	void PPSetBuffersAsOutput(const RenderTarget** bufferPtrArray, uint32_t bufferCount, const RenderTargetDepthBuffer* depthBufferPtr);
+	void PPClearBuffersAsInput(const int32_t* slotArray, size_t bufferCount);
+	void PPClearBuffersAsOutput(uint32_t bufferCount);
+
+	// End postprocess interface
 
 	void SetDrawTexts();
 

@@ -147,6 +147,7 @@ PixelOutput main(DPixelInput input)
 		float a = 5.0f;
 
 		indFactor *= a * dotSender * dotReceiver * dPowTwoRec;
+		// Multiplying by light factor here, avoiding doing second pass.
 		indFactor *= max(dot(mapNormal, gLightDirection), 0.0f);
 
 		// if maximum distance is exceeded, add to lit factor to avoid "shadow / light bleeding"

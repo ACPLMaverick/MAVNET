@@ -7,20 +7,22 @@
 #include "Scenes\Scene.h"
 #include "SimpleSSAO.h"
 #include "Lights/LightDirectional.h"
+#include "GBuffer.h"
 
 namespace Postprocesses
 {
 	SSDOBase::SSDOBase() :
 		_dataBuffer(nullptr),
 		_randomVectorTexture(nullptr),
-		_maxDistance(0.7f),
+		_maxDistance(1.2f),
 		_fadeStart(0.02f),
 		_epsilon(0.01f),
 		_powFactor(1.0f)
 	{
-		RandomVectorsGenerator::Generate(&_randomVectorTexture, 1024);
+		RandomVectorsGenerator::Generate(&_randomVectorTexture, 2048);
 
 		_shaders.push_back(System::GetInstance()->GetScene()->LoadShader(std::wstring(L"SSDOBase_Base")));
+		_shaders.push_back(System::GetInstance()->GetScene()->LoadShader(std::wstring(L"SSDOBase_BlurMerge")));
 		_shaders.push_back(System::GetInstance()->GetScene()->LoadShader(std::wstring(L"SSDOBase_BlurMerge")));
 
 		ID3D11Device* device = Renderer::GetInstance()->GetDevice();
@@ -71,9 +73,9 @@ namespace Postprocesses
 	{
 	}
 
-	void SSDOBase::SetPass(const Camera & camera, int32_t passIndex) const
+	void SSDOBase::SetPass(GBuffer& gBuffer, const Camera & camera, int32_t passIndex) const
 	{
-		Postprocess::SetPass(camera, passIndex);
+		Postprocess::SetPass(gBuffer, camera, passIndex);
 
 		if (passIndex == 0)
 		{
@@ -90,13 +92,45 @@ namespace Postprocesses
 			_shaders[0]->UnmapPsBuffer(1);
 
 			_randomVectorTexture->Set(6);
+
+			const int32_t inSlots[2] = { 4, 5 };
+			gBuffer.PPClearBuffersAsInput(inSlots, 2);
+			const GBuffer::RenderTarget* rts[2] = { &gBuffer.PPGetBuffers()[0], &gBuffer.PPGetBuffers()[1] };
+			gBuffer.PPSetBuffersAsOutput(rts, 2, nullptr);
 		}
 		else if (passIndex == 1)
 		{
 			Shader::SSDOBlurMergePS* buffer = reinterpret_cast<Shader::SSDOBlurMergePS*>(_shaders[1]->MapPsBuffer(1));
-			buffer->TexelSize = XMFLOAT2A(1.0f / (float)System::GetInstance()->GetOptions()._windowWidth,
-				1.0f / (float)System::GetInstance()->GetOptions()._windowHeight);
+			buffer->TexelSize = XMFLOAT2A(1.0f / ((float)System::GetInstance()->GetOptions()._windowWidth / GBuffer::PP_BUFFER_SIZE_DIVISOR),
+				1.0f / ((float)System::GetInstance()->GetOptions()._windowHeight / GBuffer::PP_BUFFER_SIZE_DIVISOR));
+			buffer->bHorizontalBlur = false;
+
 			_shaders[1]->UnmapPsBuffer(1);
+
+
+			gBuffer.PPClearBuffersAsOutput(2);
+			const GBuffer::RenderTarget* in[2] = { &gBuffer.PPGetBuffers()[0], &gBuffer.PPGetBuffers()[1] };
+			const int32_t inSlots[2] = { 4, 5 };
+			gBuffer.PPSetBuffersAsInput(in, inSlots, 2);
+			const GBuffer::RenderTarget* rts[2] = { &gBuffer.PPGetBuffers()[2], &gBuffer.PPGetBuffers()[3] };
+			gBuffer.PPSetBuffersAsOutput(rts, 2, nullptr);
+		}
+		else if (passIndex == 2)
+		{
+			Shader::SSDOBlurMergePS* buffer = reinterpret_cast<Shader::SSDOBlurMergePS*>(_shaders[2]->MapPsBuffer(1));
+			buffer->TexelSize = XMFLOAT2A(1.0f / ((float)System::GetInstance()->GetOptions()._windowWidth / GBuffer::PP_BUFFER_SIZE_DIVISOR),
+				1.0f / ((float)System::GetInstance()->GetOptions()._windowHeight / GBuffer::PP_BUFFER_SIZE_DIVISOR));
+			buffer->bHorizontalBlur = true;
+
+			_shaders[2]->UnmapPsBuffer(1);
+
+
+			gBuffer.PPClearBuffersAsOutput(2);
+			const GBuffer::RenderTarget* in[2] = { &gBuffer.PPGetBuffers()[2], &gBuffer.PPGetBuffers()[3] };
+			const int32_t inSlots[2] = { 4, 5 };
+			gBuffer.PPSetBuffersAsInput(in, inSlots, 2);
+			const GBuffer::RenderTarget* rts[2] = { gBuffer.PPGetOutputBuffer(), &gBuffer.PPGetBuffers()[0] };
+			gBuffer.PPSetBuffersAsOutput(rts, 2, nullptr);
 		}
 	}
 

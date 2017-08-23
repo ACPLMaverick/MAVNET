@@ -32,8 +32,8 @@ namespace Postprocesses
 
 		// Inherited via Postprocess
 		virtual void Update() override;
-		virtual void SetPass(const Camera& camera, int32_t passIndex = 0) const;
-		virtual inline int GetPassCount() const { return 2; }
+		virtual void SetPass(GBuffer& gBuffer, const Camera& camera, int32_t passIndex = 0) const;
+		virtual inline int GetPassCount() const { return 3; }
 	};
 
 }

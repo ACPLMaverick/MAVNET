@@ -40,7 +40,8 @@ void Timer::Shutdown()
 double Timer::GetNowTimeDouble() const
 {
 	LARGE_INTEGER counts;
-	QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&counts));
+	bool bb = QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&counts));
+	ASSERT(bb);
 
 	return static_cast<double>(counts.QuadPart) / static_cast<double>(_frequency);
 }
@@ -51,4 +52,11 @@ float Timer::GetNowTime() const
 	QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&counts));
 
 	return static_cast<float>(static_cast<double>(counts.QuadPart) / static_cast<double>(_frequency));
+}
+
+int64_t Timer::GetNowTicks() const
+{
+	LARGE_INTEGER counts;
+	QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&counts));
+	return counts.QuadPart;
 }

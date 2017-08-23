@@ -34,6 +34,8 @@ public:
 
 	double GetNowTimeDouble() const;
 	float GetNowTime() const;
+	int64_t GetNowTicks() const;
+	inline int64_t GetFrequency() const { return _frequency; }
 	inline float GetTotalTime() const { return _totalTime; }
 	inline float GetDeltaTime() const { return _deltaTime; }
 	inline float GetFPS() const { return 1.0f / _deltaTime; }

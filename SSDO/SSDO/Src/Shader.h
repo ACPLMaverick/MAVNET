@@ -79,7 +79,8 @@ public:
 	__declspec(align(16))
 		struct SSDOBlurMergePS
 	{
-		XMFLOAT2A TexelSize;
+		XMFLOAT2 TexelSize;
+		bool bHorizontalBlur;
 	};
 
 #pragma endregion

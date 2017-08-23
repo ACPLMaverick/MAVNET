@@ -76,9 +76,9 @@ namespace Postprocesses
 	{
 	}
 
-	void SimpleSSAO::SetPass(const Camera & camera, int32_t passIndex) const
+	void SimpleSSAO::SetPass(GBuffer& gBuffer, const Camera & camera, int32_t passIndex) const
 	{
-		Postprocess::SetPass(camera, passIndex);
+		Postprocess::SetPass(gBuffer, camera, passIndex);
 
 		if (passIndex == 0)
 		{
@@ -91,13 +91,26 @@ namespace Postprocesses
 			_shaders[0]->UnmapPsBuffer(1);
 
 			_randomVectorTexture->Set(5);
+
+			const int32_t inSlots[1] = { 4 };
+			gBuffer.PPClearBuffersAsInput(inSlots, 1);
+			const GBuffer::RenderTarget* rts[1] = { &gBuffer.PPGetBuffers()[0] };
+			gBuffer.PPSetBuffersAsOutput(rts, 1, nullptr);
 		}
 		else if (passIndex == 1)
 		{
 			Shader::SSAOBlurMergePS* buffer = reinterpret_cast<Shader::SSAOBlurMergePS*>(_shaders[1]->MapPsBuffer(1));
-			buffer->TexelSize = XMFLOAT2A(1.0f / (float)System::GetInstance()->GetOptions()._windowWidth, 
-				1.0f / (float)System::GetInstance()->GetOptions()._windowHeight);
+			buffer->TexelSize = XMFLOAT2A(1.0f / ((float)System::GetInstance()->GetOptions()._windowWidth / GBuffer::PP_BUFFER_SIZE_DIVISOR), 
+				1.0f / ((float)System::GetInstance()->GetOptions()._windowHeight / GBuffer::PP_BUFFER_SIZE_DIVISOR));
 			_shaders[1]->UnmapPsBuffer(1);
+
+			
+			gBuffer.PPClearBuffersAsOutput(1);
+			const GBuffer::RenderTarget* in[1] = { &gBuffer.PPGetBuffers()[0] };
+			const int32_t inSlots[1] = { 4 };
+			gBuffer.PPSetBuffersAsInput(in, inSlots, 1);
+			const GBuffer::RenderTarget* rts[1] = { gBuffer.PPGetOutputBuffer() };
+			gBuffer.PPSetBuffersAsOutput(rts, 1, nullptr);
 		}
 	}
 
