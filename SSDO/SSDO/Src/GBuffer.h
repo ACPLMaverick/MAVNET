@@ -124,7 +124,6 @@ protected:
 
 #pragma region Functions Protected
 
-	inline void FlipOutputs();
 	inline void SetMapData();
 	inline void UnsetMapData();
 	inline void DrawFullscreenPlane();
@@ -161,6 +160,7 @@ public:
 
 	inline const RenderTarget* PPGetBuffers() const { return _postprocessBuffers; }
 	inline const RenderTarget* PPGetOutputBuffer() const { return &_outputA; }
+	inline const RenderTarget* PPGetOutputBBuffer() const { return &_outputB; }
 	void PPSetBuffersAsInput(const RenderTarget** bufferPtrArray, const int32_t slotArray[], size_t bufferCount);
 	void PPSetBuffersAsOutput(const RenderTarget** bufferPtrArray, uint32_t bufferCount, const RenderTargetDepthBuffer* depthBufferPtr);
 	void PPClearBuffersAsInput(const int32_t* slotArray, size_t bufferCount);
@@ -175,6 +175,8 @@ public:
 	void Draw() const;
 
 	void Merge(const GBuffer& other);
+
+	void FlipOutputs();
 
 #pragma endregion
 

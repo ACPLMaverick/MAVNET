@@ -12,6 +12,7 @@
 #include "Postprocesses/Sepia.h"
 #include "Postprocesses/SimpleSSAO.h"
 #include "Postprocesses/SSDOBase.h"
+#include "Postprocesses/SSDOImproved.h"
 
 using namespace Lights;
 using namespace Postprocesses;
@@ -78,6 +79,7 @@ namespace Scenes
 
 		//_lightsPoint.push_back(new LightPoint(XMFLOAT4A(0.6f, 1.0f, 0.9f, 1.0f), XMFLOAT3A(0.0f, 4.0f, -5.0f), 10.0f));
 
+		_postprocesses.push_back(new SSDOImproved());
 		_postprocesses.push_back(new SSDOBase());
 		_postprocesses.push_back(new SimpleSSAO());
 

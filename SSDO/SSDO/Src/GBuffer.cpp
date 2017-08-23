@@ -327,9 +327,8 @@ void GBuffer::DrawPostprocess(const Postprocesses::Postprocess & pp)
 		pp.SetPass(*this, _camera, i);
 
 		DrawFullscreenPlane();
-		//const uintptr_t null = 0;
-		//context->OMSetRenderTargets(1, reinterpret_cast<ID3D11RenderTargetView* const*>(&null), nullptr);
 
+		pp.AfterPass(*this, _camera, i);
 	}
 }
 
@@ -409,7 +408,7 @@ void GBuffer::Merge(const GBuffer & other)
 	FlipOutputs();
 }
 
-inline void GBuffer::FlipOutputs()
+void GBuffer::FlipOutputs()
 {
 	RenderTarget vmp = _outputA;
 	_outputA = _outputB;

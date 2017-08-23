@@ -22,4 +22,8 @@ namespace Postprocesses
 		_shaders[passIndex]->UnmapPsBuffer(0);
 	}
 
+	void Postprocess::AfterPass(GBuffer & gBuffer, const Camera & camera, int32_t passIndex) const
+	{
+	}
+
 }

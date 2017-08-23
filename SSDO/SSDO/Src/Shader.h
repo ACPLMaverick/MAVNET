@@ -83,6 +83,16 @@ public:
 		bool bHorizontalBlur;
 	};
 
+	__declspec(align(16))
+		struct SSDOImprovedPS
+	{
+		XMFLOAT4X4A Proj;
+		XMFLOAT4A Offsets[Postprocesses::SSDOBase::SAMPLE_COUNT];
+		XMFLOAT4A Params;
+		XMFLOAT4A LightColor;
+		XMFLOAT3A LightDirection;
+	};
+
 #pragma endregion
 
 protected:
