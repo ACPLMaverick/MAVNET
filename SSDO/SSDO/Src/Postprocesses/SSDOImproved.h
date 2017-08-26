@@ -1,7 +1,9 @@
 #pragma once
 #include "Postprocess.h"
+#include "SATGenerator.h"
 
 class Texture;
+class RWTexture;
 
 namespace Postprocesses
 {
@@ -21,8 +23,14 @@ namespace Postprocesses
 		float _epsilon;
 		float _powFactor;
 
+		SATGenerator _satGen;
+
 		ID3D11Buffer* _dataBuffer;
-		Texture* _randomVectorTexture;
+		RWTexture* _satColor;
+		RWTexture* _satNormalDepth;
+
+		Texture* _testInput;
+		RWTexture* _testOutput;
 
 		inline void FillParams(XMFLOAT4A* paramBuffer) const;
 

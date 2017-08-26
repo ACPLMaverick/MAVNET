@@ -6,20 +6,76 @@
 #include "Camera.h"
 #include "Scenes\Scene.h"
 #include "SimpleSSAO.h"
-#include "Lights/LightDirectional.h"
 #include "GBuffer.h"
+#include "Lights/LightDirectional.h"
+#include "RWTexture.h"
 
 namespace Postprocesses
 {
 	SSDOImproved::SSDOImproved() :
 		_dataBuffer(nullptr),
-		_randomVectorTexture(nullptr),
 		_maxDistance(1.2f),
 		_fadeStart(0.02f),
 		_epsilon(0.01f),
 		_powFactor(1.0f)
 	{
-		RandomVectorsGenerator::Generate(&_randomVectorTexture, 2048);
+		// TETIN
+
+		const int32_t siz(4);
+
+		_testInput = new Texture();
+		_testInput->SetWidth(siz);
+		_testInput->SetHeight(siz);
+		_testInput->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R16G16B16A16_FLOAT);
+		_testInput->SetBPP(64);
+		_testInput->SetMipmapped(false);
+		_testInput->AllocateRawDataToTextureSize();
+
+		PackedVector::XMHALF4* ptr = reinterpret_cast<PackedVector::XMHALF4*>(_testInput->GetRawData().GetDataPtr());
+		ptr[0 + 0] = PackedVector::XMHALF4(1.0f, 0.0f, 0.0f, 0.0f);
+		ptr[0 + 1] = PackedVector::XMHALF4(3.0f, 0.0f, 0.0f, 0.0f);
+		ptr[0 + 2] = PackedVector::XMHALF4(0.0f, 0.0f, 0.0f, 0.0f);
+		ptr[0 + 3] = PackedVector::XMHALF4(2.0f, 0.0f, 0.0f, 0.0f);
+		ptr[4 + 0] = PackedVector::XMHALF4(3.0f, 0.0f, 0.0f, 0.0f);
+		ptr[4 + 1] = PackedVector::XMHALF4(2.0f, 0.0f, 0.0f, 0.0f);
+		ptr[4 + 2] = PackedVector::XMHALF4(4.0f, 0.0f, 0.0f, 0.0f);
+		ptr[4 + 3] = PackedVector::XMHALF4(3.0f, 0.0f, 0.0f, 0.0f);
+		ptr[8 + 0] = PackedVector::XMHALF4(0.0f, 0.0f, 0.0f, 0.0f);
+		ptr[8 + 1] = PackedVector::XMHALF4(5.0f, 0.0f, 0.0f, 0.0f);
+		ptr[8 + 2] = PackedVector::XMHALF4(1.0f, 0.0f, 0.0f, 0.0f);
+		ptr[8 + 3] = PackedVector::XMHALF4(1.0f, 0.0f, 0.0f, 0.0f);
+		ptr[12 + 0] = PackedVector::XMHALF4(2.0f, 0.0f, 0.0f, 0.0f);
+		ptr[12 + 1] = PackedVector::XMHALF4(2.0f, 0.0f, 0.0f, 0.0f);
+		ptr[12 + 2] = PackedVector::XMHALF4(3.0f, 0.0f, 0.0f, 0.0f);
+		ptr[12 + 3] = PackedVector::XMHALF4(3.0f, 0.0f, 0.0f, 0.0f);
+		
+		_testInput->InitResources(false, false);
+
+		_testOutput = new RWTexture();
+		_testOutput->SetWidth(siz);
+		_testOutput->SetHeight(siz);
+		_testOutput->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R16G16B16A16_FLOAT);
+		_testOutput->SetBPP(64);
+		_testOutput->SetMipmapped(false);
+		_testOutput->AllocateRawDataToTextureSize();
+		_testOutput->InitResources(false, false);
+
+		// END TETIN
+
+		_satColor = new RWTexture();
+		_satNormalDepth = new RWTexture();
+		_satColor->SetWidth(System::GetInstance()->GetOptions()._windowWidth);
+		_satColor->SetHeight(System::GetInstance()->GetOptions()._windowHeight);
+		_satColor->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM);
+		_satColor->SetBPP(32);
+		_satColor->SetMipmapped(false);
+		_satColor->InitResources(false, false);
+		_satNormalDepth->SetWidth(System::GetInstance()->GetOptions()._windowWidth);
+		_satNormalDepth->SetHeight(System::GetInstance()->GetOptions()._windowHeight);
+		_satNormalDepth->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R16G16B16A16_FLOAT);
+		_satNormalDepth->SetBPP(64);
+		_satNormalDepth->SetMipmapped(false);
+		_satNormalDepth->InitResources(false, false);
 
 		_shaders.push_back(System::GetInstance()->GetScene()->LoadShader(std::wstring(L"SSDOImproved_Base")));
 
@@ -64,7 +120,14 @@ namespace Postprocesses
 
 	SSDOImproved::~SSDOImproved()
 	{
-		delete _randomVectorTexture;
+		delete _testInput;
+		delete _testOutput;
+
+		_dataBuffer->Release();
+		delete _dataBuffer;
+
+		delete _satColor;
+		delete _satNormalDepth;
 	}
 
 	void SSDOImproved::Update()
@@ -76,6 +139,7 @@ namespace Postprocesses
 		Postprocess::SetPass(gBuffer, camera, passIndex);
 
 		// GENERATE SATS HERE
+		_satGen.Generate(_testInput, _testInput, _testOutput, _testOutput);
 
 		Shader::SSDOImprovedPS* buffer = reinterpret_cast<Shader::SSDOImprovedPS*>(_shaders[0]->MapPsBuffer(1));
 		XMMATRIX proj = XMLoadFloat4x4A(&camera.GetMatProj());
@@ -90,8 +154,6 @@ namespace Postprocesses
 		_shaders[0]->UnmapPsBuffer(1);
 
 		// SET SATS HERE
-
-		_randomVectorTexture->Set(6);
 
 		const GBuffer::RenderTarget* in[1] = { gBuffer.PPGetOutputBBuffer() };
 		const int32_t inSlots[1] = { 3 };

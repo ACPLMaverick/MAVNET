@@ -9,12 +9,13 @@ using namespace Lights;
 #include <vector>
 #include <fstream>
 
-std::wstring PATH_PREFIX = L"./Resources/Shaders/_build/";
-std::wstring PATH_SUFFIX_VS = L"_VS.cso";
-std::wstring PATH_SUFFIX_HS = L"_HS.cso";
-std::wstring PATH_SUFFIX_GS = L"_GS.cso";
-std::wstring PATH_SUFFIX_DS = L"_DS.cso";
-std::wstring PATH_SUFFIX_PS = L"_PS.cso";
+const std::wstring ShaderBytecodeLoader::PATH_PREFIX = L"./Resources/Shaders/_build/";
+const std::wstring ShaderBytecodeLoader::PATH_SUFFIX_VS = L"_VS.cso";
+const std::wstring ShaderBytecodeLoader::PATH_SUFFIX_HS = L"_HS.cso";
+const std::wstring ShaderBytecodeLoader::PATH_SUFFIX_GS = L"_GS.cso";
+const std::wstring ShaderBytecodeLoader::PATH_SUFFIX_DS = L"_DS.cso";
+const std::wstring ShaderBytecodeLoader::PATH_SUFFIX_PS = L"_PS.cso";
+const std::wstring ShaderBytecodeLoader::PATH_SUFFIX_CS = L"_CS.cso";
 
 Shader::Shader(const wstring& shaderFilename, size_t inputLayoutNumElements, 
 	ConstantBufferDesc* cbVsDescs, size_t cbVsCount, ConstantBufferDesc* cbPsDescs, size_t cbPsCount)
@@ -23,37 +24,18 @@ Shader::Shader(const wstring& shaderFilename, size_t inputLayoutNumElements,
 
 	// loading compiled shaders from files
 	uint8_t* vecVS, *vecPS;
-	int64_t sizeVS, sizePS;
+	size_t sizeVS, sizePS;
 
-	wstring pathVS = PATH_PREFIX + shaderFilename + PATH_SUFFIX_VS;
-	wstring pathPS = PATH_PREFIX + shaderFilename + PATH_SUFFIX_PS;
-
-	ifstream streamVS(pathVS, ios::binary);
-	ASSERT(streamVS.is_open());
-	streamVS.seekg(0, streamVS.end);
-	sizeVS = streamVS.tellg();
-	streamVS.seekg(0, streamVS.beg);
-	vecVS = new uint8_t[sizeVS];
-	streamVS.read(reinterpret_cast<char*>(vecVS), sizeVS);
-	streamVS.close();
+	ShaderBytecodeLoader::LoadBytecodeVS(shaderFilename, &vecVS, sizeVS);
+	ShaderBytecodeLoader::LoadBytecodePS(shaderFilename, &vecPS, sizePS);
 
 	device->CreateVertexShader(vecVS, sizeVS, nullptr, &_vs);
 	ASSERT(_vs != nullptr);
 
-	ifstream streamPS(pathPS, ios::binary);
-	if (streamPS.is_open())
-	{
-		streamPS.seekg(0, streamPS.end);
-		sizePS = streamPS.tellg();
-		streamPS.seekg(0, streamPS.beg);
-		vecPS = new uint8_t[sizePS];
-		streamPS.read(reinterpret_cast<char*>(vecPS), sizePS);
-		streamPS.close();
+	device->CreatePixelShader(vecPS, sizePS, nullptr, &_ps);
+	ASSERT(_ps != nullptr);
 
-		device->CreatePixelShader(vecPS, sizePS, nullptr, &_ps);
-		ASSERT(_ps != nullptr);
-		delete[] vecPS;
-	}
+	delete[] vecPS;
 	
 	// create vertex layout description
 	D3D11_INPUT_ELEMENT_DESC layout[3];
@@ -262,4 +244,46 @@ Shader * Shader::CreateResource(const std::wstring & name)
 		ASSERT(false);
 		return nullptr;
 	}
+}
+
+void ShaderBytecodeLoader::LoadBytecode(const wstring & shaderFilename, uint8_t ** outArrayPtr, size_t& outDataSize)
+{
+	ifstream stream(shaderFilename, ios::binary);
+	ASSERT(stream.is_open());
+	stream.seekg(0, stream.end);
+	outDataSize = stream.tellg();
+	stream.seekg(0, stream.beg);
+	(*outArrayPtr) = new uint8_t[outDataSize];
+	stream.read(reinterpret_cast<char*>((*outArrayPtr)), outDataSize);
+	stream.close();
+}
+
+void ShaderBytecodeLoader::LoadBytecodeVS(const wstring & shaderName, uint8_t ** outArrayPtr, size_t & outDataSize)
+{
+	LoadBytecode(PATH_PREFIX + shaderName + PATH_SUFFIX_VS, outArrayPtr, outDataSize);
+}
+
+void ShaderBytecodeLoader::LoadBytecodeHS(const wstring & shaderName, uint8_t ** outArrayPtr, size_t & outDataSize)
+{
+	LoadBytecode(PATH_PREFIX + shaderName + PATH_SUFFIX_HS, outArrayPtr, outDataSize);
+}
+
+void ShaderBytecodeLoader::LoadBytecodeGS(const wstring & shaderName, uint8_t ** outArrayPtr, size_t & outDataSize)
+{
+	LoadBytecode(PATH_PREFIX + shaderName + PATH_SUFFIX_GS, outArrayPtr, outDataSize);
+}
+
+void ShaderBytecodeLoader::LoadBytecodeDS(const wstring & shaderName, uint8_t ** outArrayPtr, size_t & outDataSize)
+{
+	LoadBytecode(PATH_PREFIX + shaderName + PATH_SUFFIX_DS, outArrayPtr, outDataSize);
+}
+
+void ShaderBytecodeLoader::LoadBytecodePS(const wstring & shaderName, uint8_t ** outArrayPtr, size_t & outDataSize)
+{
+	LoadBytecode(PATH_PREFIX + shaderName + PATH_SUFFIX_PS, outArrayPtr, outDataSize);
+}
+
+void ShaderBytecodeLoader::LoadBytecodeCS(const wstring & shaderName, uint8_t ** outArrayPtr, size_t & outDataSize)
+{
+	LoadBytecode(PATH_PREFIX + shaderName + PATH_SUFFIX_CS, outArrayPtr, outDataSize);
 }

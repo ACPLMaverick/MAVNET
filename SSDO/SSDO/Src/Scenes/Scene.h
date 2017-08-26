@@ -19,6 +19,7 @@ namespace Postprocesses
 #include "GlobalDefines.h"
 
 #include "Shader.h"
+#include "ComputeShader.h"
 #include "Mesh.h"
 #include "Material.h"
 #include "Font.h"
@@ -42,6 +43,7 @@ namespace Scenes
 
 		// resources
 		std::map<const std::wstring, Shader*> _shaders;
+		std::map<const std::wstring, ComputeShader*> _computeShaders;
 		std::map<const std::wstring, Mesh*> _meshes;
 		std::map<const std::wstring, Material*> _materials;
 		std::map<const std::wstring, Font*> _fonts;
@@ -98,6 +100,7 @@ namespace Scenes
 		inline Controller* GetController() { return &_controller; }
 
 		inline Shader* LoadShader(const std::wstring& name) { return GetResource<Shader>(name, _shaders); }
+		inline ComputeShader* LoadComputeShader(const std::wstring& name) { return GetResource<ComputeShader>(name, _computeShaders); }
 		inline Mesh* LoadMesh(const std::wstring& name) { return GetResource<Mesh>(name, _meshes); }
 		inline Material* LoadMaterial(const std::wstring& name) { return GetResource<Material>(name, _materials); }
 		inline Font* LoadFont(const std::wstring& name) { return GetResource<Font>(name, _fonts); }

@@ -83,6 +83,11 @@ namespace Scenes
 			delete (*it).second;
 		}
 
+		for (auto it = _computeShaders.begin(); it != _computeShaders.end(); ++it)
+		{
+			delete (*it).second;
+		}
+
 		for (auto it = _materials.begin(); it != _materials.end(); ++it)
 		{
 			delete (*it).second;
@@ -101,6 +106,7 @@ namespace Scenes
 		_materials.clear();
 		_meshes.clear();
 		_shaders.clear();
+		_computeShaders.clear();
 		_fonts.clear();
 	}
 

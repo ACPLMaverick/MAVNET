@@ -9,7 +9,6 @@
 #include "Camera.h"
 #include "Texture.h"
 
-#include <DirectXPackedVector.h>
 using namespace DirectX::PackedVector;
 #define HALF_MIN 6.10352e-5f
 #define HALF_MAX 65504.f

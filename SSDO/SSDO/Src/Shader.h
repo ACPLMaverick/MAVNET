@@ -3,6 +3,29 @@
 #include "GlobalDefines.h"
 #include "Postprocesses/SSDOBase.h"
 
+class ShaderBytecodeLoader
+{
+protected:
+
+	static const std::wstring PATH_PREFIX;
+	static const std::wstring PATH_SUFFIX_VS;
+	static const std::wstring PATH_SUFFIX_HS;
+	static const std::wstring PATH_SUFFIX_GS;
+	static const std::wstring PATH_SUFFIX_DS;
+	static const std::wstring PATH_SUFFIX_PS;
+	static const std::wstring PATH_SUFFIX_CS;
+
+public:
+	// Data under arrayPtr gets allocated inside this function.
+	static void LoadBytecode(const wstring& shaderFilename, uint8_t** outArrayPtr, size_t& outDataSize);
+	static void LoadBytecodeVS(const wstring& shaderName, uint8_t** outArrayPtr, size_t& outDataSize);
+	static void LoadBytecodeHS(const wstring& shaderName, uint8_t** outArrayPtr, size_t& outDataSize);
+	static void LoadBytecodeGS(const wstring& shaderName, uint8_t** outArrayPtr, size_t& outDataSize);
+	static void LoadBytecodeDS(const wstring& shaderName, uint8_t** outArrayPtr, size_t& outDataSize);
+	static void LoadBytecodePS(const wstring& shaderName, uint8_t** outArrayPtr, size_t& outDataSize);
+	static void LoadBytecodeCS(const wstring& shaderName, uint8_t** outArrayPtr, size_t& outDataSize);
+};
+
 class Shader
 {
 public:

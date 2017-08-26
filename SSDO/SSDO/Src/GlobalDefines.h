@@ -4,6 +4,7 @@
 #include <string>
 #include <d3d11.h>
 #include <DirectXMath.h>
+#include <DirectXPackedVector.h>
 
 using namespace DirectX;
 using namespace std;
@@ -12,6 +13,10 @@ using namespace std;
 
 #define ZERO(arg) ZeroMemory(&arg, sizeof(arg))
 #define ZEROM(argPtr, sizeBytes) ZeroMemory(argPtr, sizeBytes)
+
+#define DWZ(type, name) \
+type name; \
+ZERO(name);
 
 #define CLAMP(val, vmin, vmax) min(max(val, vmin), vmax)
 
