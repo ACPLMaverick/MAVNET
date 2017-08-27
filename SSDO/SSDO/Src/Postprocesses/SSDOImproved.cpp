@@ -21,11 +21,12 @@ namespace Postprocesses
 	{
 		// TETIN
 
-		const int32_t siz(4);
+		const int32_t sizX(4);
+		const int32_t sizY(4);
 
 		_testInput = new Texture();
-		_testInput->SetWidth(siz);
-		_testInput->SetHeight(siz);
+		_testInput->SetWidth(sizX);
+		_testInput->SetHeight(sizY);
 		_testInput->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R16G16B16A16_FLOAT);
 		_testInput->SetBPP(64);
 		_testInput->SetMipmapped(false);
@@ -52,18 +53,28 @@ namespace Postprocesses
 		_testInput->InitResources(false, false);
 
 		_testOutput = new RWTexture();
-		_testOutput->SetWidth(siz);
-		_testOutput->SetHeight(siz);
+		_testOutput->SetWidth(sizX);
+		_testOutput->SetHeight(sizY);
 		_testOutput->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R16G16B16A16_FLOAT);
 		_testOutput->SetBPP(64);
 		_testOutput->SetMipmapped(false);
 		_testOutput->AllocateRawDataToTextureSize();
 		_testOutput->InitResources(false, false);
 
+		_testBuf = new RWTexture();
+		_testBuf->SetWidth(sizX);
+		_testBuf->SetHeight(sizY);
+		_testBuf->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R16G16B16A16_FLOAT);
+		_testBuf->SetBPP(64);
+		_testBuf->SetMipmapped(false);
+		_testBuf->InitResources(true, false);
+
 		// END TETIN
 
 		_satColor = new RWTexture();
 		_satNormalDepth = new RWTexture();
+		_bufColor = new RWTexture();
+		_bufNormalDepth = new RWTexture();
 		_satColor->SetWidth(System::GetInstance()->GetOptions()._windowWidth);
 		_satColor->SetHeight(System::GetInstance()->GetOptions()._windowHeight);
 		_satColor->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM);
@@ -76,6 +87,18 @@ namespace Postprocesses
 		_satNormalDepth->SetBPP(64);
 		_satNormalDepth->SetMipmapped(false);
 		_satNormalDepth->InitResources(false, false);
+		_bufColor->SetWidth(System::GetInstance()->GetOptions()._windowWidth);
+		_bufColor->SetHeight(System::GetInstance()->GetOptions()._windowHeight);
+		_bufColor->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM);
+		_bufColor->SetBPP(32);
+		_bufColor->SetMipmapped(false);
+		_bufColor->InitResources(true, false);
+		_bufNormalDepth->SetWidth(System::GetInstance()->GetOptions()._windowWidth);
+		_bufNormalDepth->SetHeight(System::GetInstance()->GetOptions()._windowHeight);
+		_bufNormalDepth->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R16G16B16A16_FLOAT);
+		_bufNormalDepth->SetBPP(64);
+		_bufNormalDepth->SetMipmapped(false);
+		_bufNormalDepth->InitResources(true, false);
 
 		_shaders.push_back(System::GetInstance()->GetScene()->LoadShader(std::wstring(L"SSDOImproved_Base")));
 
@@ -121,6 +144,7 @@ namespace Postprocesses
 	SSDOImproved::~SSDOImproved()
 	{
 		delete _testInput;
+		delete _testBuf;
 		delete _testOutput;
 
 		_dataBuffer->Release();
@@ -128,6 +152,8 @@ namespace Postprocesses
 
 		delete _satColor;
 		delete _satNormalDepth;
+		delete _bufColor;
+		delete _bufNormalDepth;
 	}
 
 	void SSDOImproved::Update()
@@ -139,7 +165,7 @@ namespace Postprocesses
 		Postprocess::SetPass(gBuffer, camera, passIndex);
 
 		// GENERATE SATS HERE
-		_satGen.Generate(_testInput, _testInput, _testOutput, _testOutput);
+		_satGen.Generate(_testInput, _testInput, _testBuf, _testBuf, _testOutput, _testOutput);
 
 		Shader::SSDOImprovedPS* buffer = reinterpret_cast<Shader::SSDOImprovedPS*>(_shaders[0]->MapPsBuffer(1));
 		XMMATRIX proj = XMLoadFloat4x4A(&camera.GetMatProj());

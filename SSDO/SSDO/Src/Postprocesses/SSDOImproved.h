@@ -28,8 +28,11 @@ namespace Postprocesses
 		ID3D11Buffer* _dataBuffer;
 		RWTexture* _satColor;
 		RWTexture* _satNormalDepth;
+		RWTexture* _bufColor;
+		RWTexture* _bufNormalDepth;
 
 		Texture* _testInput;
+		RWTexture* _testBuf;
 		RWTexture* _testOutput;
 
 		inline void FillParams(XMFLOAT4A* paramBuffer) const;
