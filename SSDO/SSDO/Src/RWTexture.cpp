@@ -50,13 +50,14 @@ void RWTexture::AcquireDeviceData()
 	ASSERT(res.pData != nullptr);
 
 	// Why each row of the staging texture data has this weird offset of *dataSize*? Hell if I know.
-	const size_t rowSize(res.RowPitch);
+	const size_t rowSize(_width * _bpp / 8);
 	const size_t rows(GetHeight());
 	uint8_t* ptr = reinterpret_cast<uint8_t*>(res.pData);
 	for (size_t i = 0; i < rows; ++i)
 	{
-		memcpy(_rawData.GetDataPtr() + i * rowSize, ptr, rowSize);
-		ptr += dataSize;
+		uint8_t* dest = _rawData.GetDataPtr() + i * rowSize;
+		memcpy(dest, ptr, rowSize);
+		ptr += res.RowPitch;
 	}
 
 	deviceContext->Unmap(_fAccessResource, 0);
