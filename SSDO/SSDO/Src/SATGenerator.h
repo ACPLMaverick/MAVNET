@@ -27,13 +27,14 @@ protected:
 	ComputeShader* _shader = nullptr;
 
 	inline void GenerateInternal(
-		ID3D11ShaderResourceView* const inputSRVA, ID3D11ShaderResourceView* const inputSRVB,
-		ID3D11ShaderResourceView* const bufferSRVA, ID3D11ShaderResourceView* const bufferSRVB,
-		ID3D11UnorderedAccessView* bufferUAVA, ID3D11UnorderedAccessView* bufferUAVB,
-		ID3D11UnorderedAccessView* outputUAVA, ID3D11UnorderedAccessView* outputUAVB,
+		ID3D11ShaderResourceView* const inputSRV,
+		ID3D11ShaderResourceView* const bufferSRV,
+		ID3D11UnorderedAccessView* bufferUAV,
+		ID3D11UnorderedAccessView* outputUAV,
 		uint32_t inputWidth, uint32_t inputHeight, uint32_t inputLevel) const;
 
 	inline void PrintRawData(const Texture* tex) const;
+	inline uint32_t GetPowerOfTwoHigherThan(uint32_t val) const;
 
 #pragma endregion
 
@@ -44,12 +45,12 @@ public:
 	SATGenerator();
 	~SATGenerator();
 
-	void Generate(const Texture* inputA, const Texture* inputB,
-		RWTexture* bufferA, RWTexture* bufferB,
-		RWTexture* outputA, RWTexture* outputB) const;
-	void Generate(const GBuffer::RenderTarget* inputA, const GBuffer::RenderTarget* inputB, 
-		RWTexture* bufferA, RWTexture* bufferB,
-		RWTexture* outputA, RWTexture* outputB) const;
+	void Generate(const Texture* input,
+		RWTexture* buffer,
+		RWTexture* output) const;
+	void Generate(const GBuffer::RenderTarget* input, 
+		RWTexture* buffer,
+		RWTexture* output) const;
 
 #pragma endregion
 

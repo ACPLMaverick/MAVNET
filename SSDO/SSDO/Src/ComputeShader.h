@@ -14,7 +14,7 @@ public:
 	__declspec(align(16))
 	struct SATBuffer
 	{
-		uint32_t WidthHeightLevel[3];
+		uint32_t WidthWidthpowLevel[3];
 		bool Vertical;
 	};
 

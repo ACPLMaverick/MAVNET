@@ -27,14 +27,11 @@ BASE_TEXTURES;
 Texture2D TexInput : register(t3);
 SamplerState SmpInput : register(s3);
 
-Texture2D TexBuffer : register(t4);
-SamplerState SmpBuffer : register(s4);
+Texture2D SatNormalDepth : register(t4);
+SamplerState SmpSatNormalDepth : register(s4);
 
-Texture2D TexBufferB : register(t5);
-SamplerState SmpBufferB : register(s5);
-
-Texture2D TexRandomVectors : register(t6);
-SamplerState SmpRandomVectors : register(s6);
+Texture2D SatColor : register(t5);
+SamplerState SmpSatColor : register(s5);
 
 float Occlusion(float distZ)
 {
@@ -59,7 +56,9 @@ PixelOutput main(DPixelInput input)
 	float depth = normalSample.w;
 	float3 normal = normalSample.xyz;
 	float3 viewPos = ViewPositionFromDepth(projInverse, input.Uv, depth);
-	float3 randomVec = TexRandomVectors.Sample(SmpRandomVectors, input.Uv).xyz;
+	float4 satNormalSample = SatNormalDepth.Sample(SmpSatNormalDepth, input.Uv);
+	float3 satColor = SatColor.Sample(SmpSatColor, input.Uv).xyz;
+
 	const float maxDist = gParams.x;
 	const float powFactor = gParams.w;
 
@@ -73,8 +72,7 @@ PixelOutput main(DPixelInput input)
 
 	PixelOutput output;
 
-	output.final = float4(1.0f, 0.0f, 0.0f, 1.0f);
-	output.final *= TexInput.Sample(SmpInput, input.Uv);
+	output.final = satNormalSample;
 
 	return output;
 }

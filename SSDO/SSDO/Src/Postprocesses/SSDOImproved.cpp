@@ -21,42 +21,30 @@ namespace Postprocesses
 	{
 		// TETIN
 
-		const int32_t sizX(4);
-		const int32_t sizY(4);
+		const int32_t sizX(1280);
+		const int32_t sizY(720);
 
 		_testInput = new Texture();
 		_testInput->SetWidth(sizX);
 		_testInput->SetHeight(sizY);
-		_testInput->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R16G16B16A16_FLOAT);
-		_testInput->SetBPP(64);
+		_testInput->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT);
+		_testInput->SetBPP(128);
 		_testInput->SetMipmapped(false);
 		_testInput->AllocateRawDataToTextureSize();
 
-		PackedVector::XMHALF4* ptr = reinterpret_cast<PackedVector::XMHALF4*>(_testInput->GetRawData().GetDataPtr());
-		ptr[0 + 0] = PackedVector::XMHALF4(1.0f, 0.0f, 0.0f, 0.0f);
-		ptr[0 + 1] = PackedVector::XMHALF4(3.0f, 0.0f, 0.0f, 0.0f);
-		ptr[0 + 2] = PackedVector::XMHALF4(0.0f, 0.0f, 0.0f, 0.0f);
-		ptr[0 + 3] = PackedVector::XMHALF4(2.0f, 0.0f, 0.0f, 0.0f);
-		ptr[4 + 0] = PackedVector::XMHALF4(3.0f, 0.0f, 0.0f, 0.0f);
-		ptr[4 + 1] = PackedVector::XMHALF4(2.0f, 0.0f, 0.0f, 0.0f);
-		ptr[4 + 2] = PackedVector::XMHALF4(4.0f, 0.0f, 0.0f, 0.0f);
-		ptr[4 + 3] = PackedVector::XMHALF4(3.0f, 0.0f, 0.0f, 0.0f);
-		ptr[8 + 0] = PackedVector::XMHALF4(0.0f, 0.0f, 0.0f, 0.0f);
-		ptr[8 + 1] = PackedVector::XMHALF4(5.0f, 0.0f, 0.0f, 0.0f);
-		ptr[8 + 2] = PackedVector::XMHALF4(1.0f, 0.0f, 0.0f, 0.0f);
-		ptr[8 + 3] = PackedVector::XMHALF4(1.0f, 0.0f, 0.0f, 0.0f);
-		ptr[12 + 0] = PackedVector::XMHALF4(2.0f, 0.0f, 0.0f, 0.0f);
-		ptr[12 + 1] = PackedVector::XMHALF4(2.0f, 0.0f, 0.0f, 0.0f);
-		ptr[12 + 2] = PackedVector::XMHALF4(3.0f, 0.0f, 0.0f, 0.0f);
-		ptr[12 + 3] = PackedVector::XMHALF4(3.0f, 0.0f, 0.0f, 0.0f);
+		XMFLOAT4* ptr = reinterpret_cast<XMFLOAT4*>(_testInput->GetRawData().GetDataPtr());
+		for (size_t i = 0; i < sizX * sizY; ++i)
+		{
+			ptr[i] = XMFLOAT4(1.0f, 0.0f, 0.0f, 0.0f);
+		}
 		
 		_testInput->InitResources(false, false);
 
 		_testOutput = new RWTexture();
 		_testOutput->SetWidth(sizX);
 		_testOutput->SetHeight(sizY);
-		_testOutput->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R16G16B16A16_FLOAT);
-		_testOutput->SetBPP(64);
+		_testOutput->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT);
+		_testOutput->SetBPP(128);
 		_testOutput->SetMipmapped(false);
 		_testOutput->AllocateRawDataToTextureSize();
 		_testOutput->InitResources(false, false);
@@ -64,8 +52,8 @@ namespace Postprocesses
 		_testBuf = new RWTexture();
 		_testBuf->SetWidth(sizX);
 		_testBuf->SetHeight(sizY);
-		_testBuf->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R16G16B16A16_FLOAT);
-		_testBuf->SetBPP(64);
+		_testBuf->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT);
+		_testBuf->SetBPP(128);
 		_testBuf->SetMipmapped(false);
 		_testBuf->InitResources(true, false);
 
@@ -77,26 +65,26 @@ namespace Postprocesses
 		_bufNormalDepth = new RWTexture();
 		_satColor->SetWidth(System::GetInstance()->GetOptions()._windowWidth);
 		_satColor->SetHeight(System::GetInstance()->GetOptions()._windowHeight);
-		_satColor->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM);
+		_satColor->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT);
 		_satColor->SetBPP(32);
 		_satColor->SetMipmapped(false);
 		_satColor->InitResources(false, false);
 		_satNormalDepth->SetWidth(System::GetInstance()->GetOptions()._windowWidth);
 		_satNormalDepth->SetHeight(System::GetInstance()->GetOptions()._windowHeight);
-		_satNormalDepth->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R16G16B16A16_FLOAT);
-		_satNormalDepth->SetBPP(64);
+		_satNormalDepth->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT);
+		_satNormalDepth->SetBPP(128);
 		_satNormalDepth->SetMipmapped(false);
 		_satNormalDepth->InitResources(false, false);
 		_bufColor->SetWidth(System::GetInstance()->GetOptions()._windowWidth);
 		_bufColor->SetHeight(System::GetInstance()->GetOptions()._windowHeight);
-		_bufColor->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM);
+		_bufColor->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT);
 		_bufColor->SetBPP(32);
 		_bufColor->SetMipmapped(false);
 		_bufColor->InitResources(true, false);
 		_bufNormalDepth->SetWidth(System::GetInstance()->GetOptions()._windowWidth);
 		_bufNormalDepth->SetHeight(System::GetInstance()->GetOptions()._windowHeight);
-		_bufNormalDepth->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R16G16B16A16_FLOAT);
-		_bufNormalDepth->SetBPP(64);
+		_bufNormalDepth->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT);
+		_bufNormalDepth->SetBPP(128);
 		_bufNormalDepth->SetMipmapped(false);
 		_bufNormalDepth->InitResources(true, false);
 
@@ -164,8 +152,14 @@ namespace Postprocesses
 	{
 		Postprocess::SetPass(gBuffer, camera, passIndex);
 
+		ID3D11DeviceContext* deviceContext = Renderer::GetInstance()->GetDeviceContext();
+		ID3D11ShaderResourceView* nullik[2]{ nullptr, nullptr };
+		deviceContext->PSSetShaderResources(4, 2, nullik);
+
 		// GENERATE SATS HERE
-		_satGen.Generate(_testInput, _testInput, _testBuf, _testBuf, _testOutput, _testOutput);
+		//_satGen.Generate(_testInput, _testBuf, _testOutput);
+		_satGen.Generate(gBuffer.GetNormalDepthBuffer(), _bufNormalDepth, _satNormalDepth);
+		_satGen.Generate(gBuffer.GetColorBuffer(), _bufColor, _satColor);
 
 		Shader::SSDOImprovedPS* buffer = reinterpret_cast<Shader::SSDOImprovedPS*>(_shaders[0]->MapPsBuffer(1));
 		XMMATRIX proj = XMLoadFloat4x4A(&camera.GetMatProj());
@@ -180,6 +174,8 @@ namespace Postprocesses
 		_shaders[0]->UnmapPsBuffer(1);
 
 		// SET SATS HERE
+		_satNormalDepth->Set(4);
+		_satColor->Set(5);
 
 		const GBuffer::RenderTarget* in[1] = { gBuffer.PPGetOutputBBuffer() };
 		const int32_t inSlots[1] = { 3 };
@@ -190,7 +186,7 @@ namespace Postprocesses
 
 	void SSDOImproved::AfterPass(GBuffer & gBuffer, const Camera & camera, int32_t passIndex) const
 	{
-		//gBuffer.FlipOutputs();
+		
 	}
 
 	inline void SSDOImproved::FillParams(XMFLOAT4A * paramBuffer) const

@@ -178,6 +178,12 @@ public:
 
 	void FlipOutputs();
 
+	inline const RenderTarget* GetColorBuffer() { return &_color; }
+	inline const RenderTarget* GetNormalDepthBuffer() { return &_normal; }
+	inline const RenderTarget* GetDepthBuffer() { return &_depth; }
+	inline const RenderTarget* GetOutputBufferA() { return &_outputA; }
+	inline const RenderTarget* GetOutputBufferB() { return &_outputB; }
+
 #pragma endregion
 
 };
