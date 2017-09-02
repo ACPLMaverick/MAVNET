@@ -5,16 +5,18 @@
 
 cbuffer LightCommon : register(b0)
 {
-	float4x4 projInverse;
+	float4x4 gProjInverse;
 };
 
 cbuffer SSDOBase : register(b1)
 {
-	float4x4 gProj;
-	float4 gOffsets[SAMPLE_COUNT];
-	float4 gParams;
 	float4 gLightColor;
 	float3 gLightDirection;
+	float4 gSatDimensions;
+	float gSampleBoxHalfSize;
+	float gSampleBoxHalfDiagonal;
+	float gOcclusionFalloff;
+	float gPowFactor;
 };
 
 struct PixelOutput
@@ -33,19 +35,65 @@ SamplerState SmpSatNormalDepth : register(s4);
 Texture2D SatColor : register(t5);
 SamplerState SmpSatColor : register(s5);
 
-float Occlusion(float distZ)
+void ApplyOcclusionFaloff(inout float occlusion)
 {
-	const float EPSILON = gParams.z;
-	const float FADE_START = gParams.y;
-	const float FADE_END = gParams.x;
+	occlusion = max(occlusion, 0.0f);
+	occlusion *= smoothstep(-(1.0f + gOcclusionFalloff), -1.0f, -occlusion);
+}
 
-	float occlusion = 0.0f;
+// Will probably be used in the future when adaptive layering is implemented.
+void SampleDepth(float2 uv, out float depth)
+{
+	depth = 1.0f - SatNormalDepth.Sample(SmpSatNormalDepth, uv).w;
+}
 
-	if (distZ > EPSILON)
+void GetAverageValues(float2 uv, float depth, out float3 avgColor, out float3 avgNormal, out float avgDepth)
+{
+	const uint sampleCount = 4;
+	const float boxHalfDiagonal = gSampleBoxHalfDiagonal * depth;
+	const float2 uvSamples[sampleCount] =
 	{
-		float fadeLength = FADE_END - FADE_START;
-		occlusion = saturate((FADE_END - distZ) / fadeLength);
+		float2(uv.x - boxHalfDiagonal, uv.y - boxHalfDiagonal),
+		float2(uv.x + boxHalfDiagonal, uv.y - boxHalfDiagonal),
+		float2(uv.x + boxHalfDiagonal, uv.y + boxHalfDiagonal),
+		float2(uv.x - boxHalfDiagonal, uv.y + boxHalfDiagonal)
+	};	// TL, TR, BR, BL
+
+	float4 normalsDepths[sampleCount];
+	float3 colors[sampleCount];
+
+	[unroll]
+	for (uint i = 0; i < sampleCount; ++i)
+	{
+		normalsDepths[i] = SatNormalDepth.Sample(SmpSatNormalDepth, uvSamples[i]);
 	}
+	[unroll]
+	for (i = 0; i < sampleCount; ++i)
+	{
+		colors[i] = SatNormalDepth.Sample(SmpSatNormalDepth, uvSamples[i]).rgb;
+	}
+
+	// SAT: (BR - BL - TR + TL) / area
+	const float areaRec = 1.0f / ( (uvSamples[2].x - uvSamples[3].x) * gSatDimensions.x * (uvSamples[2].y - uvSamples[1].y) * gSatDimensions.y );
+
+	const float4 avgNormalDepth = (normalsDepths[2] - normalsDepths[3] - normalsDepths[1] + normalsDepths[0]) * areaRec;
+	avgNormal = normalize(avgNormalDepth.xyz);
+	avgDepth = avgNormalDepth.w;
+
+	avgColor = (colors[2] - colors[3] - colors[1] + colors[0]) * areaRec;
+}
+
+float GetOcclusion(float3 pixelNormal, float2 uv, float pixelDepth, float avgDepth)
+{
+	float3 pxViewPos = ViewPositionFromDepth(gProjInverse, uv, pixelDepth);
+	float3 avgViewPos = ViewPositionFromDepth(gProjInverse, uv, avgDepth);
+
+	float3 dirToAvg = avgViewPos - pxViewPos;
+
+	float occlusion = dot(dirToAvg, pixelNormal);
+	occlusion /= 2.0f * gSampleBoxHalfSize;
+	ApplyOcclusionFaloff(occlusion);
+	occlusion = pow(occlusion, gPowFactor);
 
 	return occlusion;
 }
@@ -55,15 +103,14 @@ PixelOutput main(DPixelInput input)
 	float4 normalSample = TexNormalDepth.Sample(SmpNormalDepth, input.Uv);
 	float depth = normalSample.w;
 	float3 normal = normalSample.xyz;
-	float3 viewPos = ViewPositionFromDepth(projInverse, input.Uv, depth);
-	float4 satNormalSample = SatNormalDepth.Sample(SmpSatNormalDepth, input.Uv);
-	float3 satColor = SatColor.Sample(SmpSatColor, input.Uv).xyz;
 
-	const float maxDist = gParams.x;
-	const float powFactor = gParams.w;
+	float3 avgColor, avgNormal;
+	float avgDepth;
+	GetAverageValues(input.Uv, depth, avgColor, avgNormal, avgDepth);
 
-	float occlusionCounter = 0.0f;
-	float occlusionDivisor = SAMPLE_COUNT;
+
+	float occlusion = GetOcclusion(normal, input.Uv, depth, avgDepth);
+
 
 	MaterialData pData;
 	pData.colBase = float4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -72,7 +119,9 @@ PixelOutput main(DPixelInput input)
 
 	PixelOutput output;
 
-	output.final = satNormalSample;
+	occlusion = 1.0f - occlusion;
+	//output.final = TexInput.Sample(SmpInput, input.Uv) * occlusion.rrrr;
+	output.final = occlusion.rrrr;
 
 	return output;
 }

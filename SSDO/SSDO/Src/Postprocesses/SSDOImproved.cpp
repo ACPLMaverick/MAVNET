@@ -14,9 +14,9 @@ namespace Postprocesses
 {
 	SSDOImproved::SSDOImproved() :
 		_dataBuffer(nullptr),
-		_maxDistance(1.2f),
-		_fadeStart(0.02f),
-		_epsilon(0.01f),
+		_sampleBoxHalfSize(0.3f),
+		_sampleBoxHalfDiagonal(_sampleBoxHalfSize * sqrt(2.0f)),
+		_occlusionFaloff(1.0f),
 		_powFactor(1.0f)
 	{
 		// TETIN
@@ -102,31 +102,6 @@ namespace Postprocesses
 
 		device->CreateBuffer(&bDesc, nullptr, &_dataBuffer);
 		ASSERT(_dataBuffer != nullptr);
-
-		// offsets
-
-		_offsets[0] = XMFLOAT4A(1.0f, 1.0f, 1.0f, 0.0f);
-		_offsets[1] = XMFLOAT4A(-1.0f, -1.0f, -1.0f, 0.0f);
-		_offsets[2] = XMFLOAT4A(-1.0f, 1.0f, 1.0f, 0.0f);
-		_offsets[3] = XMFLOAT4A(1.0f, -1.0f, -1.0f, 0.0f);
-		_offsets[4] = XMFLOAT4A(1.0f, 1.0f, -1.0f, 0.0f);
-		_offsets[5] = XMFLOAT4A(-1.0f, -1.0f, 1.0f, 0.0f);
-		_offsets[6] = XMFLOAT4A(-1.0f, 1.0f, -1.0f, 0.0f);
-		_offsets[7] = XMFLOAT4A(1.0f, -1.0f, 1.0f, 0.0f);
-		_offsets[8] = XMFLOAT4A(-1.0f, 0.0f, 0.0f, 0.0f);
-		_offsets[9] = XMFLOAT4A(1.0f, 0.0f, 0.0f, 0.0f);
-		_offsets[10] = XMFLOAT4A(0.0f, -1.0f, 0.0f, 0.0f);
-		_offsets[11] = XMFLOAT4A(0.0f, 1.0f, 0.0f, 0.0f);
-		_offsets[12] = XMFLOAT4A(0.0f, 0.0f, -1.0f, 0.0f);
-		_offsets[13] = XMFLOAT4A(0.0f, 0.0f, 1.0f, 0.0f);
-
-		for (int32_t i = 0; i < SAMPLE_COUNT; ++i)
-		{
-			float rand = System::GetInstance()->GetRandom()->GetFloat(0.25f, 1.0f);
-			XMVECTOR vc = XMLoadFloat4A(&_offsets[i]);
-			vc = rand * XMVector4Normalize(vc);
-			XMStoreFloat4(&_offsets[i], vc);
-		}
 	}
 
 	SSDOImproved::~SSDOImproved()
@@ -156,24 +131,25 @@ namespace Postprocesses
 		ID3D11ShaderResourceView* nullik[2]{ nullptr, nullptr };
 		deviceContext->PSSetShaderResources(4, 2, nullik);
 
-		// GENERATE SATS HERE
 		//_satGen.Generate(_testInput, _testBuf, _testOutput);
 		_satGen.Generate(gBuffer.GetNormalDepthBuffer(), _bufNormalDepth, _satNormalDepth);
 		_satGen.Generate(gBuffer.GetColorBuffer(), _bufColor, _satColor);
 
 		Shader::SSDOImprovedPS* buffer = reinterpret_cast<Shader::SSDOImprovedPS*>(_shaders[0]->MapPsBuffer(1));
-		XMMATRIX proj = XMLoadFloat4x4A(&camera.GetMatProj());
-		XMStoreFloat4x4A(&buffer->Proj, XMMatrixTranspose(proj));
-		memcpy(&buffer->Offsets, _offsets, SAMPLE_COUNT * sizeof(XMFLOAT4A));
-		FillParams(&buffer->Params);
 		reinterpret_cast<Lights::LightDirectional*>(&buffer->LightColor)->ApplyToShader(
 			*System::GetInstance()->GetScene()->GetLightsDirectional()[0],
 			camera
 		);
+		buffer->SatDimensions = XMFLOAT2A(
+			static_cast<float>(_satNormalDepth->GetWidth()), 
+			static_cast<float>(_satNormalDepth->GetHeight()));
+		buffer->SampleBoxHalfSize = _sampleBoxHalfSize;
+		buffer->SampleBoxHalfDiagonal = _sampleBoxHalfDiagonal;
+		buffer->OcclusionFalloff = _occlusionFaloff;
+		buffer->PowFactor = _powFactor;
 
 		_shaders[0]->UnmapPsBuffer(1);
 
-		// SET SATS HERE
 		_satNormalDepth->Set(4);
 		_satColor->Set(5);
 
@@ -188,13 +164,4 @@ namespace Postprocesses
 	{
 		
 	}
-
-	inline void SSDOImproved::FillParams(XMFLOAT4A * paramBuffer) const
-	{
-		paramBuffer->x = _maxDistance;
-		paramBuffer->y = _fadeStart;
-		paramBuffer->z = _epsilon;
-		paramBuffer->w = _powFactor;
-	}
-
 }

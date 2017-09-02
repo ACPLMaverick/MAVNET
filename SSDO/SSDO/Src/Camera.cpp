@@ -172,9 +172,7 @@ void Camera::SetDirection(const XMVECTOR & direction)
 	XMVECTOR pos = XMLoadFloat3(&_position);
 	XMVECTOR dir = XMLoadFloat3(&_target) - pos;
 
-	XMVECTOR len = XMVector3Length(dir);
-
-	XMVECTOR nTgt = pos + XMVector3Normalize(direction) * len;
+	XMVECTOR nTgt = pos + XMVector3Normalize(direction);
 
 	XMStoreFloat3(&_target, nTgt);
 

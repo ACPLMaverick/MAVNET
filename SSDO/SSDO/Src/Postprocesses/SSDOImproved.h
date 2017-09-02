@@ -10,17 +10,12 @@ namespace Postprocesses
 	class SSDOImproved :
 		public Postprocess
 	{
-	public:
-
-		static const int32_t SAMPLE_COUNT = 14;
-
 	protected:
 
 
-		XMFLOAT4A _offsets[SAMPLE_COUNT];
-		float _maxDistance;
-		float _fadeStart;
-		float _epsilon;
+		float _sampleBoxHalfSize;
+		float _sampleBoxHalfDiagonal;
+		float _occlusionFaloff;
 		float _powFactor;
 
 		SATGenerator _satGen;
@@ -34,8 +29,6 @@ namespace Postprocesses
 		Texture* _testInput;
 		RWTexture* _testBuf;
 		RWTexture* _testOutput;
-
-		inline void FillParams(XMFLOAT4A* paramBuffer) const;
 
 	public:
 		SSDOImproved();

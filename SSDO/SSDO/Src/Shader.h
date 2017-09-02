@@ -109,11 +109,13 @@ public:
 	__declspec(align(16))
 		struct SSDOImprovedPS
 	{
-		XMFLOAT4X4A Proj;
-		XMFLOAT4A Offsets[Postprocesses::SSDOBase::SAMPLE_COUNT];
-		XMFLOAT4A Params;
 		XMFLOAT4A LightColor;
 		XMFLOAT3A LightDirection;
+		XMFLOAT2A SatDimensions;
+		float SampleBoxHalfSize;
+		float SampleBoxHalfDiagonal;
+		float OcclusionFalloff;
+		float PowFactor;
 	};
 
 #pragma endregion
