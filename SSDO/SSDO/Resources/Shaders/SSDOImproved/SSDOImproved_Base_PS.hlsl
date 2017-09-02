@@ -35,10 +35,11 @@ SamplerState SmpSatNormalDepth : register(s4);
 Texture2D SatColor : register(t5);
 SamplerState SmpSatColor : register(s5);
 
-void ApplyOcclusionFaloff(inout float occlusion)
+void ApplyOcclusionFaloff(float diffZ, inout float occlusion)
 {
 	occlusion = max(occlusion, 0.0f);
 	occlusion *= smoothstep(-(1.0f + gOcclusionFalloff), -1.0f, -occlusion);
+	occlusion *= step(0.0001f, diffZ);
 }
 
 // Will probably be used in the future when adaptive layering is implemented.
@@ -53,10 +54,10 @@ void GetAverageValues(float2 uv, float depth, out float3 avgColor, out float3 av
 	const float boxHalfDiagonal = gSampleBoxHalfDiagonal * depth;
 	const float2 uvSamples[sampleCount] =
 	{
-		float2(uv.x - boxHalfDiagonal, uv.y - boxHalfDiagonal),
-		float2(uv.x + boxHalfDiagonal, uv.y - boxHalfDiagonal),
-		float2(uv.x + boxHalfDiagonal, uv.y + boxHalfDiagonal),
-		float2(uv.x - boxHalfDiagonal, uv.y + boxHalfDiagonal)
+		saturate(float2(uv.x - boxHalfDiagonal, uv.y - boxHalfDiagonal)),
+		saturate(float2(uv.x + boxHalfDiagonal, uv.y - boxHalfDiagonal)),
+		saturate(float2(uv.x + boxHalfDiagonal, uv.y + boxHalfDiagonal)),
+		saturate(float2(uv.x - boxHalfDiagonal, uv.y + boxHalfDiagonal))
 	};	// TL, TR, BR, BL
 
 	float4 normalsDepths[sampleCount];
@@ -85,14 +86,15 @@ void GetAverageValues(float2 uv, float depth, out float3 avgColor, out float3 av
 
 float GetOcclusion(float3 pixelNormal, float2 uv, float pixelDepth, float avgDepth)
 {
-	float3 pxViewPos = ViewPositionFromDepth(gProjInverse, uv, pixelDepth);
-	float3 avgViewPos = ViewPositionFromDepth(gProjInverse, uv, avgDepth);
+	const float3 pxViewPos = ViewPositionFromDepth(gProjInverse, uv, pixelDepth);
+	const float3 avgViewPos = ViewPositionFromDepth(gProjInverse, uv, avgDepth);
+	const float diffZ = abs(pixelDepth - avgDepth);
 
-	float3 dirToAvg = avgViewPos - pxViewPos;
+	const float3 dirToAvg = avgViewPos - pxViewPos;
 
 	float occlusion = dot(dirToAvg, pixelNormal);
-	occlusion /= 2.0f * gSampleBoxHalfSize;
-	ApplyOcclusionFaloff(occlusion);
+	occlusion /= gSampleBoxHalfSize;
+	ApplyOcclusionFaloff(diffZ, occlusion);
 	occlusion = pow(occlusion, gPowFactor);
 
 	return occlusion;
