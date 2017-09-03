@@ -70,7 +70,7 @@ PixelOutput main(DPixelInput input)
 	MaterialData pData;
 	pData.colBase = float4(1.0f, 1.0f, 1.0f, 1.0f);
 	pData.colSpecular = float4(1.0f, 1.0f, 1.0f, 1.0f);
-	pData.gloss = normalSample.w;
+	pData.gloss = 50.0f;
 
 	PixelOutput output;
 

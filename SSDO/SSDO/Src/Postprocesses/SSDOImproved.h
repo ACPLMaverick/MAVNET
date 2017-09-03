@@ -14,7 +14,7 @@ namespace Postprocesses
 
 
 		float _sampleBoxHalfSize;
-		float _sampleBoxHalfDiagonal;
+		float _occlusionPower;
 		float _occlusionFaloff;
 		float _powFactor;
 

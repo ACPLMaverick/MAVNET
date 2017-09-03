@@ -113,7 +113,7 @@ public:
 		XMFLOAT3A LightDirection;
 		XMFLOAT2A SatDimensions;
 		float SampleBoxHalfSize;
-		float SampleBoxHalfDiagonal;
+		float OcclusionPower;
 		float OcclusionFalloff;
 		float PowFactor;
 	};

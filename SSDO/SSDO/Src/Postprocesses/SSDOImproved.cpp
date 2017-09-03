@@ -15,7 +15,7 @@ namespace Postprocesses
 	SSDOImproved::SSDOImproved() :
 		_dataBuffer(nullptr),
 		_sampleBoxHalfSize(0.3f),
-		_sampleBoxHalfDiagonal(_sampleBoxHalfSize * sqrt(2.0f)),
+		_occlusionPower(1.0f),
 		_occlusionFaloff(1.0f),
 		_powFactor(1.0f)
 	{
@@ -144,7 +144,7 @@ namespace Postprocesses
 			static_cast<float>(_satNormalDepth->GetWidth()), 
 			static_cast<float>(_satNormalDepth->GetHeight()));
 		buffer->SampleBoxHalfSize = _sampleBoxHalfSize;
-		buffer->SampleBoxHalfDiagonal = _sampleBoxHalfDiagonal;
+		buffer->OcclusionPower = _occlusionPower;
 		buffer->OcclusionFalloff = _occlusionFaloff;
 		buffer->PowFactor = _powFactor;
 
