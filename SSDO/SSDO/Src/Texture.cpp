@@ -140,6 +140,15 @@ void Texture::GenerateRTVDesc(D3D11_RENDER_TARGET_VIEW_DESC & desc)
 {
 }
 
+void Texture::CreateMipmaps()
+{
+	if (!_bMipmapped)
+		_bMipmapped = true;
+
+	ID3D11DeviceContext* deviceContext = Renderer::GetInstance()->GetDeviceContext();
+	deviceContext->GenerateMips(_fSRV);
+}
+
 void Texture::ClearTextureSlot(int32_t slot)
 {
 	ID3D11DeviceContext* deviceContext = Renderer::GetInstance()->GetDeviceContext();

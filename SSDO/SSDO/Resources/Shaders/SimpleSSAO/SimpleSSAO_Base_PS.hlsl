@@ -44,7 +44,7 @@ float Occlusion(float distZ)
 
 float4 main(DPixelInput input) : SV_TARGET
 {
-	float4 normalDepth = TexNormalDepth.Sample(SmpNormalDepth, input.Uv);
+	float4 normalDepth = TexNormalDepth.SampleLevel(SmpNormalDepth, input.Uv, 0);
 	float depth = normalDepth.w;
 	float3 normal = normalDepth.xyz;
 	float3 viewPos = ViewPositionFromDepth(projInverse, input.Uv, depth);

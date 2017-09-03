@@ -13,6 +13,7 @@
 namespace Postprocesses
 {
 	SSDOImproved::SSDOImproved() :
+		SAT_SIZE_DIVISOR(4),
 		_dataBuffer(nullptr),
 		_sampleBoxHalfSize(0.3f),
 		_occlusionPower(1.0f),
@@ -21,8 +22,8 @@ namespace Postprocesses
 	{
 		// TETIN
 
-		const int32_t sizX(1280);
-		const int32_t sizY(720);
+		const int32_t sizX(1280 / SAT_SIZE_DIVISOR);
+		const int32_t sizY(720 / SAT_SIZE_DIVISOR);
 
 		_testInput = new Texture();
 		_testInput->SetWidth(sizX);
@@ -63,26 +64,26 @@ namespace Postprocesses
 		_satNormalDepth = new RWTexture();
 		_bufColor = new RWTexture();
 		_bufNormalDepth = new RWTexture();
-		_satColor->SetWidth(System::GetInstance()->GetOptions()._windowWidth);
-		_satColor->SetHeight(System::GetInstance()->GetOptions()._windowHeight);
+		_satColor->SetWidth(System::GetInstance()->GetOptions()._windowWidth / SAT_SIZE_DIVISOR);
+		_satColor->SetHeight(System::GetInstance()->GetOptions()._windowHeight / SAT_SIZE_DIVISOR);
 		_satColor->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT);
-		_satColor->SetBPP(32);
+		_satColor->SetBPP(128);
 		_satColor->SetMipmapped(false);
 		_satColor->InitResources(false, false);
-		_satNormalDepth->SetWidth(System::GetInstance()->GetOptions()._windowWidth);
-		_satNormalDepth->SetHeight(System::GetInstance()->GetOptions()._windowHeight);
+		_satNormalDepth->SetWidth(System::GetInstance()->GetOptions()._windowWidth / SAT_SIZE_DIVISOR);
+		_satNormalDepth->SetHeight(System::GetInstance()->GetOptions()._windowHeight / SAT_SIZE_DIVISOR);
 		_satNormalDepth->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT);
 		_satNormalDepth->SetBPP(128);
 		_satNormalDepth->SetMipmapped(false);
 		_satNormalDepth->InitResources(false, false);
-		_bufColor->SetWidth(System::GetInstance()->GetOptions()._windowWidth);
-		_bufColor->SetHeight(System::GetInstance()->GetOptions()._windowHeight);
+		_bufColor->SetWidth(System::GetInstance()->GetOptions()._windowWidth / SAT_SIZE_DIVISOR);
+		_bufColor->SetHeight(System::GetInstance()->GetOptions()._windowHeight / SAT_SIZE_DIVISOR);
 		_bufColor->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT);
-		_bufColor->SetBPP(32);
+		_bufColor->SetBPP(128);
 		_bufColor->SetMipmapped(false);
 		_bufColor->InitResources(true, false);
-		_bufNormalDepth->SetWidth(System::GetInstance()->GetOptions()._windowWidth);
-		_bufNormalDepth->SetHeight(System::GetInstance()->GetOptions()._windowHeight);
+		_bufNormalDepth->SetWidth(System::GetInstance()->GetOptions()._windowWidth / SAT_SIZE_DIVISOR);
+		_bufNormalDepth->SetHeight(System::GetInstance()->GetOptions()._windowHeight / SAT_SIZE_DIVISOR);
 		_bufNormalDepth->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT);
 		_bufNormalDepth->SetBPP(128);
 		_bufNormalDepth->SetMipmapped(false);

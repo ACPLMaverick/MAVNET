@@ -104,6 +104,8 @@ public:
 	inline ID3D11ShaderResourceView* GetSRV() const { return _fSRV; }
 	inline ID3D11RenderTargetView* GetRTV() const { return _fRTV; }
 
+	void CreateMipmaps();
+
 	inline void AllocateRawDataToTextureSize()
 	{
 		int32_t size(_width * _height * _bpp / 8);

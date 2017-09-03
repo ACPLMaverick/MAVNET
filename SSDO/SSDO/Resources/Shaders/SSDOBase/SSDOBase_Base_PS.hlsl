@@ -56,7 +56,7 @@ float Occlusion(float distZ)
 
 PixelOutput main(DPixelInput input)
 {
-	float4 normalSample = TexNormalDepth.Sample(SmpNormalDepth, input.Uv);
+	float4 normalSample = TexNormalDepth.SampleLevel(SmpNormalDepth, input.Uv, 0.0f);
 	float depth = normalSample.w;
 	float3 normal = normalSample.xyz;
 	float3 viewPos = ViewPositionFromDepth(projInverse, input.Uv, depth);
@@ -111,7 +111,7 @@ PixelOutput main(DPixelInput input)
 
 		// Lit from this sample
 		float4 smpColor = 0.0f;
-		float4 smpBaseColor = TexColor.Sample(SmpColor, mapUv);
+		float4 smpBaseColor = TexColor.SampleLevel(SmpColor, mapUv, 0.0f);
 		//pData.colBase = smpBaseColor;
 
 		PhongBlinn(gLightColor,

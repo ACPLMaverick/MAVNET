@@ -48,7 +48,11 @@ GBuffer::GBuffer(const Camera& camera) :
 	descTextureBuffers.Width /= PP_BUFFER_SIZE_DIVISOR;
 	descTextureBuffers.Height /= PP_BUFFER_SIZE_DIVISOR;
 
-	D3D11_TEXTURE2D_DESC descTextureNormals = descTexture;
+	D3D11_TEXTURE2D_DESC descMipmapped = descTexture;
+	descMipmapped.MipLevels = 0;
+	descMipmapped.MiscFlags |= D3D11_RESOURCE_MISC_GENERATE_MIPS;
+
+	D3D11_TEXTURE2D_DESC descTextureNormals = descMipmapped;
 	descTextureNormals.Format = formatNormal;
 
 	D3D11_SAMPLER_DESC descSampler;
@@ -76,7 +80,10 @@ GBuffer::GBuffer(const Camera& camera) :
 	descSrv.Texture2D.MipLevels = 1;
 	descSrv.Texture2D.MostDetailedMip = 0;
 
-	D3D11_SHADER_RESOURCE_VIEW_DESC descSrvNormals = descSrv;
+	D3D11_SHADER_RESOURCE_VIEW_DESC descSrvMipmapped = descSrv;
+	descSrvMipmapped.Texture2D.MipLevels = -1;
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC descSrvNormals = descSrvMipmapped;
 	descSrvNormals.Format = formatNormal;
 
 	D3D11_TEXTURE2D_DESC descDs;
@@ -93,7 +100,7 @@ GBuffer::GBuffer(const Camera& camera) :
 	descDs.MiscFlags = 0;
 	
 
-	ASSERT(device->CreateTexture2D(&descTexture, nullptr, &_color.Texture) == S_OK);
+	ASSERT(device->CreateTexture2D(&descMipmapped, nullptr, &_color.Texture) == S_OK);
 	ASSERT(device->CreateTexture2D(&descTextureNormals, nullptr, &_normal.Texture) == S_OK);
 	ASSERT(device->CreateTexture2D(&descTexture, nullptr, &_outputA.Texture) == S_OK);
 	ASSERT(device->CreateTexture2D(&descTexture, nullptr, &_outputB.Texture) == S_OK);
@@ -116,7 +123,7 @@ GBuffer::GBuffer(const Camera& camera) :
 	for (size_t i = 0; i < PP_BUFFER_COUNT; ++i)
 		ASSERT(device->CreateSamplerState(&descSamplerBuffers, &_postprocessBuffers[i].Sampler) == S_OK);
 
-	ASSERT(device->CreateShaderResourceView(_color.Texture, &descSrv, &_color.SRV) == S_OK);
+	ASSERT(device->CreateShaderResourceView(_color.Texture, &descSrvMipmapped, &_color.SRV) == S_OK);
 	ASSERT(device->CreateShaderResourceView(_normal.Texture, &descSrvNormals, &_normal.SRV) == S_OK);
 	ASSERT(device->CreateShaderResourceView(_outputA.Texture, &descSrv, &_outputA.SRV) == S_OK);
 	ASSERT(device->CreateShaderResourceView(_outputB.Texture, &descSrv, &_outputB.SRV) == S_OK);
@@ -306,7 +313,9 @@ void GBuffer::SetDrawPostprocesses()
 	const int32_t rts[1] = { 3 };
 	PPSetBuffersAsInput(rt, rts, 1);
 
-	//FlipOutputs();
+	// generate mipmaps for normals, depth and color
+	_normal.GenerateMipmaps();
+	_color.GenerateMipmaps();
 
 	// return blend state to opaque
 	Renderer::GetInstance()->SetMainBlendState();

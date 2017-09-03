@@ -12,6 +12,7 @@ namespace Postprocesses
 	{
 	protected:
 
+		const uint32_t SAT_SIZE_DIVISOR;
 
 		float _sampleBoxHalfSize;
 		float _occlusionPower;

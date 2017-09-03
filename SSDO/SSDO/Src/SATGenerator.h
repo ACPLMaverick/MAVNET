@@ -35,6 +35,7 @@ protected:
 
 	inline void PrintRawData(const Texture* tex) const;
 	inline uint32_t GetPowerOfTwoHigherThan(uint32_t val) const;
+	inline uint32_t GetTextureLevel(uint32_t inputWidth, uint32_t outputWidth) const;
 
 #pragma endregion
 

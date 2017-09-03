@@ -23,7 +23,7 @@ void SATGenerator::Generate(const Texture* input,
 {
 	uint32_t inputWidth(input->GetWidth());
 	uint32_t inputHeight(input->GetHeight());
-	uint32_t inputLevel(inputWidth / output->GetWidth() - 1);
+	uint32_t inputLevel(GetTextureLevel(inputWidth, output->GetWidth()));
 	GenerateInternal(input->GetSRV(), buffer->GetSRV(), buffer->GetUAV(), 
 		 output->GetUAV(), inputWidth, inputHeight, inputLevel);
 
@@ -42,7 +42,7 @@ void SATGenerator::Generate(const GBuffer::RenderTarget* input,
 {
 	uint32_t inputWidth(System::GetInstance()->GetOptions()._windowWidth / GBuffer::PP_BUFFER_SIZE_DIVISOR);
 	uint32_t inputHeight(System::GetInstance()->GetOptions()._windowHeight / GBuffer::PP_BUFFER_SIZE_DIVISOR);
-	uint32_t inputLevel(inputWidth / output->GetWidth() - 1);
+	uint32_t inputLevel(GetTextureLevel(inputWidth, output->GetWidth()));
 	GenerateInternal(input->SRV, buffer->GetSRV(), buffer->GetUAV(),
 		output->GetUAV(), inputWidth, inputHeight, inputLevel);
 }
@@ -56,6 +56,9 @@ inline void SATGenerator::GenerateInternal(
 {
 	ID3D11DeviceContext* deviceContext(Renderer::GetInstance()->GetDeviceContext());
 	
+	inputWidth >>= inputLevel;
+	inputHeight >>= inputLevel;
+
 	ComputeShader::SATBuffer* buf = _shader->MapConstantBuffer<ComputeShader::SATBuffer>();
 	buf->WidthWidthpowLevel[0] = inputWidth;
 	buf->WidthWidthpowLevel[1] = GetPowerOfTwoHigherThan(inputWidth);
@@ -128,4 +131,15 @@ inline uint32_t SATGenerator::GetPowerOfTwoHigherThan(uint32_t val) const
 	val |= val >> 8;
 	val |= val >> 16;
 	return val + 1;
+}
+
+inline uint32_t SATGenerator::GetTextureLevel(uint32_t inputWidth, uint32_t outputWidth) const
+{
+	uint32_t level = 0;
+	while (inputWidth > outputWidth)
+	{
+		inputWidth >>= 1;
+		++level;
+	}
+	return level;
 }

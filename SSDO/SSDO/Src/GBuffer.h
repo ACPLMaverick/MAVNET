@@ -2,6 +2,7 @@
 
 #include "GlobalDefines.h"
 #include "Buffer.h"
+#include "Renderer.h"
 
 class Shader;
 class Camera;
@@ -54,6 +55,12 @@ public:
 				SRV->Release();
 				SRV = nullptr;
 			}
+		}
+
+		inline void GenerateMipmaps()
+		{
+			ID3D11DeviceContext* deviceContext = Renderer::GetInstance()->GetDeviceContext();
+			deviceContext->GenerateMips(SRV);
 		}
 
 		virtual RenderTarget& operator=(const RenderTarget& other)
