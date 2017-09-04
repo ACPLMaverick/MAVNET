@@ -97,7 +97,7 @@ PixelOutput main(DPixelInput input)
 		float sampleDepth = samplePos.z;
 		float2 mapUv = (samplePos.xy + 1.0f) * 0.5f;
 		mapUv.y = 1.0f - mapUv.y;
-		float4 mapNormalSample = TexNormalDepth.Sample(SmpNormalDepth, mapUv);
+		float4 mapNormalSample = TexNormalDepth.SampleLevel(SmpNormalDepth, mapUv, 0.0f);
 		float mapDepth = mapNormalSample.w;
 		float3 mapViewPos = ViewPositionFromDepth(projInverse, mapUv, mapDepth);
 

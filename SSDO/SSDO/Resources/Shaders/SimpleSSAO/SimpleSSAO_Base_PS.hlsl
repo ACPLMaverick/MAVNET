@@ -73,7 +73,7 @@ float4 main(DPixelInput input) : SV_TARGET
 		float sampleDepth = samplePos.z;
 		float2 mapUv = (samplePos.xy + 1.0f) * 0.5f;
 		mapUv.y = 1.0f - mapUv.y;
-		float mapDepth = TexNormalDepth.Sample(SmpNormalDepth, mapUv).w;
+		float mapDepth = TexNormalDepth.SampleLevel(SmpNormalDepth, mapUv, 0.0f).w;
 		float3 mapViewPos = ViewPositionFromDepth(projInverse, mapUv, mapDepth);
 
 		// Compute occlusion for this sample
