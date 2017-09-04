@@ -141,9 +141,10 @@ namespace Postprocesses
 			*System::GetInstance()->GetScene()->GetLightsDirectional()[0],
 			camera
 		);
-		buffer->SatDimensions = XMFLOAT2A(
-			static_cast<float>(_satNormalDepth->GetWidth()), 
-			static_cast<float>(_satNormalDepth->GetHeight()));
+		buffer->SatDimensionsAndRecs.x = static_cast<float>(_satNormalDepth->GetWidth());
+		buffer->SatDimensionsAndRecs.y = static_cast<float>(_satNormalDepth->GetHeight());
+		buffer->SatDimensionsAndRecs.z = 1.0f / buffer->SatDimensionsAndRecs.x;
+		buffer->SatDimensionsAndRecs.w = 1.0f / buffer->SatDimensionsAndRecs.y;
 		buffer->SampleBoxHalfSize = _sampleBoxHalfSize;
 		buffer->OcclusionPower = _occlusionPower;
 		buffer->OcclusionFalloff = _occlusionFaloff;

@@ -87,27 +87,86 @@ void SampleDepth(in float2 uv, out float depth)
 	depth = 1.0f - SatNormalDepth.Sample(SmpSatNormalDepth, uv).w;
 }
 
+void GenerateSamplePointsAndArea(in const float filterHalfWidth, in const float2 uv, in const float depth,
+	out float2 samplePoints[4], out float areaRec)
+{
+	const uint sampleCount = 4;
+	float tSize = filterHalfWidth * min(gSatDimensions.x, gSatDimensions.y) * pow(depth, 0.8f); // how many pixels
+	float2 centerPoint = uv * gSatDimensions.xy;
+	float diffX = abs(min(centerPoint.x - tSize, 0.0f)) + max(centerPoint.x + tSize - gSatDimensions.x, 0.0f);
+	float diffY = abs(min(centerPoint.y - tSize, 0.0f)) + max(centerPoint.y + tSize - gSatDimensions.y, 0.0f);
+	float tSizeX = tSize - diffX + diffY;
+	float tSizeY = tSize - diffY + diffX;
+
+	// TL, TR, BR, BL
+	samplePoints[0] = float2(centerPoint.x - tSizeX - 1, centerPoint.y - tSizeY - 1);
+	samplePoints[1] = float2(min(centerPoint.x + tSizeX, gSatDimensions.x - 1), centerPoint.y - tSizeY - 1);
+	samplePoints[2] = float2(min(centerPoint.x + tSizeX, gSatDimensions.x - 1), min(centerPoint.y + tSizeY, gSatDimensions.y - 1));
+	samplePoints[3] = float2(centerPoint.x - tSizeX - 1, min(centerPoint.y + tSizeY, gSatDimensions.y - 1));
+
+	areaRec = 1.0f / float(
+		(samplePoints[2].x - samplePoints[3].x) *
+		(samplePoints[2].y - samplePoints[1].y));
+}
+
+void CalculateAverage(in Texture2D tex, in SamplerState smp,
+	in const float2 samplePoints[4], in const float areaRec, out float4 average)
+{
+	// SAT: (BR - BL - TR + TL) / area
+	float4 values[4] =
+	{
+		tex.Sample(smp, samplePoints[0] * gSatDimensions.zw),
+		tex.Sample(smp, samplePoints[1] * gSatDimensions.zw),
+		tex.Sample(smp, samplePoints[2] * gSatDimensions.zw),
+		tex.Sample(smp, samplePoints[3] * gSatDimensions.zw),
+	};
+	average = (values[2] - values[3] - values[1] + values[0]) * areaRec;
+}
 
 void GetAverageValues(in const float2 uv, in const float depth, in const float colorSampleMultiplier,
 	out float3 avgColor, out float3 avgNormal, out float3 avgViewPos, out float avgDepth)
 {
+
+	const uint sampleCount = 4;
+	const float boxHalfSize = gSampleBoxHalfSize;
+	const float boxHalfSizeColor = boxHalfSize * colorSampleMultiplier;
+
+	float2 samplePoints[4];
+	float2 samplePointsColor[4];
+	float areaRec, areaRecColor;
+
+	GenerateSamplePointsAndArea(boxHalfSize, uv, depth, samplePoints, areaRec);
+	GenerateSamplePointsAndArea(boxHalfSizeColor, uv, depth, samplePointsColor, areaRecColor);
+
+	float4 avgNormalDepth, avgColor4;
+	
+	CalculateAverage(SatNormalDepth, SmpSatNormalDepth, samplePoints, areaRec, avgNormalDepth);
+	CalculateAverage(SatColor, SmpSatColor, samplePointsColor, areaRecColor, avgColor4);
+
+	avgNormal = normalize(avgNormalDepth.xyz);
+	avgDepth = avgNormalDepth.w;
+	avgViewPos = ViewPositionFromDepth(gProjInverse, uv, avgDepth);
+
+	avgColor = avgColor4.rgb;
+
+	/*
 	const uint sampleCount = 4;
 	float boxHalfSize = gSampleBoxHalfSize * pow(depth, 0.8f);
 	const float2 uvSamples[sampleCount] =
 	{
-		saturate(float2(uv.x - boxHalfSize, uv.y - boxHalfSize)),
-		saturate(float2(uv.x + boxHalfSize, uv.y - boxHalfSize)),
-		saturate(float2(uv.x + boxHalfSize, uv.y + boxHalfSize)),
-		saturate(float2(uv.x - boxHalfSize, uv.y + boxHalfSize))
-	};	// TL, TR, BR, BL
+		float2(uv.x - boxHalfSize, uv.y - boxHalfSize),
+		float2(uv.x + boxHalfSize, uv.y - boxHalfSize),
+		float2(uv.x + boxHalfSize, uv.y + boxHalfSize),
+		float2(uv.x - boxHalfSize, uv.y + boxHalfSize)
+	};
 
 	boxHalfSize *= colorSampleMultiplier;
 	const float2 uvSamplesColor[sampleCount] =
 	{
-		saturate(float2(uv.x - boxHalfSize, uv.y - boxHalfSize)),
-		saturate(float2(uv.x + boxHalfSize, uv.y - boxHalfSize)),
-		saturate(float2(uv.x + boxHalfSize, uv.y + boxHalfSize)),
-		saturate(float2(uv.x - boxHalfSize, uv.y + boxHalfSize))
+		float2(uv.x - boxHalfSize, uv.y - boxHalfSize),
+		float2(uv.x + boxHalfSize, uv.y - boxHalfSize),
+		saturate(float2(uv.x + boxHalfSize, uv.y + boxHalfSize)) - 0.001f,
+		float2(uv.x - boxHalfSize, uv.y + boxHalfSize)
 	};	// TL, TR, BR, BL
 
 	float4 normalsDepths[sampleCount];
@@ -124,8 +183,8 @@ void GetAverageValues(in const float2 uv, in const float depth, in const float c
 		colors[i] = SatColor.Sample(SmpSatColor, uvSamplesColor[i]).rgb;
 	}
 
-	// SAT: (BR - BL - TR + TL) / area
-	const float areaRec = 1.0f / ( (uvSamples[2].x - uvSamples[3].x) * gSatDimensions.x * (uvSamples[2].y - uvSamples[1].y) * gSatDimensions.y );
+
+	const float areaRec = abs(1.0f / ((uvSamples[2].x - uvSamples[3].x) * gSatDimensions.x * (uvSamples[2].y - uvSamples[1].y) * gSatDimensions.y));
 	const float areaRecColor = areaRec / (colorSampleMultiplier * colorSampleMultiplier);
 
 	const float4 avgNormalDepth = (normalsDepths[2] - normalsDepths[3] - normalsDepths[1] + normalsDepths[0]) * areaRec;
@@ -134,6 +193,7 @@ void GetAverageValues(in const float2 uv, in const float depth, in const float c
 	avgViewPos = ViewPositionFromDepth(gProjInverse, uv, avgDepth);
 
 	avgColor = (colors[2] - colors[3] - colors[1] + colors[0]) * areaRecColor;
+	*/
 }
 
 float GetOcclusion(in const float3 avgNormal, in const float3 avgViewPos, in const float3 pxViewPos,
@@ -202,15 +262,32 @@ PixelOutput main(in DPixelInput input)
 	const float4 colorInput = TexInput.Sample(SmpInput, input.Uv);
 	smpColor *= colorInput;
 
+	output.final = lerp(colorInput, smpColor, finalLerpValue) + float4(indirect.xyz, 1.0f);
 	//output.final = visibility.rrrr;
 	//output.final = finalLerpValue.rrrr;
 	//output.final = avgNormal.xyzz;
-	output.final = lerp(colorInput, smpColor, finalLerpValue) + float4(indirect.xyz, 1.0f);
 	//output.final = smpColor;
 	//output.final = avgColor.xyzz;
 	//output.final = indirect.xyzz;
 	//output.final = indirectFactor.xxxx;
 	//output.final = pow(1.0f - directionalFactor, 5.1f).xxxx;
+
+	// temp filter
+	/*
+	float4 tFiltered = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	
+	float4 samples[4];
+
+	[unroll]
+	for (i = 0; i < 4; ++i)
+	{
+		//samples[i] = SatColor[samplePoints[i]];
+		samples[i] = SatColor.Sample(SmpSatColor, samplePoints[i] * gSatDimensions.zw);
+	}
+	tFiltered = (samples[2] - samples[3] - samples[1] + samples[0]) * areaRec;
+
+	output.final = tFiltered * 0.5f;
+	*/
 
 	return output;
 }

@@ -114,9 +114,9 @@ void Texture::GenerateTextureResourceDesc(D3D11_TEXTURE2D_DESC & desc, bool bIsR
 void Texture::GenerateSamplerDesc(D3D11_SAMPLER_DESC & sDesc)
 {
 	sDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	sDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-	sDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-	sDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	sDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+	sDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+	sDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
 	sDesc.MipLODBias = 0.0f;
 	sDesc.MaxAnisotropy = 16;
 	sDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;

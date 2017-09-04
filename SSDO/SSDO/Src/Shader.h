@@ -111,7 +111,7 @@ public:
 	{
 		XMFLOAT4A LightColor;
 		XMFLOAT3A LightDirection;
-		XMFLOAT2A SatDimensions;
+		XMFLOAT4A SatDimensionsAndRecs;
 		float SampleBoxHalfSize;
 		float OcclusionPower;
 		float OcclusionFalloff;
