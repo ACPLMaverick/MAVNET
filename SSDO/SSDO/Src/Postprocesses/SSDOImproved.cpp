@@ -9,11 +9,11 @@
 #include "GBuffer.h"
 #include "Lights/LightDirectional.h"
 #include "RWTexture.h"
+#include "SATGenerator.h"
 
 namespace Postprocesses
 {
 	SSDOImproved::SSDOImproved() :
-		SAT_SIZE_DIVISOR(4),
 		_dataBuffer(nullptr),
 		_sampleBoxHalfSize(0.3f),
 		_occlusionPower(1.0f),
@@ -62,32 +62,13 @@ namespace Postprocesses
 
 		_satColor = new RWTexture();
 		_satNormalDepth = new RWTexture();
-		_bufColor = new RWTexture();
-		_bufNormalDepth = new RWTexture();
-		_satColor->SetWidth(System::GetInstance()->GetOptions()._windowWidth / SAT_SIZE_DIVISOR);
-		_satColor->SetHeight(System::GetInstance()->GetOptions()._windowHeight / SAT_SIZE_DIVISOR);
-		_satColor->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT);
-		_satColor->SetBPP(128);
-		_satColor->SetMipmapped(false);
-		_satColor->InitResources(false, false);
-		_satNormalDepth->SetWidth(System::GetInstance()->GetOptions()._windowWidth / SAT_SIZE_DIVISOR);
-		_satNormalDepth->SetHeight(System::GetInstance()->GetOptions()._windowHeight / SAT_SIZE_DIVISOR);
-		_satNormalDepth->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT);
-		_satNormalDepth->SetBPP(128);
-		_satNormalDepth->SetMipmapped(false);
-		_satNormalDepth->InitResources(false, false);
-		_bufColor->SetWidth(System::GetInstance()->GetOptions()._windowWidth / SAT_SIZE_DIVISOR);
-		_bufColor->SetHeight(System::GetInstance()->GetOptions()._windowHeight / SAT_SIZE_DIVISOR);
-		_bufColor->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT);
-		_bufColor->SetBPP(128);
-		_bufColor->SetMipmapped(false);
-		_bufColor->InitResources(true, false);
-		_bufNormalDepth->SetWidth(System::GetInstance()->GetOptions()._windowWidth / SAT_SIZE_DIVISOR);
-		_bufNormalDepth->SetHeight(System::GetInstance()->GetOptions()._windowHeight / SAT_SIZE_DIVISOR);
-		_bufNormalDepth->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT);
-		_bufNormalDepth->SetBPP(128);
-		_bufNormalDepth->SetMipmapped(false);
-		_bufNormalDepth->InitResources(true, false);
+		_satBufferA = new RWTexture();
+		_satBufferB = new RWTexture();
+		
+		AssignTextureParams(_satColor);
+		AssignTextureParams(_satNormalDepth);
+		AssignTextureParams(_satBufferA);
+		AssignTextureParams(_satBufferB);
 
 		_shaders.push_back(System::GetInstance()->GetScene()->LoadShader(std::wstring(L"SSDOImproved_Base")));
 
@@ -103,10 +84,14 @@ namespace Postprocesses
 
 		device->CreateBuffer(&bDesc, nullptr, &_dataBuffer);
 		ASSERT(_dataBuffer != nullptr);
+
+		AdaptiveLayerGenerator::GetInstance()->Initialize(&SSDOImproved::AssignTextureParams);
 	}
 
 	SSDOImproved::~SSDOImproved()
 	{
+		AdaptiveLayerGenerator::GetInstance()->Shutdown();
+
 		delete _testInput;
 		delete _testBuf;
 		delete _testOutput;
@@ -116,8 +101,8 @@ namespace Postprocesses
 
 		delete _satColor;
 		delete _satNormalDepth;
-		delete _bufColor;
-		delete _bufNormalDepth;
+		delete _satBufferA;
+		delete _satBufferB;
 	}
 
 	void SSDOImproved::Update()
@@ -133,8 +118,15 @@ namespace Postprocesses
 		deviceContext->PSSetShaderResources(4, 2, nullik);
 
 		//_satGen.Generate(_testInput, _testBuf, _testOutput);
-		_satGen.Generate(gBuffer.GetNormalDepthBuffer(), _bufNormalDepth, _satNormalDepth);
-		_satGen.Generate(gBuffer.GetColorBuffer(), _bufColor, _satColor);
+		SATGenerator::GetInstance()->Generate(gBuffer.GetNormalDepthBuffer(), gBuffer.GetColorBuffer(),
+									_satBufferA, _satBufferB, _satNormalDepth, _satColor);
+
+		// Split base buffers into two adaptive layers with index texture assignment
+		// Generate SAT for first layer
+		// Compute second layer's SAT using differential method
+
+		// For each second layer, compute further two adaptive layers out of them with index texture assignment
+		// For each child first layer compute SAT, second one will be computed in
 
 		Shader::SSDOImprovedPS* buffer = reinterpret_cast<Shader::SSDOImprovedPS*>(_shaders[0]->MapPsBuffer(1));
 		reinterpret_cast<Lights::LightDirectional*>(&buffer->LightColor)->ApplyToShader(
@@ -152,6 +144,7 @@ namespace Postprocesses
 
 		_shaders[0]->UnmapPsBuffer(1);
 
+		// Set four adaptive layers for each data buffer (8 textures) and index texture (totally 9)
 		_satNormalDepth->Set(4);
 		_satColor->Set(5);
 
@@ -165,5 +158,15 @@ namespace Postprocesses
 	void SSDOImproved::AfterPass(GBuffer & gBuffer, const Camera & camera, int32_t passIndex) const
 	{
 		
+	}
+
+	void SSDOImproved::AssignTextureParams(Texture * tex)
+	{
+		tex->SetWidth(System::GetInstance()->GetOptions()._windowWidth / SAT_SIZE_DIVISOR);
+		tex->SetHeight(System::GetInstance()->GetOptions()._windowHeight / SAT_SIZE_DIVISOR);
+		tex->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT);
+		tex->SetBPP(128);
+		tex->SetMipmapped(false);
+		tex->InitResources(false, false);
 	}
 }

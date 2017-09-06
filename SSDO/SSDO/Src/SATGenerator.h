@@ -3,12 +3,13 @@
 #include "GlobalDefines.h"
 #include "RWStructuredBuffer.h"
 #include "GBuffer.h"
+#include "Singleton.h"
 
 class Texture;
 class RWTexture;
 class ComputeShader;
 
-class SATGenerator
+class SATGenerator : public Singleton<SATGenerator>
 {
 protected:
 
@@ -27,10 +28,14 @@ protected:
 	ComputeShader* _shader = nullptr;
 
 	inline void GenerateInternal(
-		ID3D11ShaderResourceView* const inputSRV,
-		ID3D11ShaderResourceView* const bufferSRV,
-		ID3D11UnorderedAccessView* bufferUAV,
-		ID3D11UnorderedAccessView* outputUAV,
+		ID3D11ShaderResourceView* const inputASRV,
+		ID3D11ShaderResourceView* const inputBSRV,
+		ID3D11ShaderResourceView* const bufferASRV,
+		ID3D11ShaderResourceView* const bufferBSRV,
+		ID3D11UnorderedAccessView* bufferAUAV,
+		ID3D11UnorderedAccessView* bufferBUAV,
+		ID3D11UnorderedAccessView* outputAUAV,
+		ID3D11UnorderedAccessView* outputBUAV,
 		uint32_t inputWidth, uint32_t inputHeight, uint32_t inputLevel) const;
 
 	inline void PrintRawData(const Texture* tex) const;
@@ -46,12 +51,20 @@ public:
 	SATGenerator();
 	~SATGenerator();
 
-	void Generate(const Texture* input,
-		RWTexture* buffer,
-		RWTexture* output) const;
-	void Generate(const GBuffer::RenderTarget* input, 
-		RWTexture* buffer,
-		RWTexture* output) const;
+	void Generate(
+		const Texture* inputA,
+		const Texture* inputB,
+		RWTexture* bufferA,
+		RWTexture* bufferB,
+		RWTexture* outputA,
+		RWTexture* outputB) const;
+	void Generate(
+		const GBuffer::RenderTarget* inputA,
+		const GBuffer::RenderTarget* inputB,
+		RWTexture* bufferA,
+		RWTexture* bufferB,
+		RWTexture* outputA,
+		RWTexture* outputB) const;
 
 #pragma endregion
 

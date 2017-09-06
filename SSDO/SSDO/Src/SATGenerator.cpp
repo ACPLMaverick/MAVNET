@@ -17,15 +17,21 @@ SATGenerator::~SATGenerator()
 {
 }
 
-void SATGenerator::Generate(const Texture* input,
-	RWTexture* buffer,
-	RWTexture* output) const
+void SATGenerator::Generate(
+	const Texture* inputA,
+	const Texture* inputB,
+	RWTexture* bufferA,
+	RWTexture* bufferB,
+	RWTexture* outputA,
+	RWTexture* outputB) const
 {
-	uint32_t inputWidth(input->GetWidth());
-	uint32_t inputHeight(input->GetHeight());
-	uint32_t inputLevel(GetTextureLevel(inputWidth, output->GetWidth()));
-	GenerateInternal(input->GetSRV(), buffer->GetSRV(), buffer->GetUAV(), 
-		 output->GetUAV(), inputWidth, inputHeight, inputLevel);
+	ASSERT(inputA->GetWidth() == inputB->GetWidth() && inputA->GetHeight() == inputB->GetHeight() && inputA->GetFormat() == inputB->GetFormat());
+	uint32_t inputWidth(inputA->GetWidth());
+	uint32_t inputHeight(inputA->GetHeight());
+	uint32_t inputLevel(GetTextureLevel(inputWidth, outputA->GetWidth()));
+	GenerateInternal(inputA->GetSRV(), inputB->GetSRV(), bufferA->GetSRV(), bufferB->GetSRV(), 
+		bufferA->GetUAV(), bufferB->GetUAV(), outputA->GetUAV(), outputB->GetUAV(),
+		inputWidth, inputHeight, inputLevel);
 
 	// TETIN!
 	/*output->AcquireDeviceData();
@@ -36,22 +42,31 @@ void SATGenerator::Generate(const Texture* input,
 	i++;*/
 }
 
-void SATGenerator::Generate(const GBuffer::RenderTarget* input,
-	RWTexture* buffer,
-	RWTexture* output) const
+void SATGenerator::Generate(
+	const GBuffer::RenderTarget* inputA,
+	const GBuffer::RenderTarget* inputB,
+	RWTexture* bufferA,
+	RWTexture* bufferB,
+	RWTexture* outputA,
+	RWTexture* outputB) const
 {
 	uint32_t inputWidth(System::GetInstance()->GetOptions()._windowWidth / GBuffer::PP_BUFFER_SIZE_DIVISOR);
 	uint32_t inputHeight(System::GetInstance()->GetOptions()._windowHeight / GBuffer::PP_BUFFER_SIZE_DIVISOR);
-	uint32_t inputLevel(GetTextureLevel(inputWidth, output->GetWidth()));
-	GenerateInternal(input->SRV, buffer->GetSRV(), buffer->GetUAV(),
-		output->GetUAV(), inputWidth, inputHeight, inputLevel);
+	uint32_t inputLevel(GetTextureLevel(inputWidth, outputA->GetWidth()));
+	GenerateInternal(inputA->SRV, inputB->SRV, bufferA->GetSRV(), bufferB->GetSRV(),
+		bufferA->GetUAV(), bufferB->GetUAV(), outputA->GetUAV(), outputB->GetUAV(),
+		inputWidth, inputHeight, inputLevel);
 }
 
 inline void SATGenerator::GenerateInternal(
-	ID3D11ShaderResourceView* const inputSRV,
-	ID3D11ShaderResourceView* const bufferSRV,
-	ID3D11UnorderedAccessView* bufferUAV,
-	ID3D11UnorderedAccessView* outputUAV,
+	ID3D11ShaderResourceView* const inputASRV,
+	ID3D11ShaderResourceView* const inputBSRV,
+	ID3D11ShaderResourceView* const bufferASRV,
+	ID3D11ShaderResourceView* const bufferBSRV,
+	ID3D11UnorderedAccessView* bufferAUAV,
+	ID3D11UnorderedAccessView* bufferBUAV,
+	ID3D11UnorderedAccessView* outputAUAV,
+	ID3D11UnorderedAccessView* outputBUAV,
 	uint32_t inputWidth, uint32_t inputHeight, uint32_t inputLevel) const
 {
 	ID3D11DeviceContext* deviceContext(Renderer::GetInstance()->GetDeviceContext());
@@ -67,9 +82,11 @@ inline void SATGenerator::GenerateInternal(
 	_shader->UnmapConstantBuffer();
 	_shader->Set(1);
 
-	deviceContext->CSSetShaderResources(4, 1, &inputSRV);
+	deviceContext->CSSetShaderResources(4, 1, &inputASRV);
+	deviceContext->CSSetShaderResources(5, 1, &inputBSRV);
 
-	deviceContext->CSSetUnorderedAccessViews(0, 1, &bufferUAV, nullptr);
+	deviceContext->CSSetUnorderedAccessViews(0, 1, &bufferAUAV, nullptr);
+	deviceContext->CSSetUnorderedAccessViews(1, 1, &bufferBUAV, nullptr);
 
 	uint32_t threadGroupCountX, threadGroupCountY;
 
@@ -88,9 +105,11 @@ inline void SATGenerator::GenerateInternal(
 	buf->Vertical = true;
 	_shader->UnmapConstantBuffer();
 
-	deviceContext->CSSetShaderResources(4, 1, &bufferSRV);
+	deviceContext->CSSetShaderResources(4, 1, &bufferASRV);
+	deviceContext->CSSetShaderResources(5, 1, &bufferBSRV);
 
-	deviceContext->CSSetUnorderedAccessViews(0, 1, &outputUAV, nullptr);
+	deviceContext->CSSetUnorderedAccessViews(0, 1, &outputAUAV, nullptr);
+	deviceContext->CSSetUnorderedAccessViews(1, 1, &outputBUAV, nullptr);
 
 	threadGroupCountX = inputHeight / (_shader->GetThreadCountInGroupX() * 2) + 1;
 	threadGroupCountY = inputWidth / _shader->GetThreadCountInGroupY();

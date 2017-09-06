@@ -1,6 +1,7 @@
 #include "../_global/GlobalDefines.hlsli"
 
-#define GROUP_SIZE_X 1024
+// Group size lowered to make able for shader to compute two sats at once
+#define GROUP_SIZE_X 256
 #define GROUP_SIZE_Y 1
 
 #define NUM_BANKS 64
@@ -9,14 +10,6 @@
 	((n) >> NUM_BANKS + (n) >> (2 * LOG_NUM_BANKS))
 
 //#define CONFLICT_FREE_OFFSET(n) 0
-
-// STRUCTS
-
-struct TempBufferData
-{
-	float4 NormalDepth;
-	float4 Color;
-};
 
 // INPUT
 
@@ -28,10 +21,13 @@ cbuffer InputGlobal : register(b1)
 
 
 Texture2D<float4> InA : register(t4);
+Texture2D<float4> InB : register(t5);
 
 RWTexture2D<float4> OutA : register(u0);
+RWTexture2D<float4> OutB : register(u1);
 
-groupshared float4 TempLocal[GROUP_SIZE_X * 2];
+groupshared float4 TempLocalA[GROUP_SIZE_X * 2];
+groupshared float4 TempLocalB[GROUP_SIZE_X * 2];
 
 // FUNCTIONS
 
@@ -72,8 +68,11 @@ void main( uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID, uint3 GTid 
 	uint localIndexSecond = thid + texWidthPowDivTwo;
 	localIndexFirst += CONFLICT_FREE_OFFSET(localIndexFirst);
 	localIndexSecond += CONFLICT_FREE_OFFSET(localIndexSecond);
-	TempLocal[localIndexFirst] = InA.mips[level][indexInFirst];
-	TempLocal[localIndexSecond] = InA.mips[level][indexInSecond];
+
+	TempLocalA[localIndexFirst] = InA.mips[level][indexInFirst];
+	TempLocalA[localIndexSecond] = InA.mips[level][indexInSecond];
+	TempLocalB[localIndexFirst] = InB.mips[level][indexInFirst];
+	TempLocalB[localIndexSecond] = InB.mips[level][indexInSecond];
 
 	// Build sum in place up the tree (up-sweep)
 	for (uint d = texWidthPow >> 1; d > 0; d >>= 1)
@@ -86,7 +85,8 @@ void main( uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID, uint3 GTid 
 			ai += CONFLICT_FREE_OFFSET(ai);
 			bi += CONFLICT_FREE_OFFSET(bi);
 
-			TempLocal[bi] += TempLocal[ai];
+			TempLocalA[bi] += TempLocalA[ai];
+			TempLocalB[bi] += TempLocalB[ai];
 		}
 		offset *= 2;
 	}
@@ -94,7 +94,8 @@ void main( uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID, uint3 GTid 
 	// Clear the last element
 	if (thid == 0)
 	{
-		TempLocal[texWidthPow - 1 + CONFLICT_FREE_OFFSET(texWidthPow - 1)] = 0;
+		TempLocalA[texWidthPow - 1 + CONFLICT_FREE_OFFSET(texWidthPow - 1)] = 0;
+		TempLocalB[texWidthPow - 1 + CONFLICT_FREE_OFFSET(texWidthPow - 1)] = 0;
 	}
 
 	// Traverse down the tree and build scan (down-sweep)
@@ -109,19 +110,26 @@ void main( uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID, uint3 GTid 
 			ai += CONFLICT_FREE_OFFSET(ai);
 			bi += CONFLICT_FREE_OFFSET(bi);
 
-			float4 t = TempLocal[ai];
-			TempLocal[ai] = TempLocal[bi];
-			TempLocal[bi] += t;
+			float4 t = TempLocalA[ai];
+			TempLocalA[ai] = TempLocalA[bi];
+			TempLocalA[bi] += t;
+
+			t = TempLocalB[ai];
+			TempLocalB[ai] = TempLocalB[bi];
+			TempLocalB[bi] += t;
 		}
 	}
 	
 	GroupMemoryBarrierWithGroupSync();
 
-	OutA[indexOutFirst] = TempLocal[localIndexFirst];
-	OutA[indexOutSecond] = TempLocal[localIndexSecond];
+	OutA[indexOutFirst] = TempLocalA[localIndexFirst];
+	OutA[indexOutSecond] = TempLocalA[localIndexSecond];
+	OutB[indexOutFirst] = TempLocalB[localIndexFirst];
+	OutB[indexOutSecond] = TempLocalB[localIndexSecond];
 
 	if (thid == texWidthPow - 1)
 	{
-		OutA[index] = InA.mips[level][index] + TempLocal[localIndexFirst];
+		OutA[index] = InA.mips[level][index] + TempLocalA[localIndexFirst];
+		OutB[index] = InB.mips[level][index] + TempLocalB[localIndexFirst];
 	}
 }
