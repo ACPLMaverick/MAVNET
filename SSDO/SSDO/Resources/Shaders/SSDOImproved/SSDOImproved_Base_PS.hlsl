@@ -46,11 +46,17 @@ SamplerState SmpSatNormalDepthLayer10 : register(s7);
 Texture2D SatNormalDepthLayer20 : register(t8);
 SamplerState SmpSatNormalDepthLayer20 : register(s8);
 
-Texture2D SatIndices : register(t9);
-SamplerState SmpSatIndices : register(s9);
+Texture2D SatColorLayer1 : register(t9);
+SamplerState SmpSatColorLayer1 : register(s9);
 
-Texture2D DbgIndices : register(t10);
-SamplerState SmpDbgIndices : register(s10);
+Texture2D SatColorLayer10 : register(t10);
+SamplerState SmpSatColorLayer10 : register(s10);
+
+Texture2D SatColorLayer20 : register(t11);
+SamplerState SmpSatColorLayer20 : register(s11);
+
+Texture2D SatIndices : register(t12);
+SamplerState SmpSatIndices : register(s12);
 
 
 // FUNCTIONS
@@ -94,14 +100,6 @@ float3 RGBtoHSV(in float3 rgb)
 	return hsv;
 }
 
-void ApplyOcclusionFaloff(in float diffZ, inout float occlusion)
-{
-	occlusion = max(occlusion, 0.0f);
-	occlusion *= 1.0f - smoothstep(1.0f, 1.0f + gOcclusionFalloff, occlusion);
-	occlusion *= 1.0f - smoothstep(0.0f, gOcclusionFalloff, diffZ);
-	occlusion *= step(0.0001f, diffZ);
-}
-
 // Will probably be used in the future when adaptive layering is implemented.
 void SampleDepth(in float2 uv, out float depth)
 {
@@ -138,7 +136,7 @@ void GetAverageValues(in const float2 uv, in const float depth, in const float c
 */
 
 void GetAverageValues(in const float2 uv, in const float depth, in const float colorSampleMultiplier,
-	out float3 avgColors[4], out float3 avgNormals[4], out float3 avgViewPoses[4], out float avgDepths[4], out float4 indexSums)
+	out float3 avgColors[4], out float3 avgNormals[4], out float3 avgViewPoses[4], out float avgDepths[4], out float4 indexWeights, out float3 baseCol)
 {
 
 	const uint sampleCount = 4;
@@ -164,43 +162,77 @@ void GetAverageValues(in const float2 uv, in const float depth, in const float c
 	CalculateAverageDifferentialGrandparent(gSatDimensions, SatNormalDepthLayer20, SatNormalDepthLayer1, SatNormalDepth,
 		SmpSatNormalDepthLayer20, SmpSatNormalDepthLayer1, SmpSatNormalDepth, samplePoints, areaRec, avgNormalDepths[3]);
 
-	CalculateSum(gSatDimensions, SatIndices, SmpSatIndices, samplePoints, indexSums);
+	CalculateAverage(gSatDimensions, SatColorLayer10, SmpSatColorLayer10, samplePoints, areaRec, avgColors4[0]);
+	CalculateAverageDifferential(gSatDimensions, SatColorLayer10, SatColorLayer1,
+		SmpSatColorLayer10, SmpSatColorLayer1, samplePoints, areaRec, avgColors4[1]);
+	CalculateAverage(gSatDimensions, SatColorLayer20, SmpSatColorLayer20, samplePoints, areaRec, avgColors4[2]);
+	CalculateAverageDifferentialGrandparent(gSatDimensions, SatColorLayer20, SatColorLayer1, SatColor,
+		SmpSatColorLayer20, SmpSatColorLayer1, SmpSatColor, samplePoints, areaRec, avgColors4[3]);
+
+	CalculateAverage(gSatDimensions, SatIndices, SmpSatIndices, samplePoints, areaRec, indexWeights);
 	
 	CalculateAverage(gSatDimensions, SatColor, SmpSatColor, samplePointsColor, areaRecColor, avgColor4);
-	CalculateAverage(gSatDimensions, SatNormalDepth, SmpSatNormalDepth, samplePoints, areaRec, avgNormalDepth);
+
+	baseCol = avgColor4.rgb;
 
 	[unroll]
 	for (uint i = 0; i < 4; ++i)
 	{
 		avgNormals[i] = avgNormalDepths[i].xyz;
-		if (length(avgNormals[i]) > 0.001f)
-		{
-			avgNormals[i] = normalize(avgNormals[i]);
-		}
 		avgDepths[i] = avgNormalDepths[i].w;
 		avgViewPoses[i] = ViewPositionFromDepth(gProjInverse, uv, avgDepths[i]);
+		avgColors[i] = avgColors4[i].rgb;
 	}
+}
+
+void ApplyOcclusionFaloff(in float diffZ, inout float occlusion)
+{
+	occlusion = max(occlusion, 0.0f);
+	occlusion *= 1.0f - smoothstep(1.0f, 1.0f + gOcclusionFalloff, occlusion);
+	occlusion *= 1.0f - smoothstep(0.0f, gOcclusionFalloff, diffZ);
+	//occlusion *= step(0.0001f, diffZ);
 }
 
 float GetOcclusion(in const float3 avgNormal, in const float3 avgViewPos, in const float3 pxViewPos,
 	in const float2 uv, in const float pixelDepth, in const float avgDepth)
 {
-	const float diffZ = abs(pixelDepth - avgDepth);
-
 	const float3 dirToAvg = avgViewPos - pxViewPos;
+	const float diffZ = max(avgDepth - pixelDepth, 0.0f);
 
 	// Non normal-sensitive method.
-	//float zb = pixelDepth;
-	//float zt = pixelDepth * (1.0f + gSampleBoxHalfSize);
-	//float occlusion = (zb - avgDepth) / (zb - zt);
+	float zb = pixelDepth;
+	float zt = pixelDepth * (1.0f + gSampleBoxHalfSize);
+	float occlusion = (zb - avgDepth) / (zb - zt);
 
-	float occlusion = max(dot(dirToAvg, avgNormal), 0.0f);
+	//float occlusion = max(dot(dirToAvg, avgNormal), 0.0f);
 
-	occlusion /= gSampleBoxHalfSize;
 	ApplyOcclusionFaloff(diffZ, occlusion);
+	occlusion /= gSampleBoxHalfSize; 
 	occlusion = pow(occlusion, gPowFactor);
 
 	return occlusion;
+}
+
+void GetIndirecity(in const float3 color, in const float3 avgColor, in const float directionalFactor, in const float occlusion, out float3 indirect)
+{
+	// Indirecity.
+	// Basically a difference between pixel color and average color is calculated.
+	// Then it is multiplied by indirect factor, calculated totally not similar to SSDO, 
+	// but with average normal and average position used.
+	indirect = avgColor;
+	indirect = color.xyz - avgColor;
+	indirect = saturate(indirect);
+
+	// FAST VERSION
+	//indirect = (1.0f - indirect) * saturate(length(indirect)) * avgColor * gLightColor.xyz;
+
+	float layerFactor = saturate(10.0f * pow(occlusion, 0.1f));
+
+	// ACCURATE VERSION
+	indirect = RGBtoHSV(indirect);
+	indirect.r = 0.785398f - indirect.r;
+	indirect = HSVtoRGB(indirect);
+	indirect *= avgColor * gLightColor.xyz * pow(1.0f - directionalFactor, 3.0f) * (1.0f - 2.0f * occlusion) * layerFactor;
 }
 
 PixelOutput main(in DPixelInput input)
@@ -225,11 +257,10 @@ PixelOutput main(in DPixelInput input)
 	const uint layerCount = 4;
 	float3 avgColors[layerCount], avgNormals[layerCount], avgViewPoses[layerCount];
 	float avgDepths[layerCount];
-	float4 indexSums;
-	float3 avgNormal = 0.0f, avgColor = 0.0f;
-	float4 dbg;
+	float4 indexWeights;
+	float3 avgColor = 0.0f;
 
-	GetAverageValues(input.Uv, depth, colorSampleBoxMultiplier, avgColors, avgNormals, avgViewPoses, avgDepths, indexSums);
+	GetAverageValues(input.Uv, depth, colorSampleBoxMultiplier, avgColors, avgNormals, avgViewPoses, avgDepths, indexWeights, avgColor);
 
 	float occlusions[layerCount];
 	
@@ -237,14 +268,14 @@ PixelOutput main(in DPixelInput input)
 	for (uint i = 0; i < layerCount; ++i)
 	{
 		occlusions[i] = GetOcclusion(avgNormals[i], avgViewPoses[i], viewPos, input.Uv, depth, avgDepths[i]);
-		occlusions[i] *= indexSums[i];
+		occlusions[i] *= indexWeights[i];
 	}
 	
-	float occlusion = (occlusions[0] + occlusions[1] + occlusions[2] + occlusions[3]) / 
-		(indexSums[0] + indexSums[1] + indexSums[2] + indexSums[3]);
+	float occlusion = (occlusions[0] + occlusions[1] + occlusions[2] + occlusions[3]);
 
-	float4 avgDepth = (avgDepths[0] * indexSums[0] + avgDepths[1] * indexSums[1] + avgDepths[2] * indexSums[2] + avgDepths[3] * indexSums[3]) /
-		(indexSums[0] + indexSums[1] + indexSums[2] + indexSums[3]);
+	//float4 avgDepth = (avgDepths[0] * indexWeights[0] + avgDepths[1] * indexWeights[1] + avgDepths[2] * indexWeights[2] + avgDepths[3] * indexWeights[3]);
+	float avgDepth = (avgDepths[0] + avgDepths[1] + avgDepths[2] + avgDepths[3]);
+	float3 avgNormal = normalize(avgNormals[0] + avgNormals[1] + avgNormals[2] + avgNormals[3]);
 
 	MaterialData pData;
 	pData.colBase = float4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -259,41 +290,36 @@ PixelOutput main(in DPixelInput input)
 	smpColor = visibility * float4(normalize(gLightColor.xyz), 1.0f);
 
 
-	// Indirecity.
-	// Basically a difference between pixel color and average color is calculated.
-	// Then it is multiplied by indirect factor, calculated totally not similar to SSDO, 
-	// but with average normal and average position used.
-	float3 indirect = avgColor;
-	indirect = color.xyz - avgColor;
-	indirect = saturate(indirect);
-
-	// FAST VERSION
-	//indirect = (1.0f - indirect) * saturate(length(indirect)) * avgColor * gLightColor.xyz;
-
-	// ACCURATE VERSION
-	indirect = RGBtoHSV(indirect);
-	indirect.r = 0.785398f - indirect.r;
-	indirect = HSVtoRGB(indirect);
-	indirect *= avgColor * gLightColor.xyz * pow(1.0f - directionalFactor, 3.0f) * (1.0f - occlusion);
-
+	
+	float3 indirects[layerCount];
+	//GetIndirecity(color.rgb, avgColor, directionalFactor, occlusion, indirect);
+	[unroll]
+	for (i = 0; i < layerCount; ++i)
+	{
+		GetIndirecity(color.rgb, avgColors[i], directionalFactor, occlusion, indirects[i]);
+		indirects[i] *= indexWeights[i];
+	}
+	float3 indirect = (indirects[0] + indirects[1] + indirects[2] + indirects[3]);
 
 	PixelOutput output;
 	const float4 colorInput = TexInput.Sample(SmpInput, input.Uv);
 	smpColor *= colorInput;
 
-	float4 indSample = DbgIndices.Sample(SmpDbgIndices, input.Uv);
-
-	//output.final = lerp(colorInput, smpColor, finalLerpValue) /*+ float4(indirect.xyz, 1.0f)*/;
-	output.final = occlusion.rrrr * saturate(indSample + indSample.aaaa);
+	output.final = lerp(colorInput, smpColor, finalLerpValue) + float4(indirect.xyz, 1.0f);
+	//output.final = visibility.rrrr * saturate(indSample + indSample.aaaa);
+	//output.final = float4(visibility, abs(occlusions[2]), 0.0f, 0.0f);
+	//output.final = (indexWeights[0] + indexWeights[1] + indexWeights[2] + indexWeights[3]) * 0.5f;
+	//output.final = occlusions[2].rrrr + 0.5f * saturate(indSample + indSample.aaaa);
 	//output.final = float4(length(avgNormals[0]), length(avgNormals[3]), length(avgNormals[2]), length(avgNormals[3]));
 	//output.final = indSample + indSample.aaaa;
-	//output.final = abs(dbg.a - (avgDepths[2]));
+	//output.final = abs(depth - (avgDepths[2])) * color;
 	//output.final = (avgNormals[2]/* + avgNormals[1] + avgNormals[2] + avgNormals[3]*/).xyzz;
-	//output.final = indexSums / (max(indexSums[0], max(indexSums[1], max(indexSums[2], indexSums[3]))));
+	//output.final = indexWeights / (max(indexWeights[0], max(indexWeights[1], max(indexWeights[2], indexWeights[3]))));
 	//output.final = visibility.rrrr;
 	//output.final = finalLerpValue.rrrr;
 	//output.final = avgNormal.xyzz;
 	//output.final = avgDepth;
+	//output.final = float4(avgDepths[0] - depth, avgDepths[1] - depth, avgDepths[2] - depth, avgDepths[3] - depth);
 	//output.final = avgColor.xyzz;
 	//output.final = avgDepths[3].xxxx;
 	//output.final = indirect.xyzz;

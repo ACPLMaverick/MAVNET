@@ -63,7 +63,7 @@ void ComputeAdaptiveLayerForCoord(in const uint2 coord)
 
 	// Assign current pixel to either one of two layers based on depth difference, and update indices accordingly.
 
-	const float layerAffilation = step(0.0000001f, depth);	// if no depth is stored in this pixel, no computation is necessary
+	const float layerAffilation = step(0.00001f, depth);	// if no depth is stored in this pixel, no computation is necessary
 
 	const float depthDiff = depth - avgDepth;	// if > 0, assign to A, if not assign to B
 	float indexA = step(0.0f, depthDiff);
@@ -86,11 +86,13 @@ void ComputeAdaptiveLayerForCoord(in const uint2 coord)
 
 	//outIndicesVal.a = depthDiff;
 
+	const float4 fillValue = 0.0f;
+
 	OutIndices[coord] = outIndicesVal;
-	OutALayerA[coord] = inSampleA * indexA;
-	OutBLayerA[coord] = inSampleB * indexA;
-	OutALayerB[coord] = inSampleA * indexB;
-	OutBLayerB[coord] = inSampleB * indexB;
+	OutALayerA[coord] = lerp(fillValue, inSampleA, indexA);
+	OutBLayerA[coord] = lerp(fillValue, inSampleB, indexA);
+	OutALayerB[coord] = lerp(fillValue, inSampleA, indexB);
+	OutBLayerB[coord] = lerp(fillValue, inSampleB, indexB);
 }
 
 [numthreads(GROUP_SIZE_X, GROUP_SIZE_Y, 1)]

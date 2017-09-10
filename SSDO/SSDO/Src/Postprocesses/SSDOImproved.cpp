@@ -155,8 +155,10 @@ namespace Postprocesses
 		_adaptiveDataNormalDepth._satLayer1->Set(6);
 		_adaptiveDataNormalDepth._satLayer10->Set(7);
 		_adaptiveDataNormalDepth._satLayer20->Set(8);
-		_satLayerIndices->Set(9);
-		_layerIndices->Set(10);
+		_adaptiveDataColor._satLayer1->Set(9);
+		_adaptiveDataColor._satLayer10->Set(10);
+		_adaptiveDataColor._satLayer20->Set(11);
+		_satLayerIndices->Set(12);
 
 		const GBuffer::RenderTarget* in[1] = { gBuffer.PPGetOutputBBuffer() };
 		const int32_t inSlots[1] = { 3 };
@@ -168,8 +170,8 @@ namespace Postprocesses
 	void SSDOImproved::AfterPass(GBuffer & gBuffer, const Camera & camera, int32_t passIndex) const
 	{
 		ID3D11DeviceContext* deviceContext = Renderer::GetInstance()->GetDeviceContext();
-		ID3D11ShaderResourceView* nullik[5]{ nullptr, nullptr, nullptr, nullptr, nullptr };
-		deviceContext->PSSetShaderResources(6, 5, nullik);
+		ID3D11ShaderResourceView* nullik[7]{ nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+		deviceContext->PSSetShaderResources(6, 7, nullik);
 	}
 
 	void SSDOImproved::AssignTextureParams(Texture * tex)
