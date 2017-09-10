@@ -236,7 +236,12 @@ Shader * Shader::CreateResource(const std::wstring & name)
 	}
 	else if (name == L"SSDOImproved_Base")
 	{
-		ConstantBufferDesc descs[2] = { sizeof(LightCommonDataPS), sizeof(SSDOBasePS) };
+		ConstantBufferDesc descs[2] = { sizeof(LightCommonDataPS), sizeof(SSDOImprovedPS) };
+		return new Shader(name, 0, nullptr, 0, descs, 2);
+	}
+	else if (name == L"SSDOImprovedB_Base")
+	{
+		ConstantBufferDesc descs[2] = { sizeof(LightCommonDataPS), sizeof(SSDOImprovedBPS) };
 		return new Shader(name, 0, nullptr, 0, descs, 2);
 	}
 	else

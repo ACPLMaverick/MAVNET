@@ -118,6 +118,17 @@ public:
 		float PowFactor;
 	};
 
+	__declspec(align(16))
+		struct SSDOImprovedBPS
+	{
+		XMFLOAT4 LightColor;
+		XMFLOAT3 LightDirection;
+		float SampleBoxHalfSize;
+		float OcclusionPower;
+		float OcclusionFalloff;
+		float PowFactor;
+	};
+
 #pragma endregion
 
 protected:

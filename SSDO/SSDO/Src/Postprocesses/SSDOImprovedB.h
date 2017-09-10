@@ -1,13 +1,13 @@
 #pragma once
 #include "Postprocess.h"
-#include "Utility/AdaptiveLayerGenerator.h"
+#include "Utility/DepthAwareBlur.h"
 
 class Texture;
 class RWTexture;
 
 namespace Postprocesses
 {
-	class SSDOImproved :
+	class SSDOImprovedB :
 		public Postprocess
 	{
 
@@ -15,11 +15,13 @@ namespace Postprocesses
 
 #pragma region Static Const Protected
 
-		static const uint32_t SAT_SIZE_DIVISOR = 4;
+		static const uint32_t BUFFER_SIZE_DIVISOR = 4;
 
 #pragma endregion
 
 #pragma region Protected
+
+		Utility::DepthAwareBlur _blurGen;
 
 		float _sampleBoxHalfSize;
 		float _occlusionPower;
@@ -27,24 +29,12 @@ namespace Postprocesses
 		float _powFactor;
 
 		ID3D11Buffer* _dataBuffer;
-		RWTexture* _satColor;
-		RWTexture* _satNormalDepth;
 
-		RWTexture* _satBufferA;
-		RWTexture* _satBufferB;
+		RWTexture* _bufColor;
+		RWTexture* _bufNormalDepth;
 
-		// Adaptive layering data
-
-		RWTexture* _layerIndices;
-		RWTexture* _satLayerIndices;
-		Utility::AdaptiveLayerGenerator::AdaptiveLayerData _adaptiveDataNormalDepth;
-		Utility::AdaptiveLayerGenerator::AdaptiveLayerData _adaptiveDataColor;
-
-		// End Adaptive layering data
-
-		Texture* _testInput;
-		RWTexture* _testBuf;
-		RWTexture* _testOutput;
+		RWTexture* _tempA;
+		RWTexture* _tempB;
 
 #pragma endregion
 
@@ -58,8 +48,8 @@ namespace Postprocesses
 
 #pragma region Functions Public
 
-		SSDOImproved();
-		~SSDOImproved();
+		SSDOImprovedB();
+		~SSDOImprovedB();
 
 		// Inherited via Postprocess
 		virtual void Update() override;

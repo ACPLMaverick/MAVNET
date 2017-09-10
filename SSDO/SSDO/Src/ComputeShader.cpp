@@ -72,7 +72,11 @@ ComputeShader * ComputeShader::CreateResource(const std::wstring & name)
 	}
 	else if (name == L"AdaptiveLayers")
 	{
-		return new ComputeShader(name, sizeof(AdaptiveLayerBuffer), 512, 1, 1);
+		return new ComputeShader(name, sizeof(AdaptiveLayerBuffer), 256, 1, 1);
+	}
+	else if (name == L"DepthAwareBlur")
+	{
+		return new ComputeShader(name, sizeof(DepthAwareBlurBuffer), 512, 1, 1);
 	}
 	else
 	{

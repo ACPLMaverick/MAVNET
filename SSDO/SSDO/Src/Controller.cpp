@@ -8,6 +8,7 @@
 #include "Postprocesses/SimpleSSAO.h"
 #include "Postprocesses/SSDOBase.h"
 #include "Postprocesses/SSDOImproved.h"
+#include "Postprocesses/SSDOImprovedB.h"
 #include "Postprocesses/Sepia.h"
 #include "Profiler.h"
 #include "Lights/LightDirectional.h"
@@ -59,6 +60,10 @@ void Controller::Initialize()
 		else if (dynamic_cast<SSDOImproved*>(*it) != nullptr)
 		{
 			_profiler->RegisterPostprocessName("SSDO+");
+		}
+		else if (dynamic_cast<SSDOImprovedB*>(*it) != nullptr)
+		{
+			_profiler->RegisterPostprocessName("SSDO++");
 		}
 		else if (dynamic_cast<Sepia*>(*it) != nullptr)
 		{

@@ -1,6 +1,6 @@
 #include "../_global/GlobalDefines.hlsli"
 #include "../_global/Lighting.hlsli"
-#include "../SAT/SATUtility.hlsli"
+#include "../PostprocessUtility/SATUtility.hlsli"
 
 #define SAMPLE_COUNT 14
 
@@ -108,30 +108,30 @@ void SampleDepth(in float2 uv, out float depth)
 
 /*
 void GetAverageValues(in const float2 uv, in const float depth, in const float colorSampleMultiplier,
-	out float3 avgColor, out float3 avgNormal, out float3 avgViewPos, out float avgDepth)
+out float3 avgColor, out float3 avgNormal, out float3 avgViewPos, out float avgDepth)
 {
 
-	const uint sampleCount = 4;
-	const float boxHalfSize = gSampleBoxHalfSize;
-	const float boxHalfSizeColor = boxHalfSize * colorSampleMultiplier;
+const uint sampleCount = 4;
+const float boxHalfSize = gSampleBoxHalfSize;
+const float boxHalfSizeColor = boxHalfSize * colorSampleMultiplier;
 
-	float2 samplePoints[4];
-	float2 samplePointsColor[4];
-	float areaRec, areaRecColor;
+float2 samplePoints[4];
+float2 samplePointsColor[4];
+float areaRec, areaRecColor;
 
-	GenerateSamplePointsAndArea(gSatDimensions, boxHalfSize, uv, depth, samplePoints, areaRec);
-	GenerateSamplePointsAndArea(gSatDimensions, boxHalfSizeColor, uv, depth, samplePointsColor, areaRecColor);
+GenerateSamplePointsAndArea(gSatDimensions, boxHalfSize, uv, depth, samplePoints, areaRec);
+GenerateSamplePointsAndArea(gSatDimensions, boxHalfSizeColor, uv, depth, samplePointsColor, areaRecColor);
 
-	float4 avgNormalDepth, avgColor4;
-	
-	CalculateAverage(gSatDimensions, SatNormalDepth, SmpSatNormalDepth, samplePoints, areaRec, avgNormalDepth);
-	CalculateAverage(gSatDimensions, SatColor, SmpSatColor, samplePointsColor, areaRecColor, avgColor4);
+float4 avgNormalDepth, avgColor4;
 
-	avgNormal = normalize(avgNormalDepth.xyz);
-	avgDepth = avgNormalDepth.w;
-	avgViewPos = ViewPositionFromDepth(gProjInverse, uv, avgDepth);
+CalculateAverage(gSatDimensions, SatNormalDepth, SmpSatNormalDepth, samplePoints, areaRec, avgNormalDepth);
+CalculateAverage(gSatDimensions, SatColor, SmpSatColor, samplePointsColor, areaRecColor, avgColor4);
 
-	avgColor = avgColor4.rgb;
+avgNormal = normalize(avgNormalDepth.xyz);
+avgDepth = avgNormalDepth.w;
+avgViewPos = ViewPositionFromDepth(gProjInverse, uv, avgDepth);
+
+avgColor = avgColor4.rgb;
 }
 */
 
@@ -170,7 +170,7 @@ void GetAverageValues(in const float2 uv, in const float depth, in const float c
 		SmpSatColorLayer20, SmpSatColorLayer1, SmpSatColor, samplePoints, areaRec, avgColors4[3]);
 
 	CalculateAverage(gSatDimensions, SatIndices, SmpSatIndices, samplePoints, areaRec, indexWeights);
-	
+
 	CalculateAverage(gSatDimensions, SatColor, SmpSatColor, samplePointsColor, areaRecColor, avgColor4);
 
 	baseCol = avgColor4.rgb;
@@ -207,7 +207,7 @@ float GetOcclusion(in const float3 avgNormal, in const float3 avgViewPos, in con
 	//float occlusion = max(dot(dirToAvg, avgNormal), 0.0f);
 
 	ApplyOcclusionFaloff(diffZ, occlusion);
-	occlusion /= gSampleBoxHalfSize; 
+	occlusion /= gSampleBoxHalfSize;
 	occlusion = pow(occlusion, gPowFactor);
 
 	return occlusion;
@@ -263,14 +263,14 @@ PixelOutput main(in DPixelInput input)
 	GetAverageValues(input.Uv, depth, colorSampleBoxMultiplier, avgColors, avgNormals, avgViewPoses, avgDepths, indexWeights, avgColor);
 
 	float occlusions[layerCount];
-	
+
 	[unroll]
 	for (uint i = 0; i < layerCount; ++i)
 	{
 		occlusions[i] = GetOcclusion(avgNormals[i], avgViewPoses[i], viewPos, input.Uv, depth, avgDepths[i]);
 		occlusions[i] *= indexWeights[i];
 	}
-	
+
 	float occlusion = (occlusions[0] + occlusions[1] + occlusions[2] + occlusions[3]);
 
 	//float4 avgDepth = (avgDepths[0] * indexWeights[0] + avgDepths[1] * indexWeights[1] + avgDepths[2] * indexWeights[2] + avgDepths[3] * indexWeights[3]);
@@ -290,7 +290,7 @@ PixelOutput main(in DPixelInput input)
 	smpColor = visibility * float4(normalize(gLightColor.xyz), 1.0f);
 
 
-	
+
 	float3 indirects[layerCount];
 	//GetIndirecity(color.rgb, avgColor, directionalFactor, occlusion, indirect);
 	[unroll]

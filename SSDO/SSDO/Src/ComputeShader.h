@@ -28,6 +28,16 @@ public:
 		bool InputSATIsDifferential;
 	};
 
+	__declspec(align(16))
+		struct DepthAwareBlurBuffer
+	{
+		uint32_t Width;
+		uint32_t Level;
+		float FilterHalfSize;
+		float FilterSampleSpacing;
+		bool Vertical;
+	};
+
 #pragma endregion
 
 protected:

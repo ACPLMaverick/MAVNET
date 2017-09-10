@@ -126,10 +126,19 @@
     <ClInclude Include="Src\RWStructuredBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\SATGenerator.h">
+    <ClInclude Include="Src\Postprocesses\Utility\SATGenerator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\AdaptiveLayerGenerator.h">
+    <ClInclude Include="Src\Postprocesses\Utility\AdaptiveLayerGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Postprocesses\SSDOImprovedB.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Postprocesses\Utility\DepthAwareBlur.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Postprocesses\Utility\Helper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -230,10 +239,16 @@
     <ClCompile Include="Src\RWStructuredBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\SATGenerator.cpp">
+    <ClCompile Include="Src\Postprocesses\Utility\SATGenerator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\AdaptiveLayerGenerator.cpp">
+    <ClCompile Include="Src\Postprocesses\Utility\AdaptiveLayerGenerator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Postprocesses\SSDOImprovedB.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Postprocesses\Utility\DepthAwareBlur.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -277,12 +292,15 @@
     <FxCompile Include="Resources\Shaders\SSDOBase\SSDOBase_BlurMerge_VS.hlsl" />
     <FxCompile Include="Resources\Shaders\SSDOImproved\SSDOImproved_Base_PS.hlsl" />
     <FxCompile Include="Resources\Shaders\SSDOImproved\SSDOImproved_Base_VS.hlsl" />
-    <FxCompile Include="Resources\Shaders\SAT\SAT_CS.hlsl" />
-    <FxCompile Include="Resources\Shaders\SAT\AdaptiveLayers_CS.hlsl" />
+    <FxCompile Include="Resources\Shaders\SSDOImprovedB\SSDOImprovedB_Base_PS.hlsl" />
+    <FxCompile Include="Resources\Shaders\SSDOImprovedB\SSDOImprovedB_Base_VS.hlsl" />
+    <FxCompile Include="Resources\Shaders\PostprocessUtility\AdaptiveLayers_CS.hlsl" />
+    <FxCompile Include="Resources\Shaders\PostprocessUtility\DepthAwareBlur_CS.hlsl" />
+    <FxCompile Include="Resources\Shaders\PostprocessUtility\SAT_CS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\_global\GlobalDefines.hlsli" />
     <None Include="Resources\Shaders\_global\Lighting.hlsli" />
-    <None Include="Resources\Shaders\SAT\SATUtility.hlsli" />
+    <None Include="Resources\Shaders\PostprocessUtility\SATUtility.hlsli" />
   </ItemGroup>
 </Project>

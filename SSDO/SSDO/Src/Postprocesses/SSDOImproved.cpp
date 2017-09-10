@@ -9,10 +9,13 @@
 #include "GBuffer.h"
 #include "Lights/LightDirectional.h"
 #include "RWTexture.h"
-#include "SATGenerator.h"
+#include "Utility/SATGenerator.h"
+
 
 namespace Postprocesses
 {
+	using namespace Utility;
+
 	SSDOImproved::SSDOImproved() :
 		_dataBuffer(nullptr),
 		_sampleBoxHalfSize(0.3f),
