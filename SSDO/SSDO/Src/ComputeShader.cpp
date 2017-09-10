@@ -68,10 +68,15 @@ ComputeShader * ComputeShader::CreateResource(const std::wstring & name)
 {
 	if (name == L"SAT")
 	{
-		return new ComputeShader(name, sizeof(SATBuffer), 1024, 1, 1);
+		return new ComputeShader(name, sizeof(SATBuffer), 256, 1, 1);
+	}
+	else if (name == L"AdaptiveLayers")
+	{
+		return new ComputeShader(name, sizeof(AdaptiveLayerBuffer), 512, 1, 1);
 	}
 	else
 	{
+		ASSERT(false);
 		return nullptr;
 	}
 }

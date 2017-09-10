@@ -18,7 +18,9 @@ namespace Postprocesses
 		_sampleBoxHalfSize(0.3f),
 		_occlusionPower(1.0f),
 		_occlusionFaloff(1.0f),
-		_powFactor(1.0f)
+		_powFactor(1.0f),
+		_adaptiveDataNormalDepth(&SSDOImproved::AssignTextureParams),
+		_adaptiveDataColor(&SSDOImproved::AssignTextureParams)
 	{
 		// TETIN
 
@@ -64,11 +66,15 @@ namespace Postprocesses
 		_satNormalDepth = new RWTexture();
 		_satBufferA = new RWTexture();
 		_satBufferB = new RWTexture();
+		_layerIndices = new RWTexture();
+		_satLayerIndices = new RWTexture();
 		
 		AssignTextureParams(_satColor);
 		AssignTextureParams(_satNormalDepth);
 		AssignTextureParams(_satBufferA);
 		AssignTextureParams(_satBufferB);
+		AssignTextureParams(_layerIndices);
+		AssignTextureParams(_satLayerIndices);
 
 		_shaders.push_back(System::GetInstance()->GetScene()->LoadShader(std::wstring(L"SSDOImproved_Base")));
 
@@ -84,14 +90,10 @@ namespace Postprocesses
 
 		device->CreateBuffer(&bDesc, nullptr, &_dataBuffer);
 		ASSERT(_dataBuffer != nullptr);
-
-		AdaptiveLayerGenerator::GetInstance()->Initialize(&SSDOImproved::AssignTextureParams);
 	}
 
 	SSDOImproved::~SSDOImproved()
 	{
-		AdaptiveLayerGenerator::GetInstance()->Shutdown();
-
 		delete _testInput;
 		delete _testBuf;
 		delete _testOutput;
@@ -103,6 +105,8 @@ namespace Postprocesses
 		delete _satNormalDepth;
 		delete _satBufferA;
 		delete _satBufferB;
+		delete _layerIndices;
+		delete _satLayerIndices;
 	}
 
 	void SSDOImproved::Update()
@@ -117,16 +121,15 @@ namespace Postprocesses
 		ID3D11ShaderResourceView* nullik[2]{ nullptr, nullptr };
 		deviceContext->PSSetShaderResources(4, 2, nullik);
 
+		// Generate SATs.
 		//_satGen.Generate(_testInput, _testBuf, _testOutput);
 		SATGenerator::GetInstance()->Generate(gBuffer.GetNormalDepthBuffer(), gBuffer.GetColorBuffer(),
 									_satBufferA, _satBufferB, _satNormalDepth, _satColor);
 
-		// Split base buffers into two adaptive layers with index texture assignment
-		// Generate SAT for first layer
-		// Compute second layer's SAT using differential method
-
-		// For each second layer, compute further two adaptive layers out of them with index texture assignment
-		// For each child first layer compute SAT, second one will be computed in
+		// Generate adaptive layers.
+		AdaptiveLayerGenerator::GetInstance()->Generate(gBuffer.GetNormalDepthBuffer(), gBuffer.GetColorBuffer(),
+			_satNormalDepth, _satColor, _satBufferA, _satBufferB, _layerIndices, _satLayerIndices, &_adaptiveDataNormalDepth, &_adaptiveDataColor,
+			_sampleBoxHalfSize);
 
 		Shader::SSDOImprovedPS* buffer = reinterpret_cast<Shader::SSDOImprovedPS*>(_shaders[0]->MapPsBuffer(1));
 		reinterpret_cast<Lights::LightDirectional*>(&buffer->LightColor)->ApplyToShader(
@@ -145,8 +148,15 @@ namespace Postprocesses
 		_shaders[0]->UnmapPsBuffer(1);
 
 		// Set four adaptive layers for each data buffer (8 textures) and index texture (totally 9)
+		// Argh argh
 		_satNormalDepth->Set(4);
 		_satColor->Set(5);
+
+		_adaptiveDataNormalDepth._satLayer1->Set(6);
+		_adaptiveDataNormalDepth._satLayer10->Set(7);
+		_adaptiveDataNormalDepth._satLayer20->Set(8);
+		_satLayerIndices->Set(9);
+		_layerIndices->Set(10);
 
 		const GBuffer::RenderTarget* in[1] = { gBuffer.PPGetOutputBBuffer() };
 		const int32_t inSlots[1] = { 3 };
@@ -157,7 +167,9 @@ namespace Postprocesses
 
 	void SSDOImproved::AfterPass(GBuffer & gBuffer, const Camera & camera, int32_t passIndex) const
 	{
-		
+		ID3D11DeviceContext* deviceContext = Renderer::GetInstance()->GetDeviceContext();
+		ID3D11ShaderResourceView* nullik[5]{ nullptr, nullptr, nullptr, nullptr, nullptr };
+		deviceContext->PSSetShaderResources(6, 5, nullik);
 	}
 
 	void SSDOImproved::AssignTextureParams(Texture * tex)

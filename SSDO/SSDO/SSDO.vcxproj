@@ -680,6 +680,7 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\Shaders\SAT\SATUtility.hlsli" />
     <None Include="Resources\Shaders\_global\GlobalDefines.hlsli" />
     <None Include="Resources\Shaders\_global\Lighting.hlsli" />
   </ItemGroup>

@@ -18,6 +18,16 @@ public:
 		bool Vertical;
 	};
 
+	__declspec(align(16))
+		struct AdaptiveLayerBuffer
+	{
+		XMFLOAT4 SatDimensionsAndRecs;
+		float BoxHalfSize;
+		uint32_t InputLevel;
+		uint32_t IndexOffset;
+		bool InputSATIsDifferential;
+	};
+
 #pragma endregion
 
 protected:

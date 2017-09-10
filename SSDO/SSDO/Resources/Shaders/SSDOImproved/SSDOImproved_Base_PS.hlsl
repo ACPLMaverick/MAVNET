@@ -1,5 +1,6 @@
 #include "../_global/GlobalDefines.hlsli"
 #include "../_global/Lighting.hlsli"
+#include "../SAT/SATUtility.hlsli"
 
 #define SAMPLE_COUNT 14
 
@@ -34,6 +35,25 @@ SamplerState SmpSatNormalDepth : register(s4);
 
 Texture2D SatColor : register(t5);
 SamplerState SmpSatColor : register(s5);
+
+// Layered SATs
+Texture2D SatNormalDepthLayer1 : register(t6);
+SamplerState SmpSatNormalDepthLayer1 : register(s6);
+
+Texture2D SatNormalDepthLayer10 : register(t7);
+SamplerState SmpSatNormalDepthLayer10 : register(s7);
+
+Texture2D SatNormalDepthLayer20 : register(t8);
+SamplerState SmpSatNormalDepthLayer20 : register(s8);
+
+Texture2D SatIndices : register(t9);
+SamplerState SmpSatIndices : register(s9);
+
+Texture2D DbgIndices : register(t10);
+SamplerState SmpDbgIndices : register(s10);
+
+
+// FUNCTIONS
 
 float3 Hue(in float h)
 {
@@ -77,7 +97,8 @@ float3 RGBtoHSV(in float3 rgb)
 void ApplyOcclusionFaloff(in float diffZ, inout float occlusion)
 {
 	occlusion = max(occlusion, 0.0f);
-	occlusion *= smoothstep(-(1.0f + gOcclusionFalloff), -1.0f, -occlusion);
+	occlusion *= 1.0f - smoothstep(1.0f, 1.0f + gOcclusionFalloff, occlusion);
+	occlusion *= 1.0f - smoothstep(0.0f, gOcclusionFalloff, diffZ);
 	occlusion *= step(0.0001f, diffZ);
 }
 
@@ -87,42 +108,7 @@ void SampleDepth(in float2 uv, out float depth)
 	depth = 1.0f - SatNormalDepth.Sample(SmpSatNormalDepth, uv).w;
 }
 
-void GenerateSamplePointsAndArea(in const float filterHalfWidth, in const float2 uv, in const float depth,
-	out float2 samplePoints[4], out float areaRec)
-{
-	const uint sampleCount = 4;
-	float tSize = filterHalfWidth * min(gSatDimensions.x, gSatDimensions.y) * pow(depth, 0.8f); // how many pixels
-	float2 centerPoint = uv * gSatDimensions.xy;
-	float diffX = abs(min(centerPoint.x - tSize, 0.0f)) + max(centerPoint.x + tSize - gSatDimensions.x, 0.0f);
-	float diffY = abs(min(centerPoint.y - tSize, 0.0f)) + max(centerPoint.y + tSize - gSatDimensions.y, 0.0f);
-	float tSizeX = tSize - diffX + diffY;
-	float tSizeY = tSize - diffY + diffX;
-
-	// TL, TR, BR, BL
-	samplePoints[0] = float2(centerPoint.x - tSizeX - 1, centerPoint.y - tSizeY - 1);
-	samplePoints[1] = float2(min(centerPoint.x + tSizeX, gSatDimensions.x - 1), centerPoint.y - tSizeY - 1);
-	samplePoints[2] = float2(min(centerPoint.x + tSizeX, gSatDimensions.x - 1), min(centerPoint.y + tSizeY, gSatDimensions.y - 1));
-	samplePoints[3] = float2(centerPoint.x - tSizeX - 1, min(centerPoint.y + tSizeY, gSatDimensions.y - 1));
-
-	areaRec = 1.0f / float(
-		(samplePoints[2].x - samplePoints[3].x) *
-		(samplePoints[2].y - samplePoints[1].y));
-}
-
-void CalculateAverage(in Texture2D tex, in SamplerState smp,
-	in const float2 samplePoints[4], in const float areaRec, out float4 average)
-{
-	// SAT: (BR - BL - TR + TL) / area
-	float4 values[4] =
-	{
-		tex.Sample(smp, samplePoints[0] * gSatDimensions.zw),
-		tex.Sample(smp, samplePoints[1] * gSatDimensions.zw),
-		tex.Sample(smp, samplePoints[2] * gSatDimensions.zw),
-		tex.Sample(smp, samplePoints[3] * gSatDimensions.zw),
-	};
-	average = (values[2] - values[3] - values[1] + values[0]) * areaRec;
-}
-
+/*
 void GetAverageValues(in const float2 uv, in const float depth, in const float colorSampleMultiplier,
 	out float3 avgColor, out float3 avgNormal, out float3 avgViewPos, out float avgDepth)
 {
@@ -135,65 +121,65 @@ void GetAverageValues(in const float2 uv, in const float depth, in const float c
 	float2 samplePointsColor[4];
 	float areaRec, areaRecColor;
 
-	GenerateSamplePointsAndArea(boxHalfSize, uv, depth, samplePoints, areaRec);
-	GenerateSamplePointsAndArea(boxHalfSizeColor, uv, depth, samplePointsColor, areaRecColor);
+	GenerateSamplePointsAndArea(gSatDimensions, boxHalfSize, uv, depth, samplePoints, areaRec);
+	GenerateSamplePointsAndArea(gSatDimensions, boxHalfSizeColor, uv, depth, samplePointsColor, areaRecColor);
 
 	float4 avgNormalDepth, avgColor4;
 	
-	CalculateAverage(SatNormalDepth, SmpSatNormalDepth, samplePoints, areaRec, avgNormalDepth);
-	CalculateAverage(SatColor, SmpSatColor, samplePointsColor, areaRecColor, avgColor4);
+	CalculateAverage(gSatDimensions, SatNormalDepth, SmpSatNormalDepth, samplePoints, areaRec, avgNormalDepth);
+	CalculateAverage(gSatDimensions, SatColor, SmpSatColor, samplePointsColor, areaRecColor, avgColor4);
 
 	avgNormal = normalize(avgNormalDepth.xyz);
 	avgDepth = avgNormalDepth.w;
 	avgViewPos = ViewPositionFromDepth(gProjInverse, uv, avgDepth);
 
 	avgColor = avgColor4.rgb;
+}
+*/
 
-	/*
+void GetAverageValues(in const float2 uv, in const float depth, in const float colorSampleMultiplier,
+	out float3 avgColors[4], out float3 avgNormals[4], out float3 avgViewPoses[4], out float avgDepths[4], out float4 indexSums)
+{
+
 	const uint sampleCount = 4;
-	float boxHalfSize = gSampleBoxHalfSize * pow(depth, 0.8f);
-	const float2 uvSamples[sampleCount] =
-	{
-		float2(uv.x - boxHalfSize, uv.y - boxHalfSize),
-		float2(uv.x + boxHalfSize, uv.y - boxHalfSize),
-		float2(uv.x + boxHalfSize, uv.y + boxHalfSize),
-		float2(uv.x - boxHalfSize, uv.y + boxHalfSize)
-	};
+	const float boxHalfSize = gSampleBoxHalfSize;
+	const float boxHalfSizeColor = boxHalfSize * colorSampleMultiplier;
 
-	boxHalfSize *= colorSampleMultiplier;
-	const float2 uvSamplesColor[sampleCount] =
-	{
-		float2(uv.x - boxHalfSize, uv.y - boxHalfSize),
-		float2(uv.x + boxHalfSize, uv.y - boxHalfSize),
-		saturate(float2(uv.x + boxHalfSize, uv.y + boxHalfSize)) - 0.001f,
-		float2(uv.x - boxHalfSize, uv.y + boxHalfSize)
-	};	// TL, TR, BR, BL
+	float2 samplePoints[4];
+	float2 samplePointsColor[4];
+	float areaRec, areaRecColor;
 
-	float4 normalsDepths[sampleCount];
-	float3 colors[sampleCount];
+	GenerateSamplePointsAndArea(gSatDimensions, boxHalfSize, uv, depth, samplePoints, areaRec);
+	GenerateSamplePointsAndArea(gSatDimensions, boxHalfSizeColor, uv, depth, samplePointsColor, areaRecColor);
+
+	float4 avgNormalDepths[4];
+	float4 avgColors4[4];
+	float4 avgColor4;
+	float4 avgNormalDepth;
+
+	CalculateAverage(gSatDimensions, SatNormalDepthLayer10, SmpSatNormalDepthLayer10, samplePoints, areaRec, avgNormalDepths[0]);
+	CalculateAverageDifferential(gSatDimensions, SatNormalDepthLayer10, SatNormalDepthLayer1,
+		SmpSatNormalDepthLayer10, SmpSatNormalDepthLayer1, samplePoints, areaRec, avgNormalDepths[1]);
+	CalculateAverage(gSatDimensions, SatNormalDepthLayer20, SmpSatNormalDepthLayer20, samplePoints, areaRec, avgNormalDepths[2]);
+	CalculateAverageDifferentialGrandparent(gSatDimensions, SatNormalDepthLayer20, SatNormalDepthLayer1, SatNormalDepth,
+		SmpSatNormalDepthLayer20, SmpSatNormalDepthLayer1, SmpSatNormalDepth, samplePoints, areaRec, avgNormalDepths[3]);
+
+	CalculateSum(gSatDimensions, SatIndices, SmpSatIndices, samplePoints, indexSums);
+	
+	CalculateAverage(gSatDimensions, SatColor, SmpSatColor, samplePointsColor, areaRecColor, avgColor4);
+	CalculateAverage(gSatDimensions, SatNormalDepth, SmpSatNormalDepth, samplePoints, areaRec, avgNormalDepth);
 
 	[unroll]
-	for (uint i = 0; i < sampleCount; ++i)
+	for (uint i = 0; i < 4; ++i)
 	{
-		normalsDepths[i] = SatNormalDepth.Sample(SmpSatNormalDepth, uvSamples[i]);
+		avgNormals[i] = avgNormalDepths[i].xyz;
+		if (length(avgNormals[i]) > 0.001f)
+		{
+			avgNormals[i] = normalize(avgNormals[i]);
+		}
+		avgDepths[i] = avgNormalDepths[i].w;
+		avgViewPoses[i] = ViewPositionFromDepth(gProjInverse, uv, avgDepths[i]);
 	}
-	[unroll]
-	for (i = 0; i < sampleCount; ++i)
-	{
-		colors[i] = SatColor.Sample(SmpSatColor, uvSamplesColor[i]).rgb;
-	}
-
-
-	const float areaRec = abs(1.0f / ((uvSamples[2].x - uvSamples[3].x) * gSatDimensions.x * (uvSamples[2].y - uvSamples[1].y) * gSatDimensions.y));
-	const float areaRecColor = areaRec / (colorSampleMultiplier * colorSampleMultiplier);
-
-	const float4 avgNormalDepth = (normalsDepths[2] - normalsDepths[3] - normalsDepths[1] + normalsDepths[0]) * areaRec;
-	avgNormal = normalize(avgNormalDepth.xyz);
-	avgDepth = avgNormalDepth.w;
-	avgViewPos = ViewPositionFromDepth(gProjInverse, uv, avgDepth);
-
-	avgColor = (colors[2] - colors[3] - colors[1] + colors[0]) * areaRecColor;
-	*/
 }
 
 float GetOcclusion(in const float3 avgNormal, in const float3 avgViewPos, in const float3 pxViewPos,
@@ -203,7 +189,13 @@ float GetOcclusion(in const float3 avgNormal, in const float3 avgViewPos, in con
 
 	const float3 dirToAvg = avgViewPos - pxViewPos;
 
+	// Non normal-sensitive method.
+	//float zb = pixelDepth;
+	//float zt = pixelDepth * (1.0f + gSampleBoxHalfSize);
+	//float occlusion = (zb - avgDepth) / (zb - zt);
+
 	float occlusion = max(dot(dirToAvg, avgNormal), 0.0f);
+
 	occlusion /= gSampleBoxHalfSize;
 	ApplyOcclusionFaloff(diffZ, occlusion);
 	occlusion = pow(occlusion, gPowFactor);
@@ -221,11 +213,38 @@ PixelOutput main(in DPixelInput input)
 	const float3 normal = normalSample.xyz;
 	const float3 viewPos = ViewPositionFromDepth(gProjInverse, input.Uv, depth);
 
+	/*
+	// old pipeline
 	float3 avgColor, avgNormal, avgViewPos;
 	float avgDepth;
 	GetAverageValues(input.Uv, depth, colorSampleBoxMultiplier, avgColor, avgNormal, avgViewPos, avgDepth);
 
 	float occlusion = GetOcclusion(avgNormal, avgViewPos, viewPos, input.Uv, depth, avgDepth);
+	*/
+
+	const uint layerCount = 4;
+	float3 avgColors[layerCount], avgNormals[layerCount], avgViewPoses[layerCount];
+	float avgDepths[layerCount];
+	float4 indexSums;
+	float3 avgNormal = 0.0f, avgColor = 0.0f;
+	float4 dbg;
+
+	GetAverageValues(input.Uv, depth, colorSampleBoxMultiplier, avgColors, avgNormals, avgViewPoses, avgDepths, indexSums);
+
+	float occlusions[layerCount];
+	
+	[unroll]
+	for (uint i = 0; i < layerCount; ++i)
+	{
+		occlusions[i] = GetOcclusion(avgNormals[i], avgViewPoses[i], viewPos, input.Uv, depth, avgDepths[i]);
+		occlusions[i] *= indexSums[i];
+	}
+	
+	float occlusion = (occlusions[0] + occlusions[1] + occlusions[2] + occlusions[3]) / 
+		(indexSums[0] + indexSums[1] + indexSums[2] + indexSums[3]);
+
+	float4 avgDepth = (avgDepths[0] * indexSums[0] + avgDepths[1] * indexSums[1] + avgDepths[2] * indexSums[2] + avgDepths[3] * indexSums[3]) /
+		(indexSums[0] + indexSums[1] + indexSums[2] + indexSums[3]);
 
 	MaterialData pData;
 	pData.colBase = float4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -262,32 +281,24 @@ PixelOutput main(in DPixelInput input)
 	const float4 colorInput = TexInput.Sample(SmpInput, input.Uv);
 	smpColor *= colorInput;
 
-	output.final = lerp(colorInput, smpColor, finalLerpValue) + float4(indirect.xyz, 1.0f);
+	float4 indSample = DbgIndices.Sample(SmpDbgIndices, input.Uv);
+
+	//output.final = lerp(colorInput, smpColor, finalLerpValue) /*+ float4(indirect.xyz, 1.0f)*/;
+	output.final = occlusion.rrrr * saturate(indSample + indSample.aaaa);
+	//output.final = float4(length(avgNormals[0]), length(avgNormals[3]), length(avgNormals[2]), length(avgNormals[3]));
+	//output.final = indSample + indSample.aaaa;
+	//output.final = abs(dbg.a - (avgDepths[2]));
+	//output.final = (avgNormals[2]/* + avgNormals[1] + avgNormals[2] + avgNormals[3]*/).xyzz;
+	//output.final = indexSums / (max(indexSums[0], max(indexSums[1], max(indexSums[2], indexSums[3]))));
 	//output.final = visibility.rrrr;
 	//output.final = finalLerpValue.rrrr;
 	//output.final = avgNormal.xyzz;
-	//output.final = smpColor;
+	//output.final = avgDepth;
 	//output.final = avgColor.xyzz;
+	//output.final = avgDepths[3].xxxx;
 	//output.final = indirect.xyzz;
 	//output.final = indirectFactor.xxxx;
 	//output.final = pow(1.0f - directionalFactor, 5.1f).xxxx;
-
-	// temp filter
-	/*
-	float4 tFiltered = float4(0.0f, 0.0f, 0.0f, 0.0f);
-	
-	float4 samples[4];
-
-	[unroll]
-	for (i = 0; i < 4; ++i)
-	{
-		//samples[i] = SatColor[samplePoints[i]];
-		samples[i] = SatColor.Sample(SmpSatColor, samplePoints[i] * gSatDimensions.zw);
-	}
-	tFiltered = (samples[2] - samples[3] - samples[1] + samples[0]) * areaRec;
-
-	output.final = tFiltered * 0.5f;
-	*/
 
 	return output;
 }
