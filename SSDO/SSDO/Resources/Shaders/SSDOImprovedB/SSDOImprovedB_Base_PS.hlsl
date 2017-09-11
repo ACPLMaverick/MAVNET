@@ -108,7 +108,7 @@ void GetOcclusion(in const float3 avgNormal, in const float3 avgViewPos, in cons
 	//occlusion = max(dot(dirToAvg, avgNormal), 0.0f);
 
 	occlusion /= gSampleBoxHalfSize;
-	occlusion = pow(occlusion, gPowFactor);
+	occlusion = pow(max(occlusion, 0.0f), gPowFactor);
 	ApplyOcclusionFaloff(pixelDepth, diffZ, occlusion);
 
 	// Fixing bleeding on surfaces with normals close to (0, 1, 0).
@@ -121,9 +121,9 @@ void GetBleedingFix(in const float3 viewPos, in const float2 uv, in const float 
 	const uint samplePointCount = 4;
 	float fixBleed = 0.0f, fixEdge = 0.0f;
 
-	float4 avgNormalDepthLowerMip = AverageNormalDepth.SampleLevel(SmpAverageNormalDepth, uv, 4);
+	float4 avgNormalDepthLowerMip = AverageNormalDepth.SampleLevel(SmpAverageNormalDepth, uv, 2);
 	float diffZ = max(avgNormalDepthLowerMip.w - depth, 0.0f);
-	float thres = pow(depth, 0.8f) * 0.5f;
+	float thres = pow(max(depth, 0.0f), 0.8f) * 0.5f;
 	fixEdge = smoothstep(thres - 0.001f, thres, diffZ);
 	//fixEdge *= (1.0f - fixBleed);
 
@@ -180,7 +180,7 @@ PixelOutput main(in DPixelInput input)
 	float4 smpColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
 	const float visibility = 1.0f - occlusion;
-	float directionalFactor = saturate(pow((1.0f - max(dot(avgNormal, gLightDirection), 0.0f)), 5.5f));
+	float directionalFactor = saturate(pow(max(1.0f - max(dot(avgNormal, gLightDirection), 0.0f), 0.0f), 5.5f));
 	float finalLerpValue = occlusion * directionalFactor * gOcclusionPower;
 	smpColor = visibility * float4(normalize(gLightColor.xyz), 1.0f);
 

@@ -99,45 +99,77 @@ GBuffer::GBuffer(const Camera& camera) :
 	descDs.CPUAccessFlags = 0;
 	descDs.MiscFlags = 0;
 	
-
-	ASSERT(device->CreateTexture2D(&descMipmapped, nullptr, &_color.Texture) == S_OK);
-	ASSERT(device->CreateTexture2D(&descTextureNormals, nullptr, &_normal.Texture) == S_OK);
-	ASSERT(device->CreateTexture2D(&descTexture, nullptr, &_outputA.Texture) == S_OK);
-	ASSERT(device->CreateTexture2D(&descTexture, nullptr, &_outputB.Texture) == S_OK);
-	for(size_t i = 0; i < PP_BUFFER_COUNT; ++i)
-		ASSERT(device->CreateTexture2D(&descTextureBuffers, nullptr, &_postprocessBuffers[i].Texture) == S_OK);
-	ASSERT(device->CreateTexture2D(&descDs, nullptr, &_depth.Texture) == S_OK);
-
-	ASSERT(device->CreateRenderTargetView(_color.Texture, nullptr, &_color.View) == S_OK);
-	ASSERT(device->CreateRenderTargetView(_normal.Texture, nullptr, &_normal.View) == S_OK);
-	ASSERT(device->CreateRenderTargetView(_outputA.Texture, nullptr, &_outputA.View) == S_OK);
-	ASSERT(device->CreateRenderTargetView(_outputB.Texture, nullptr, &_outputB.View) == S_OK);
+	HRESULT hr;
+	hr = device->CreateTexture2D(&descMipmapped, nullptr, &_color.Texture);
+	ASSERT(hr == S_OK);
+	hr = device->CreateTexture2D(&descTextureNormals, nullptr, &_normal.Texture);
+	ASSERT(hr == S_OK);
+	hr = device->CreateTexture2D(&descTexture, nullptr, &_outputA.Texture);
+	ASSERT(hr == S_OK);
+	hr = device->CreateTexture2D(&descTexture, nullptr, &_outputB.Texture);
+	ASSERT(hr == S_OK);
 	for (size_t i = 0; i < PP_BUFFER_COUNT; ++i)
-		ASSERT(device->CreateRenderTargetView(_postprocessBuffers[i].Texture, nullptr, &_postprocessBuffers[i].View) == S_OK);
+	{
+		hr = device->CreateTexture2D(&descTextureBuffers, nullptr, &_postprocessBuffers[i].Texture);
+		ASSERT(hr == S_OK);
+	}
+	hr = device->CreateTexture2D(&descDs, nullptr, &_depth.Texture);
+	ASSERT(hr == S_OK);
 
-	ASSERT(device->CreateSamplerState(&descSampler, &_color.Sampler) == S_OK);
-	ASSERT(device->CreateSamplerState(&descSampler, &_normal.Sampler) == S_OK);
-	ASSERT(device->CreateSamplerState(&descSampler, &_outputA.Sampler) == S_OK);
-	ASSERT(device->CreateSamplerState(&descSampler, &_outputB.Sampler) == S_OK);
-	ASSERT(device->CreateSamplerState(&descSampler, &_depth.Sampler) == S_OK);
+	hr = device->CreateRenderTargetView(_color.Texture, nullptr, &_color.View);
+	ASSERT(hr == S_OK);
+	hr = device->CreateRenderTargetView(_normal.Texture, nullptr, &_normal.View);
+	ASSERT(hr == S_OK);
+	hr = device->CreateRenderTargetView(_outputA.Texture, nullptr, &_outputA.View);
+	ASSERT(hr == S_OK);
+	hr = device->CreateRenderTargetView(_outputB.Texture, nullptr, &_outputB.View);
+	ASSERT(hr == S_OK);
 	for (size_t i = 0; i < PP_BUFFER_COUNT; ++i)
-		ASSERT(device->CreateSamplerState(&descSamplerBuffers, &_postprocessBuffers[i].Sampler) == S_OK);
+	{
+		hr = device->CreateRenderTargetView(_postprocessBuffers[i].Texture, nullptr, &_postprocessBuffers[i].View);
+		ASSERT(hr == S_OK);
+	}
 
-	ASSERT(device->CreateShaderResourceView(_color.Texture, &descSrvMipmapped, &_color.SRV) == S_OK);
-	ASSERT(device->CreateShaderResourceView(_normal.Texture, &descSrvNormals, &_normal.SRV) == S_OK);
-	ASSERT(device->CreateShaderResourceView(_outputA.Texture, &descSrv, &_outputA.SRV) == S_OK);
-	ASSERT(device->CreateShaderResourceView(_outputB.Texture, &descSrv, &_outputB.SRV) == S_OK);
+	hr = device->CreateSamplerState(&descSampler, &_color.Sampler);
+	ASSERT(hr == S_OK);
+	hr = device->CreateSamplerState(&descSampler, &_normal.Sampler);
+	ASSERT(hr == S_OK);
+	hr = device->CreateSamplerState(&descSampler, &_outputA.Sampler);
+	ASSERT(hr == S_OK);
+	hr = device->CreateSamplerState(&descSampler, &_outputB.Sampler);
+	ASSERT(hr == S_OK);
+	hr = device->CreateSamplerState(&descSampler, &_depth.Sampler);
+	ASSERT(hr == S_OK);
 	for (size_t i = 0; i < PP_BUFFER_COUNT; ++i)
-		ASSERT(device->CreateShaderResourceView(_postprocessBuffers[i].Texture, &descSrv, &_postprocessBuffers[i].SRV) == S_OK);
+	{
+		hr = device->CreateSamplerState(&descSamplerBuffers, &_postprocessBuffers[i].Sampler);
+		ASSERT(hr == S_OK);
+	}
+
+	hr = device->CreateShaderResourceView(_color.Texture, &descSrvMipmapped, &_color.SRV);
+	ASSERT(hr == S_OK);
+	hr = device->CreateShaderResourceView(_normal.Texture, &descSrvNormals, &_normal.SRV);
+	ASSERT(hr == S_OK);
+	hr = device->CreateShaderResourceView(_outputA.Texture, &descSrv, &_outputA.SRV);
+	ASSERT(hr == S_OK);
+	hr = device->CreateShaderResourceView(_outputB.Texture, &descSrv, &_outputB.SRV);
+	ASSERT(hr == S_OK);
+	for (size_t i = 0; i < PP_BUFFER_COUNT; ++i)
+	{
+		hr = device->CreateShaderResourceView(_postprocessBuffers[i].Texture, &descSrv, &_postprocessBuffers[i].SRV);
+		ASSERT(hr == S_OK);
+	}
 	descSrv.Format = formatDepthSrv;
-	ASSERT(device->CreateShaderResourceView(_depth.Texture, &descSrv, &_depth.SRV) == S_OK);
+	hr = device->CreateShaderResourceView(_depth.Texture, &descSrv, &_depth.SRV);
+	ASSERT(hr == S_OK);
 
 	D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
 	ZeroMemory(&dsvDesc, sizeof(D3D11_DEPTH_STENCIL_VIEW_DESC));
 	dsvDesc.Format = formatDepthDsv;
 	dsvDesc.ViewDimension = dsvDimension;
 	dsvDesc.Texture2D.MipSlice = 0;
-	ASSERT(device->CreateDepthStencilView(_depth.Texture, &dsvDesc, &_depth.DepthStencilView) == S_OK);
+	hr = device->CreateDepthStencilView(_depth.Texture, &dsvDesc, &_depth.DepthStencilView);
+	ASSERT(hr == S_OK);
 
 	D3D11_BLEND_DESC blendDesc;
 	D3D11_RENDER_TARGET_BLEND_DESC rbDesc;

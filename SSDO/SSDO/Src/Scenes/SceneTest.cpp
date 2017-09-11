@@ -44,19 +44,45 @@ namespace Scenes
 		Material* matBlue = new Material(*shdColor, XMFLOAT4A(0.0f, 0.0f, 1.0f, 1.0f));
 		_materials.emplace(L"MatBlue", matBlue);
 
+		Mesh* sib0 = new Mesh(L"sibnek0", true);
+		_meshes.emplace(L"Sibnek0", sib0);
+		Mesh* sib1 = new Mesh(L"sibnek1", true);
+		_meshes.emplace(L"Sibnek0", sib1);
+		Mesh* sib2 = new Mesh(L"sibnek2", true);
+		_meshes.emplace(L"Sibnek0", sib2);
+		Mesh* sib3 = new Mesh(L"sibnek3", true);
+		_meshes.emplace(L"Sibnek0", sib3);
+
 		Mesh* box = new Mesh(L"box", true);
 		_meshes.emplace(L"Box", box);
 
-		Object* objFloor = new Object(*box, *matWhite);
-		objFloor->SetScale(XMFLOAT3A(15.0f, 0.01f, 15.0f));
-		objFloor->SetPosition(XMFLOAT3A(0.0f, 0.0f, 0.0f));
-		_objects.push_back(objFloor);
+		XMFLOAT3A cathScale(1.5f, 1.5f, 1.5f);
+		XMFLOAT3A cathRot(0.0f, 90.0f, 0.0f);
+		XMFLOAT3A cathPos(0.0f, 0.0f, 0.0f);
 
-		Object* objFloor02 = new Object(*box, *matWhite);
-		objFloor02->SetScale(XMFLOAT3A(15.0f, 0.01f, 15.0f));
-		objFloor02->SetPosition(XMFLOAT3A(0.0f, 0.0f, 15.0f));
-		objFloor02->SetRotation(XMFLOAT3A(90.0f, 0.0f, 0.0f));
-		_objects.push_back(objFloor02);
+		Object* objCath0 = new Object(*sib0, *matWhite);
+		objCath0->SetScale(cathScale);
+		objCath0->SetRotation(cathRot);
+		objCath0->SetPosition(cathPos);
+		_objects.push_back(objCath0);
+
+		Object* objCath1 = new Object(*sib1, *matWhite);
+		objCath1->SetScale(cathScale);
+		objCath1->SetRotation(cathRot);
+		objCath1->SetPosition(cathPos);
+		_objects.push_back(objCath1);
+
+		Object* objCath2 = new Object(*sib2, *matWhite);
+		objCath2->SetScale(cathScale);
+		objCath2->SetRotation(cathRot);
+		objCath2->SetPosition(cathPos);
+		_objects.push_back(objCath2);
+
+		Object* objCath3 = new Object(*sib3, *matWhite);
+		objCath3->SetScale(cathScale);
+		objCath3->SetRotation(cathRot);
+		objCath3->SetPosition(cathPos);
+		_objects.push_back(objCath3);
 
 		Object* objBox01 = new Object(*box, *matWhite);
 		objBox01->SetPosition(XMFLOAT3A(0.0f, 2.0f, 4.0f));

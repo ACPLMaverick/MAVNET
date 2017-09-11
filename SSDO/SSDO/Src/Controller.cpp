@@ -189,8 +189,8 @@ void Controller::Update()
 	if (_bRotateLight && _scene->GetLightsDirectional().size() > 0)
 	{
 		Lights::LightDirectional* lDir(_scene->GetLightsDirectional()[0]);
-		const float rotationSpeed(25.0f);
-		XMFLOAT3A rotationTemp(XMFLOAT3A(0.0f, 0.0f, 1.0f));
+		const float rotationSpeed(15.0f);
+		XMFLOAT3A rotationTemp(XMFLOAT3A(1.0f, 0.0f, 0.0f));
 		const XMVECTOR rotationAxeVec(XMLoadFloat3A(&rotationTemp));
 
 		const float lightRotationAngle = rotationSpeed * Timer::GetInstance()->GetDeltaTime();

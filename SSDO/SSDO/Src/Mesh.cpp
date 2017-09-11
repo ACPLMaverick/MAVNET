@@ -135,7 +135,7 @@ Mesh::Mesh(const std::wstring & filePath, bool bReadOnly)
 		}
 	}
 
-	_indices.Allocate(indices.GetSize());
+	_indices.Allocate(indices.GetSize() / 3);
 	for (auto it = indices.GetIterator(); it.IsValid(); it += 3)
 	{
 		_indices.Add(Triangle(*(it + 2), *(it + 1), *(it)));

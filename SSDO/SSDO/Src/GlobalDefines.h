@@ -40,9 +40,9 @@ OutputDebugString(d_text.c_str());
 
 #else
 
-#define ASSERT_D(expression, message) expression
+#define ASSERT_D(expression, message)
 
-#define ASSERT(expression) expression
+#define ASSERT(expression)
 
 #define ASSERT_X(func) func
 
