@@ -16,6 +16,7 @@ void RWTexture::InitResources(bool bMakeReadOnly, bool bIsRenderTarget)
 		DWZ(D3D11_TEXTURE2D_DESC, arDesc);
 		GenerateTextureResourceDesc(arDesc, false);
 		arDesc.BindFlags = 0;
+		arDesc.MiscFlags = 0;
 		arDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
 		arDesc.Usage = D3D11_USAGE_STAGING;
 		

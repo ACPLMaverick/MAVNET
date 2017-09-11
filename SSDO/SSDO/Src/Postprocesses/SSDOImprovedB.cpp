@@ -30,7 +30,7 @@ namespace Postprocesses
 		_tempB = new RWTexture();
 		
 		AssignTextureParams(_bufColor);
-		AssignTextureParams(_bufNormalDepth);
+		AssignTextureParams(_bufNormalDepth, true);
 		AssignTextureParams(_tempA);
 		AssignTextureParams(_tempB);
 
@@ -77,6 +77,9 @@ namespace Postprocesses
 		// Generate blurred buffers.
 		_blurGen.Generate(gBuffer.GetNormalDepthBuffer(), gBuffer.GetColorBuffer(), _tempA, _tempB, _bufNormalDepth, _bufColor);
 
+		// Generate mips for edge fixing in pixel shader.
+		deviceContext->GenerateMips(_bufNormalDepth->GetSRV());
+
 		Shader::SSDOImprovedBPS* buffer = reinterpret_cast<Shader::SSDOImprovedBPS*>(_shaders[0]->MapPsBuffer(1));
 		reinterpret_cast<Lights::LightDirectional*>(&buffer->LightColor)->ApplyToShader(
 			*System::GetInstance()->GetScene()->GetLightsDirectional()[0],
@@ -107,13 +110,13 @@ namespace Postprocesses
 		deviceContext->PSSetSamplers(4, 2, reinterpret_cast<ID3D11SamplerState**>(nullik));
 	}
 
-	void SSDOImprovedB::AssignTextureParams(Texture * tex)
+	void SSDOImprovedB::AssignTextureParams(Texture * tex, bool mipmapped)
 	{
 		tex->SetWidth(System::GetInstance()->GetOptions()._windowWidth / GBuffer::PP_BUFFER_SIZE_DIVISOR / BUFFER_SIZE_DIVISOR);
 		tex->SetHeight(System::GetInstance()->GetOptions()._windowHeight / GBuffer::PP_BUFFER_SIZE_DIVISOR / BUFFER_SIZE_DIVISOR);
 		tex->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R16G16B16A16_FLOAT);
 		tex->SetBPP(64);
-		tex->SetMipmapped(false);
+		tex->SetMipmapped(mipmapped);
 		tex->InitResources(false, false);
 	}
 }

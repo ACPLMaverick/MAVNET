@@ -86,16 +86,16 @@ void GetAverageValues(in const float2 uv, out float3 avgColor, out float3 avgNor
 	avgViewPos = ViewPositionFromDepth(gProjInverse, uv, avgDepth);
 }
 
-void ApplyOcclusionFaloff(in float diffZ, inout float occlusion)
+void ApplyOcclusionFaloff(in const float depth, in const float diffZ, inout float occlusion)
 {
 	occlusion = max(occlusion, 0.0f);
 	occlusion *= 1.0f - smoothstep(1.0f, 1.0f + 0.3f, occlusion);
-	//occlusion *= 1.0f - smoothstep(0.0f, gOcclusionFalloff, diffZ);
-	//occlusion *= step(0.0001f, diffZ);
+	//occlusion *= 1.0f - step(0.02f * pow(1.0f - depth, 0.8f), diffZ);
+	occlusion *= step(0.0001f, diffZ);
 }
 
-float GetOcclusion(in const float3 avgNormal, in const float3 avgViewPos, in const float3 pxViewPos,
-	in const float2 uv, in const float pixelDepth, in const float avgDepth)
+void GetOcclusion(in const float3 avgNormal, in const float3 avgViewPos, in const float3 pxViewPos,
+	in const float2 uv, in const float pixelDepth, in const float avgDepth, out float occlusion)
 {
 	const float3 dirToAvg = avgViewPos - pxViewPos;
 	const float diffZ = max(avgDepth - pixelDepth, 0.0f);
@@ -103,15 +103,75 @@ float GetOcclusion(in const float3 avgNormal, in const float3 avgViewPos, in con
 	// Non normal-sensitive method.
 	float zb = pixelDepth;
 	float zt = pixelDepth * (1.0f + gSampleBoxHalfSize);
-	float occlusion = (zb - avgDepth) / (zb - zt);
+	occlusion = (zb - avgDepth) / (zb - zt);
 
-	//float occlusion = max(dot(dirToAvg, avgNormal), 0.0f);
+	//occlusion = max(dot(dirToAvg, avgNormal), 0.0f);
 
-	ApplyOcclusionFaloff(diffZ, occlusion);
 	occlusion /= gSampleBoxHalfSize;
 	occlusion = pow(occlusion, gPowFactor);
+	ApplyOcclusionFaloff(pixelDepth, diffZ, occlusion);
 
-	return occlusion;
+	// Fixing bleeding on surfaces with normals close to (0, 1, 0).
+	occlusion *= smoothstep(0.1f, 0.2f, (1.0f - dot(avgNormal, float3(0.0f, 1.0f, 0.0f))));
+}
+
+void GetBleedingFix(in const float3 viewPos, in const float2 uv, in const float depth, in const float avgDepth, out float fix)
+{
+	const float fixSize = gSampleBoxHalfSize * depth * 0.0f;
+	const uint samplePointCount = 4;
+	float fixBleed = 0.0f, fixEdge = 0.0f;
+
+	//float2 samplePoints[samplePointCount] =
+	//{
+	//	float2(uv.x, uv.y - fixSize),
+	//	float2(uv.x + fixSize, uv.y),
+	//	float2(uv.x, uv.y + fixSize),
+	//	float2(uv.x - fixSize, uv.y)
+	//};
+
+	//float4 samples[samplePointCount] =
+	//{
+	//	AverageNormalDepth.Sample(SmpAverageNormalDepth, samplePoints[0]),
+	//	AverageNormalDepth.Sample(SmpAverageNormalDepth, samplePoints[1]),
+	//	AverageNormalDepth.Sample(SmpAverageNormalDepth, samplePoints[2]),
+	//	AverageNormalDepth.Sample(SmpAverageNormalDepth, samplePoints[3])
+	//};
+
+	//const float sampleOutOfBoundsThres = 0.01f;
+	//float outOfBoundsFixes[samplePointCount] =
+	//{
+	//	(step(sampleOutOfBoundsThres, samplePoints[0].y)),
+	//	(1.0f - step(1.0f - sampleOutOfBoundsThres, samplePoints[1].x)),
+	//	(1.0f - step(1.0f - sampleOutOfBoundsThres, samplePoints[2].y)),
+	//	(step(sampleOutOfBoundsThres, samplePoints[3].x))
+	//};
+
+	//float diffs[samplePointCount] =
+	//{
+	//	abs(depth - samples[0].w) * outOfBoundsFixes[0],
+	//	abs(depth - samples[1].w) * outOfBoundsFixes[1],
+	//	abs(depth - samples[2].w) * outOfBoundsFixes[2],
+	//	abs(depth - samples[3].w) * outOfBoundsFixes[3]
+	//};
+
+	//const float fixThresholdA = 0.1f * depth;
+	//const float fixThresholdB = 0.2f * depth;
+
+	//// Bleed fix.
+
+	//fixBleed = smoothstep(fixThresholdA, fixThresholdB, diffs[0]) +
+	//	smoothstep(fixThresholdA, fixThresholdB, diffs[1]) +
+	//	smoothstep(fixThresholdA, fixThresholdB, diffs[2]) +
+	//	smoothstep(fixThresholdA, fixThresholdB, diffs[3]);
+	//fixBleed = 1.0f - saturate(fixBleed);
+
+	float4 avgNormalDepthLowerMip = AverageNormalDepth.SampleLevel(SmpAverageNormalDepth, uv, 1);
+	float diffZ = max(avgNormalDepthLowerMip.w - depth, 0.0f);
+	float thres = pow(depth, 0.8f) * 0.05f;
+	fixEdge = smoothstep(thres - 0.001f, thres, diffZ);
+	//fixEdge *= (1.0f - fixBleed);
+
+	fix = 1.0f - fixEdge;
 }
 
 void GetIndirecity(in const float3 color, in const float3 avgColor, in const float directionalFactor, in const float occlusion, out float3 indirect)
@@ -126,22 +186,19 @@ void GetIndirecity(in const float3 color, in const float3 avgColor, in const flo
 
 	// FAST VERSION
 	//indirect = (1.0f - indirect) * saturate(length(indirect)) * avgColor * gLightColor.xyz;
-
-	float layerFactor = saturate(10.0f * pow(occlusion, 0.1f));
-
 	// ACCURATE VERSION
 	indirect = RGBtoHSV(indirect);
 	indirect.r = 0.785398f - indirect.r;
 	indirect = HSVtoRGB(indirect);
-	indirect *= avgColor * gLightColor.xyz * pow(1.0f - directionalFactor, 3.0f) * (1.0f - 2.0f * occlusion) * layerFactor;
+	indirect *= avgColor * gLightColor.xyz * pow(1.0f - directionalFactor, 3.0f) * (1.0f - 2.0f * occlusion) * 0.5f;
 }
 
 PixelOutput main(in DPixelInput input)
 {
 	const float colorSampleBoxMultiplier = 1.5f;
 
-	const float4 color = TexColor.Sample(SmpColor, input.Uv);
-	const float4 normalSample = TexNormalDepth.Sample(SmpNormalDepth, input.Uv);
+	const float4 color = TexColor.SampleLevel(SmpColor, input.Uv, 0);
+	const float4 normalSample = TexNormalDepth.SampleLevel(SmpNormalDepth, input.Uv, 0);
 	const float depth = normalSample.w;
 	const float3 normal = normalSample.xyz;
 	const float3 viewPos = ViewPositionFromDepth(gProjInverse, input.Uv, depth);
@@ -151,7 +208,13 @@ PixelOutput main(in DPixelInput input)
 	float avgDepth = 1.0f;
 	GetAverageValues(input.Uv, avgColor, avgNormal, avgViewPos, avgDepth);
 
-	float occlusion = GetOcclusion(avgNormal, avgViewPos, viewPos, input.Uv, depth, avgDepth);
+	float occlusion;
+	GetOcclusion(avgNormal, avgViewPos, viewPos, input.Uv, depth, avgDepth, occlusion);
+
+	float bleedFix;
+	GetBleedingFix(viewPos, input.Uv, depth, avgDepth, bleedFix);
+
+	occlusion *= bleedFix;
 
 	MaterialData pData;
 	pData.colBase = float4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -175,7 +238,8 @@ PixelOutput main(in DPixelInput input)
 
 	output.final = lerp(colorInput, smpColor, finalLerpValue) + float4(indirect.xyz, 1.0f);
 	//output.final = avgNormal.xyzz;
-	output.final = occlusion.xxxx;
+	//output.final = visibility.xxxx * color;
+	//output.final = bleedFix.xxxx;
 
 	return output;
 }

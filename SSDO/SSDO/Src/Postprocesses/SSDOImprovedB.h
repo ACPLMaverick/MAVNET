@@ -40,7 +40,7 @@ namespace Postprocesses
 
 #pragma region Functions Protected
 
-		static void AssignTextureParams(Texture* tex);
+		static void AssignTextureParams(Texture* tex, bool mipmapped = false);
 
 #pragma endregion
 		
