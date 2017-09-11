@@ -22,7 +22,7 @@ Controller::Controller(Scene* scene) :
 	_cameraBoost(30.0f), 
 	_cameraRotateSpeedX(1.0f), 
 	_cameraRotateSpeedY(1.0f),
-	_bRotateLight(false)
+	_bRotateLight(true)
 {
 }
 

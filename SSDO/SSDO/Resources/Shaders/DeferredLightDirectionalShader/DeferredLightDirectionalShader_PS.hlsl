@@ -34,7 +34,7 @@ float4 main(DPixelInput input) : SV_TARGET
 	float4 inColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
 	float3 viewDir = normalize(-pInput.PositionView);
 
-	LightDirectional(pInput, gColor, gDirection, viewDir, pData, inColor);
+	LightDirectional(pInput, gColor, normalize(gDirection), viewDir, pData, inColor);
 
 	return inColor;
 }

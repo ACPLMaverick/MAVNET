@@ -62,7 +62,7 @@ void main(uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID, uint3 GTid :
 	inputB *= gWeights[5];
 	float totalWeight = gWeights[5];
 
-	const float depthFactor = pow(depth, 1.2f);
+	const float depthFactor = pow(max(depth, 0.0f), 1.2f);
 	const float depthBorder = gFilterHalfSize * depthFactor;
 
 	// Get samples with weight based on depth difference
