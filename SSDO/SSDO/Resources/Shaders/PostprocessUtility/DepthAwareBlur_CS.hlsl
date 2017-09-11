@@ -56,6 +56,7 @@ void main(uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID, uint3 GTid :
 	float4 inputB = InB.mips[gLevel][index];
 
 	// Get current depth value and assign weights
+	float3 normal = normalize(inputA.xyz);
 	float depth = inputA.w;
 	inputA *= gWeights[5];
 	inputB *= gWeights[5];
@@ -64,6 +65,8 @@ void main(uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID, uint3 GTid :
 	const float depthFactor = pow(depth, 1.2f);
 	const float depthBorder = gFilterHalfSize * depthFactor;
 
+	const float normalFactor = smoothstep(0.2f, 0.5f, max(dot(normal, float3(0.0f, 0.0f, -1.0f)), 0.0f));
+
 	// Get samples with weight based on depth difference
 
 	for (int i = -KERNEL_SIZE; i <= KERNEL_SIZE; ++i)
@@ -71,7 +74,7 @@ void main(uint3 Gid : SV_GroupID, uint3 DTid : SV_DispatchThreadID, uint3 GTid :
 		if (i == 0)
 			continue;
 
-		uint2 neighIndex = index + (gFilterSampleSpacing + 1) * i * texOffset * depthFactor * 32.0f;
+		uint2 neighIndex = index + (gFilterSampleSpacing + 1) * i * texOffset * normalFactor * 3.0f;
 		if (gVertical)
 		{
 			neighIndex.y = clamp(neighIndex.y, 0, gWidth - 1);

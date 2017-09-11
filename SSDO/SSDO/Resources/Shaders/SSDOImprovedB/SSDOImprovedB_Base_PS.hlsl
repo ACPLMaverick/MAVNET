@@ -121,53 +121,9 @@ void GetBleedingFix(in const float3 viewPos, in const float2 uv, in const float 
 	const uint samplePointCount = 4;
 	float fixBleed = 0.0f, fixEdge = 0.0f;
 
-	//float2 samplePoints[samplePointCount] =
-	//{
-	//	float2(uv.x, uv.y - fixSize),
-	//	float2(uv.x + fixSize, uv.y),
-	//	float2(uv.x, uv.y + fixSize),
-	//	float2(uv.x - fixSize, uv.y)
-	//};
-
-	//float4 samples[samplePointCount] =
-	//{
-	//	AverageNormalDepth.Sample(SmpAverageNormalDepth, samplePoints[0]),
-	//	AverageNormalDepth.Sample(SmpAverageNormalDepth, samplePoints[1]),
-	//	AverageNormalDepth.Sample(SmpAverageNormalDepth, samplePoints[2]),
-	//	AverageNormalDepth.Sample(SmpAverageNormalDepth, samplePoints[3])
-	//};
-
-	//const float sampleOutOfBoundsThres = 0.01f;
-	//float outOfBoundsFixes[samplePointCount] =
-	//{
-	//	(step(sampleOutOfBoundsThres, samplePoints[0].y)),
-	//	(1.0f - step(1.0f - sampleOutOfBoundsThres, samplePoints[1].x)),
-	//	(1.0f - step(1.0f - sampleOutOfBoundsThres, samplePoints[2].y)),
-	//	(step(sampleOutOfBoundsThres, samplePoints[3].x))
-	//};
-
-	//float diffs[samplePointCount] =
-	//{
-	//	abs(depth - samples[0].w) * outOfBoundsFixes[0],
-	//	abs(depth - samples[1].w) * outOfBoundsFixes[1],
-	//	abs(depth - samples[2].w) * outOfBoundsFixes[2],
-	//	abs(depth - samples[3].w) * outOfBoundsFixes[3]
-	//};
-
-	//const float fixThresholdA = 0.1f * depth;
-	//const float fixThresholdB = 0.2f * depth;
-
-	//// Bleed fix.
-
-	//fixBleed = smoothstep(fixThresholdA, fixThresholdB, diffs[0]) +
-	//	smoothstep(fixThresholdA, fixThresholdB, diffs[1]) +
-	//	smoothstep(fixThresholdA, fixThresholdB, diffs[2]) +
-	//	smoothstep(fixThresholdA, fixThresholdB, diffs[3]);
-	//fixBleed = 1.0f - saturate(fixBleed);
-
-	float4 avgNormalDepthLowerMip = AverageNormalDepth.SampleLevel(SmpAverageNormalDepth, uv, 1);
+	float4 avgNormalDepthLowerMip = AverageNormalDepth.SampleLevel(SmpAverageNormalDepth, uv, 4);
 	float diffZ = max(avgNormalDepthLowerMip.w - depth, 0.0f);
-	float thres = pow(depth, 0.8f) * 0.05f;
+	float thres = pow(depth, 0.8f) * 0.5f;
 	fixEdge = smoothstep(thres - 0.001f, thres, diffZ);
 	//fixEdge *= (1.0f - fixBleed);
 

@@ -29,8 +29,8 @@ namespace Postprocesses
 			const AdaptiveLayerData * dataA, const AdaptiveLayerData * dataB, float boxHalfSize) const
 		{
 			GenerateInternal(baseInputA->SRV, baseInputB->SRV, baseSATA, baseSATB, bufferA, bufferB, layerIndices, satLayerIndices, dataA, dataB,
-				System::GetInstance()->GetOptions()._windowWidth / GBuffer::PP_BUFFER_SIZE_DIVISOR,
-				System::GetInstance()->GetOptions()._windowHeight / GBuffer::PP_BUFFER_SIZE_DIVISOR, boxHalfSize);
+				System::GetInstance()->GetOptions()._windowWidth,
+				System::GetInstance()->GetOptions()._windowHeight, boxHalfSize);
 		}
 
 		void AdaptiveLayerGenerator::Generate(const Texture * baseInputA, const Texture * baseInputB,

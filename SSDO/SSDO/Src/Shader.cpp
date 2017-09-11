@@ -177,6 +177,18 @@ void Shader::UnmapPsBuffer(size_t i) const
 	deviceContext->Unmap(_constantPsBuffers[i], 0);
 }
 
+ID3D11Buffer * Shader::GetVsBuffer(size_t i) const
+{
+	ASSERT(i < _constantVsBufferCount);
+	return _constantVsBuffers[i];
+}
+
+ID3D11Buffer * Shader::GetPsBuffer(size_t i) const
+{
+	ASSERT(i < _constantPsBufferCount);
+	return _constantPsBuffers[i];
+}
+
 Shader * Shader::CreateResource(const std::wstring & name)
 {
 	if (name == L"ColorShader")

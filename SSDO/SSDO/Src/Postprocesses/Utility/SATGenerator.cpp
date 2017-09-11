@@ -55,8 +55,8 @@ namespace Postprocesses
 			RWTexture* outputA,
 			RWTexture* outputB) const
 		{
-			uint32_t inputWidth(System::GetInstance()->GetOptions()._windowWidth / GBuffer::PP_BUFFER_SIZE_DIVISOR);
-			uint32_t inputHeight(System::GetInstance()->GetOptions()._windowHeight / GBuffer::PP_BUFFER_SIZE_DIVISOR);
+			uint32_t inputWidth(System::GetInstance()->GetOptions()._windowWidth);
+			uint32_t inputHeight(System::GetInstance()->GetOptions()._windowHeight);
 			uint32_t inputLevel(Helper::GetTextureLevel(inputWidth, outputA->GetWidth()));
 			GenerateInternal(inputA->SRV, inputB->SRV, bufferA->GetSRV(), bufferB->GetSRV(),
 				bufferA->GetUAV(), bufferB->GetUAV(), outputA->GetUAV(), outputB->GetUAV(),

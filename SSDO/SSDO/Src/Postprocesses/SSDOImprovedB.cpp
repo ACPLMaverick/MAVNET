@@ -22,7 +22,7 @@ namespace Postprocesses
 		_occlusionPower(1.0f),
 		_occlusionFaloff(1.0f),
 		_powFactor(1.0f),
-		_blurGen(0.3f, 0.0f, 3)
+		_blurGen(0.3f, 0.0f, 1)
 	{
 		_bufColor = new RWTexture();
 		_bufNormalDepth = new RWTexture();
@@ -112,8 +112,8 @@ namespace Postprocesses
 
 	void SSDOImprovedB::AssignTextureParams(Texture * tex, bool mipmapped)
 	{
-		tex->SetWidth(System::GetInstance()->GetOptions()._windowWidth / GBuffer::PP_BUFFER_SIZE_DIVISOR / BUFFER_SIZE_DIVISOR);
-		tex->SetHeight(System::GetInstance()->GetOptions()._windowHeight / GBuffer::PP_BUFFER_SIZE_DIVISOR / BUFFER_SIZE_DIVISOR);
+		tex->SetWidth(System::GetInstance()->GetOptions()._windowWidth / BUFFER_SIZE_DIVISOR);
+		tex->SetHeight(System::GetInstance()->GetOptions()._windowHeight / BUFFER_SIZE_DIVISOR);
 		tex->SetFormat(DXGI_FORMAT::DXGI_FORMAT_R16G16B16A16_FLOAT);
 		tex->SetBPP(64);
 		tex->SetMipmapped(mipmapped);

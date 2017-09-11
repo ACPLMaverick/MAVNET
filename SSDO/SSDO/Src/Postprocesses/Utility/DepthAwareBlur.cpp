@@ -26,9 +26,9 @@ namespace Postprocesses
 
 		void DepthAwareBlur::Generate(const GBuffer::RenderTarget * inputA, const GBuffer::RenderTarget * inputB, RWTexture * bufferA, RWTexture * bufferB, RWTexture * outputA, RWTexture * outputB) const
 		{
-			const uint32_t width(System::GetInstance()->GetOptions()._windowWidth / GBuffer::PP_BUFFER_SIZE_DIVISOR);
+			const uint32_t width(System::GetInstance()->GetOptions()._windowWidth);
 			GenerateInternal(inputA->SRV, inputB->SRV, bufferA, bufferB, outputA, outputB,
-				width, System::GetInstance()->GetOptions()._windowHeight / GBuffer::PP_BUFFER_SIZE_DIVISOR, 
+				width, System::GetInstance()->GetOptions()._windowHeight, 
 				Helper::GetTextureLevel(width, outputA->GetWidth()));
 		}
 

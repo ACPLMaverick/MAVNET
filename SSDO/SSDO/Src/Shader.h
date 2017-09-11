@@ -165,6 +165,8 @@ public:
 	void UnmapVsBuffer(size_t i) const;
 	void* MapPsBuffer(size_t i) const;
 	void UnmapPsBuffer(size_t i) const;
+	ID3D11Buffer* GetVsBuffer(size_t i) const;
+	ID3D11Buffer* GetPsBuffer(size_t i) const;
 
 	static Shader* CreateResource(const std::wstring& name);
 };

@@ -55,15 +55,15 @@ void Controller::Initialize()
 		}
 		else if (dynamic_cast<SSDOBase*>(*it) != nullptr)
 		{
-			_profiler->RegisterPostprocessName("SSDO");
+			_profiler->RegisterPostprocessName("SSDO - A");
 		}
 		else if (dynamic_cast<SSDOImproved*>(*it) != nullptr)
 		{
-			_profiler->RegisterPostprocessName("SSDO+");
+			_profiler->RegisterPostprocessName("SSDO - B");
 		}
 		else if (dynamic_cast<SSDOImprovedB*>(*it) != nullptr)
 		{
-			_profiler->RegisterPostprocessName("SSDO++");
+			_profiler->RegisterPostprocessName("SSDO - C");
 		}
 		else if (dynamic_cast<Sepia*>(*it) != nullptr)
 		{

@@ -2,5 +2,7 @@
 
 DPixelInput main(in uint vertexID : SV_VertexID)
 {
-	return GenerateDPixelInput(vertexID);
+	DPixelInput dp = GenerateDPixelInput(vertexID);
+	dp.Uv *= 2.0f;
+	return dp;
 }

@@ -100,7 +100,7 @@ public:
 #pragma region Public Const
 
 	static const size_t PP_BUFFER_COUNT = 4;
-	static const uint32_t PP_BUFFER_SIZE_DIVISOR = 1;
+	static const uint32_t PP_BUFFER_SIZE_DIVISOR = 2;
 
 #pragma endregion
 

@@ -14,7 +14,7 @@ namespace Postprocesses
 	SSDOBase::SSDOBase() :
 		_dataBuffer(nullptr),
 		_randomVectorTexture(nullptr),
-		_maxDistance(1.2f),
+		_maxDistance(0.6f),
 		_fadeStart(0.02f),
 		_epsilon(0.01f),
 		_powFactor(1.0f)
@@ -77,6 +77,8 @@ namespace Postprocesses
 	{
 		Postprocess::SetPass(gBuffer, camera, passIndex);
 
+		ID3D11DeviceContext* deviceContext = Renderer::GetInstance()->GetDeviceContext();
+
 		if (passIndex == 0)
 		{
 			Shader::SSDOBasePS* buffer = reinterpret_cast<Shader::SSDOBasePS*>(_shaders[0]->MapPsBuffer(1));
@@ -107,6 +109,9 @@ namespace Postprocesses
 
 			_shaders[1]->UnmapPsBuffer(1);
 
+			ID3D11Buffer* buf = _shaders[1]->GetPsBuffer(1);
+			deviceContext->VSSetConstantBuffers(1, 1, &buf);
+
 
 			gBuffer.PPClearBuffersAsOutput(2);
 			const GBuffer::RenderTarget* in[2] = { &gBuffer.PPGetBuffers()[0], &gBuffer.PPGetBuffers()[1] };
@@ -124,13 +129,16 @@ namespace Postprocesses
 
 			_shaders[2]->UnmapPsBuffer(1);
 
+			ID3D11Buffer* buf = _shaders[2]->GetPsBuffer(1);
+			deviceContext->VSSetConstantBuffers(1, 1, &buf);
+
 
 			gBuffer.PPClearBuffersAsOutput(2);
 			const GBuffer::RenderTarget* in[2] = { &gBuffer.PPGetBuffers()[2], &gBuffer.PPGetBuffers()[3] };
 			const int32_t inSlots[2] = { 4, 5 };
 			gBuffer.PPSetBuffersAsInput(in, inSlots, 2);
-			const GBuffer::RenderTarget* rts[2] = { gBuffer.PPGetOutputBuffer(), &gBuffer.PPGetBuffers()[0] };
-			gBuffer.PPSetBuffersAsOutput(rts, 2, nullptr);
+			const GBuffer::RenderTarget* rts[1] = { gBuffer.PPGetOutputBuffer() };
+			gBuffer.PPSetBuffersAsOutput(rts, 1, nullptr);
 		}
 	}
 
