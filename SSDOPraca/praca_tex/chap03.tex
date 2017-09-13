@@ -1,0 +1,75 @@
+\chapter{Model statystyczny kierunkowej okluzji otoczenia}
+\label{t:algorytm}
+
+
+	\section{Wady bazowego algorytmu SSDO}
+	\label{t:algorytm:wady-ssdo}
+	
+	% konieczność próbkowania i rozmycia 
+	% użycie dwóch przebiegów renderingu
+	
+	Aby móc rozważać ulepszenie algorytmu SSDO, należy zastanowić się najpierw nad jego wadami. Jako, że niniejsza praca skoncentrowana jest wokół poprawienia wydajności, takie też kwestie zostaną rozpatrzone.
+	
+	Pierwsza i najważniejsza wadą SSDO to konieczność próbkowania otoczenia każdego piksela. Każda instrukcja samplowania tekstury w programie cieniującym stanowi istotne obniżenie wydajności. W przypadku omawianej techniki trzeba korzystać z pojedynczego bufora w każdym z dwóch przebiegów renderingu lub z dwóch buforów w jednym przebiegu (kolor oraz wektory normalne razem z głębokością). Mając, przykładowo, 14 próbek, generuje to w sumie 28 kosztownych wywołań instrukcji \texttt{Texture.Sample}\footnote{W języku HLSL.} na jeden piksel \cite{luna}. Redukując tę liczbę do znacznie mniejszej wartości da się bardzo przyspieszyć działanie programu.
+	
+	Kolejną kwestią związaną z próbkowaniem jest jego niska częstotliwość. Generuje to widoczny szum oraz artefakty, choć dzięki temu można korzystać z mipmap buforów i~przyspieszyć ich samplowanie. Mniejsze tekstury nie wpłyną znacząco na jakość obrazu. Niemniej jednak trzeba poświęcić dodatkowe przebiegi renderingu\footnote{Tzn. wywołania funkcji \texttt{Draw} lub \texttt{Dispatch} biblioteki graficznej.}, zazwyczaj co najmniej dwa, na stworzenie rozmytej wersji okluzji. Jest to kolejny proces, który wymaga pobierania wielu okolicznych próbek dla każdego piksela, ponadto należy brać pod uwagę głębokość każdej próbki tak, aby nie rozmyć okluzji w~miejscach nieciągłości i nie wywołać niepożądanego efektu ,,rozlewania się'' \cite{luna}. Wynika z~tego jasno, iż rozmycie jest dość kosztowym i niepożądanym z punktu widzenia wydajności procesem, który najlepiej ograniczyć do minimum albo w ogóle go uniknąć.
+	
+	Za kolejny niewygodny fakt można uznać to, że bazowa technika SSDO wymaga do działania dwóch przebiegów renderingu -- dla oświetlenia bezpośredniego i niebezpośredniego. Da się zauważyć w \cite{ssdo}, że ,,rozlewanie się'' kolorów występuje tylko w obszarach dobrze doświetlonych, a jego kolor jest bardzo zbliżony, lub wręcz taki sam, jak bazowy kolor materiału rzucających niebezpośrednie światło obiektów. Sensownym krokiem byłaby rezygnacja z buforu koloru oświetlonego jako wejścia do drugiego przebiegu techniki na rzecz buforu koloru \emph{nieoświetlonego}. Pozwoliłoby to połączyć kalkulację obu rodzajów iluminacji w jeden przebieg i zaoszczędzić na wywołaniu funkcji \texttt{Draw} przy niewielkim lub wręcz niezauważalnym pogorszeniu realizmu sceny.
+	
+	\section{Zastosowanie modelu statystycznego}
+	\label{t:algorytm:stat}
+	
+	% cel - przyspieszenie przy akceptowalnym pogorszeniu jakości
+	% użycie statystycznego zamiast próbkowania - z czym się wiąże
+	% symulowanie próbek poprzez uzależnienie od kierunku i koloru (wzorek)
+	% light bleeding symulowany poprzez rozmycie koloru i różnicę (wzorek)
+	% rozmycie buforów w technice C.
+	
+	Głównym eksperymentem niniejszej pracy jest próba podniesienia wydajności algorytmu SSDO omówionego w rozdziale \ref{t:teoria:ssdo}, przy jednoczesnym akceptowalnym pogorszeniu wyglądu renderowanego obrazu, tj. zachowaniu tych samych efektów o, w ostateczności, nieznacznie gorszej jakości. Finalnie stworzono dwie autorskie techniki, oznaczone jako SSDO-B i~SSDO-C. Bazową metodę określa się jako SSDO-A.
+	
+		\subsection{Oświetlenie bezpośrednie}
+		\label{t:algorytm:stat:direct}
+		
+		Kluczowym pomysłem stało się użycie opisanego w rozdziale \ref{t:teoria:statvo} statystycznego modelu wolumetrycznego przesłonięcia (StatVO). Rezygnując z próbkowania należy brać pod uwagę, że efekt SSDO trzeba osiągnąć zupełnie innym algorytmem, nie uwzględniającym wielu różnych kierunków oświetlenia bezpośredniego. W omawianym przypadku technika stała się dużo bardziej uproszczona, lecz generuje podobne efekty. Trzeba zauważyć, iż kolor oraz kierunek zacienienia SSDO jest ściśle zależny od koloru i kierunku padającego światła. Można wykorzystać ten fakt, żeby ograniczyć okluzję generowaną przez StatVO do miejsc słabiej doświetlonych. Dokonano tego przy pomocy iloczynu skalarnego średniego wektora normalnego oraz kierunku światła. Kolor zaciemnienia został uzależniony od koloru oświetlenia poprzez zwykłe przemnożenie pierwszego przez drugi. Ważną czynnością jest jednak uprzednia normalizacja drugiego wektora tak, aby jasność światła nie miała znaczącego wpływu na wynikową barwę zaciemnienia. Można proces ten opisać następującymi wzorami:
+		
+		\begin{equation}
+		D = saturate(pow(1 - max(\vec{n_{avg}} \cdot \vec{L_{d}}, 0), p))\ ,
+		\end{equation}
+		
+		\begin{equation}
+		V = AD(1 - StatVO(\mathbf{x})) \frac{\vec{L_{c}}}{\overline{L_{c}}}\ .
+		\end{equation}
+		
+		\(V\) jest końcowym kolorem oświetlenia bazującego na SSDO. \(A\) to odgórnie ustalony współczynnik jasności. Jako \(n_{avg}\) oznaczono średni wektor normalny w danym miejscu. Symbole \(L_{d}\) i \(L_{c}\) są odpowiednio kierunkiem i kolorem światła padającego na scenę.
+		
+		\subsection{Oświetlenie niebezpośrednie}
+		\label{t:algorytm:stat:indirect}
+		
+		Proces obliczania oświetlenia niebezpośredniego także został znacząco uproszczony i~sprowadza się do odpowiedniej manipulacji buforem koloru nieoświetlonego. Okno filtra jego SAT jest większe niż w przypadku bufora normalnych-głębokości aby sprawić wrażenie bardziej rozległego efektu niż okluzja i wykroczyć poza jej obszar, tak jak wygląda to w~\cite{ssdo}. Zgodnie z sugestią w podrozdziale \ref{t:algorytm:wady-ssdo} algorytm wykonuje się w tym samym przebiegu renderingu. Działanie polega na obliczeniu różnicy koloru piksela oraz średniej wartości ,,wylanego'' koloru. Następnym krokiem jest przekształcenie otrzymanego wektora do przestrzeni HSV, po czym następuje odwrócenie komponentu barwy i ponowne przekształcenie na RGB. Uzyskana w ten sposób wartość zostaje dalej uzależniona od koloru padającego światła, średniego koloru oraz przeciwieństw współczynnika kierunkowego \(D\)~i~okluzji. Na koniec wynik dodawany jest do finalnego koloru danego piksela. Cały proces przedstawia się wzorem:
+		
+		\begin{equation}
+		I = \rho(c_{\mathbf{x}} - c_{avg})c_{avg}\vec{L_{c}}(1 - D)(1 - StatVO(\mathbf{x}))\ ,
+		\end{equation}
+		
+		gdzie \(\rho\) to funkcja przekształcająca do przestrzeni HSV, odwracająca komponent barwy, po czym transformująca z powrotem do RGB.
+		
+		\subsection{Różnice pomiędzy SSDO-B a SSDO-C}
+		\label{t:algorytm:stat:diffs}
+		
+		Algorytm przedstawiony powyżej został użyty zarówno w metodzie SSDO-B, której implementację opisano w rozdziale \ref{t:impl:b}, jak i SSDO-C, omówionej w \ref{t:impl:c}. Warto jednak wspomnieć, co różni obie te techniki. SSDO-B polega na bezpośrednim zastosowaniu algorytmów StatVO do tworzenia kierunkowej okluzji otoczenia. SSDO-C odchodzi w~pewnym stopniu od tego schematu, stosując inną, mniej skomplikowaną metodę generowania danych wejściowych. Zrezygnowano tu z użycia SAT, kierując się chęcią uproszczenia procesu przygotowania wartości średnich oraz zmniejszenia liczby przebiegów i użytych tekstur. Zastosowano uśrednienie buforów normalnych, głębokości i koloru przy użyciu rozmycia Gaussa z zachowaniem krawędzi. Takie podejście redukuje także liczbę próbek w finalnym procesie do jednej na każdy bufor. SSDO-C cechuje się znaczącym zwiększeniem wydajności kosztem wprowadzenia niepożądanych artefaktów wizualnych w postaci widocznych czasem cienkich obrysów obiektów oraz ,,wylewania się'' okluzji na płaskich powierzchniach w~okolicach krawędzi.
+		
+		\pagebreak
+		
+		\subsection{Użycie pamięci}
+		\label{t:algorytm:stat:memory}
+		
+		Znaczącym czynnikiem przy ocenie przydatności i wydajności algorytmów jest ich użycie pamięci. Jej ilość wykorzystywana przez technikę często rośnie wraz ze zwiększaniem szybkości działania. W tym przypadku, w większości sytuacji, przyrost jest na szczęście nieznaczny. 
+		
+		Bazowa metoda SSDO (SSDO-A) do działania potrzebuje dwóch dodatkowych buforów. Jednego do przechowywania podpróbkowanego, zaszumionego oświetlenia a drugiego do przeprowadzenia rozmycia metodą ping-pongową. Jako, że efekt ma niską częstotliwość, bufory te mogą być w mniejszym rozmiarze niż tylny bufor aplikacji. Należy także wspomnieć, że do wygenerowania równomiernie rozłożonych próbek utworzona zostaje specjalna tekstura losowych wektorów o rozmiarze 1024x1024 pikseli. 
+		
+		W przypadku SSDO-B sytuacja wygląda inaczej. Nie biorąc pod uwagę techniki adaptacyjnych warstw głębi, tak jak i w SSDO-A wykorzystuje się dwa dodatkowe bufory -- SAT dla wektorów normalnych i głębokości oraz dla koloru. W niniejszej pracy algorytm generowania SAT (omówiony w rozdziale \ref{t:impl:b}) wymaga użycia kolejnych dodatkowych dwóch tekstur-buforów. Nie można zastosować metody ping-pongowej -- SAT są obliczane dla obu tekstur naraz. Sprawa komplikuje się, gdy uwzględnimy adaptacyjne warstwy głębokości. Trzeba stworzyć przynajmniej kolejne cztery tekstury, a wartość ta będzie się znacząco zwiększać, gdy podjęta zostanie decyzja o wprowadzeniu większej liczby warstw ze względu na skomplikowanie sceny.
+		
+		Użycie pamięci techniki SSDO-C jest porównywalne z SSDO-B bez adaptacyjnych warstw. Podobnie jak tam, potrzeba tu dwóch tekstur na uśrednione wersje buforów oraz dwóch tekstur-buforów dla poprawnego przeprowadzenia procesu rozmycia. 
+		
+		Warto wspomnieć, że w przypadku SSDO-B i SSDO-C tekstury są rozmiarów jednej czwartej rozmiaru tylnego bufora aplikacji, dzięki czemu użycie pamięci nie odbiega znacząco od SSDO-A.
+		

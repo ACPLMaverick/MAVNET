@@ -1,0 +1,322 @@
+\documentclass[12pt, oneside, a4paper]{mwbk}
+\usepackage[polish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[OT4]{fontenc}
+
+\usepackage{graphicx}
+\usepackage{verbatim}
+
+\usepackage[hidelinks]{hyperref}
+
+\usepackage{titletoc}
+\usepackage{etoolbox}
+
+\usepackage{enumitem}
+\usepackage[noend]{algorithmic}
+\usepackage[english,ruled]{algorithm2e}
+
+\usepackage{color}
+\usepackage[normalem]{ulem}
+\usepackage{listings}
+\usepackage{rotating}
+\usepackage{float}
+\usepackage{textpos}
+
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{booktabs}
+\usepackage{pgfplotstable}
+\usepackage{pdflscape}
+\usepgfplotslibrary{units}
+\usepackage{afterpage}
+
+\newcommand\blankpage{%
+	\null
+	\thispagestyle{empty}%
+	%\addtocounter{page}{-1}%
+	\newpage}
+
+\definecolor{dkgreen}{rgb}{0, 0.4, 0}
+
+
+\linespread{1,3}
+\oddsidemargin = 10pt
+\textwidth = 470pt
+
+\hyphenpenalty=1000
+\tolerance=500
+
+\setcounter{secnumdepth}{4}
+
+\newcommand{\myfigure}[4]{
+	\begin{figure}[H]
+		\centering
+		\scalebox{#3}
+		{
+			\includegraphics{#2}
+		}
+		\caption[#1]{#1}
+		\label{#4}
+	\end{figure}
+}
+\newcommand{\myownfigure}[4]{
+	\begin{figure}[H]
+		\centering
+		\scalebox{#3}
+		{
+			\includegraphics{#2}
+		}
+		\caption[#1]{#1 Źródło: opracowanie własne.}
+		\label{#4}
+	\end{figure}
+}
+\newcommand{\myownextfigure}[4]{
+	\begin{figure}[H]
+		\centering
+		\scalebox{#3}
+		{
+			\includegraphics{#2}
+		}
+		\caption[#1.]{#1 Źródło: opracowanie własne w oparciu o~źródło zewnętrzne\footnote{}.}
+		\label{#4}
+	\end{figure}
+}
+\newcommand{\myextfigure}[4]{
+	\begin{figure}[H]
+		\centering
+		\scalebox{#3}
+		{
+			\includegraphics{#2}
+		}
+		\caption[#1.]{#1\footnotemark.}
+		\label{#4}
+	\end{figure}
+}
+\newcommand{\myextcitefigure}[5]{
+	\begin{figure}[H]
+		\centering
+		\scalebox{#4}
+		{
+			\includegraphics{#3}
+		}
+		\caption[#1]{#1 #2}
+		\label{#5}
+	\end{figure}
+}
+
+
+\pgfplotstableset{
+	begin table=\begin{longtable}, % -------- CF
+		end table=\end{longtable},
+	every head row/.style={
+		%before row=\caption{X-Powered-By header}\\\toprule, after row=\bottomrule \endhead,% --------- CF
+		% as in the previous example, this patches the first row:
+		before row={\hline},
+		after row=\hline,
+	},
+	every last row/.style={% ------------ CF
+		after row=\hline,
+	},
+	every even row/.style={
+		before row={\rowcolor[gray]{0.92}}},
+}
+	
+\lstset{frame=tb,
+	aboveskip=3mm,
+	belowskip=3mm,
+	showstringspaces=false,
+	columns=flexible,
+	basicstyle={\small\ttfamily},
+	numbers=none,
+	numberstyle=\tiny\color{gray},
+	keywordstyle=\color{blue},
+	commentstyle=\color{dkgreen},
+	stringstyle=\color{mauve},
+	breaklines=true,
+	breakatwhitespace=true,
+	tabsize=3}
+	
+\newcommand{\beginnumbered}{\begin{enumerate}[label*=\arabic*.]}
+
+\lstdefinelanguage{GLSL}
+{
+	sensitive=true,
+	morekeywords=[1]{
+		attribute, const, uniform, varying,
+		layout, centroid, flat, smooth,
+		noperspective, break, continue, do,
+		for, while, switch, case, default, if,
+		else, in, out, inout, float, int, void,
+		bool, true, false, invariant, discard,
+		return, mat2, mat3, mat4, mat2x2, mat2x3,
+		mat2x4, mat3x2, mat3x3, mat3x4, mat4x2,
+		mat4x3, mat4x4, vec2, vec3, vec4, ivec2,
+		ivec3, ivec4, bvec2, bvec3, bvec4, uint,
+		uvec2, uvec3, uvec4, lowp, mediump, highp,
+		precision, sampler1D, sampler2D, sampler3D,
+		samplerCube, sampler1DShadow,
+		sampler2DShadow, samplerCubeShadow,
+		sampler1DArray, sampler2DArray,
+		sampler1DArrayShadow, sampler2DArrayShadow,
+		isampler1D, isampler2D, isampler3D,
+		isamplerCube, isampler1DArray,
+		isampler2DArray, usampler1D, usampler2D,
+		usampler3D, usamplerCube, usampler1DArray,
+		usampler2DArray, sampler2DRect,
+		sampler2DRectShadow, isampler2DRect,
+		usampler2DRect, samplerBuffer,
+		isamplerBuffer, usamplerBuffer, sampler2DMS,
+		isampler2DMS, usampler2DMS,
+		sampler2DMSArray, isampler2DMSArray,
+		usampler2DMSArray, struct},
+	morekeywords=[2]{
+		radians,degrees,sin,cos,tan,asin,acos,atan,
+		atan,sinh,cosh,tanh,asinh,acosh,atanh,pow,
+		exp,log,exp2,log2,sqrt,inversesqrt,abs,sign,
+		floor,trunc,round,roundEven,ceil,fract,mod,modf,
+		min,max,clamp,mix,step,smoothstep,isnan,isinf,
+		floatBitsToInt,floatBitsToUint,intBitsToFloat,
+		uintBitsToFloat,length,distance,dot,cross,
+		normalize,faceforward,reflect,refract,
+		matrixCompMult,outerProduct,transpose,
+		determinant,inverse,lessThan,lessThanEqual,
+		greaterThan,greaterThanEqual,equal,notEqual,
+		any,all,not,textureSize,texture,textureProj,
+		textureLod,textureOffset,texelFetch,
+		texelFetchOffset,textureProjOffset,
+		textureLodOffset,textureProjLod,
+		textureProjLodOffset,textureGrad,
+		textureGradOffset,textureProjGrad,
+		textureProjGradOffset,texture1D,texture1DProj,
+		texture1DProjLod,texture2D,texture2DProj,
+		texture2DLod,texture2DProjLod,texture3D,
+		texture3DProj,texture3DLod,texture3DProjLod,
+		textureCube,textureCubeLod,shadow1D,shadow2D,
+		shadow1DProj,shadow2DProj,shadow1DLod,
+		shadow2DLod,shadow1DProjLod,shadow2DProjLod,
+		dFdx,dFdy,fwidth,noise1,noise2,noise3,noise4,
+		EmitVertex,EndPrimitive},
+	morekeywords=[3]{
+		gl_VertexID,gl_InstanceID,gl_Position,
+		gl_PointSize,gl_ClipDistance,gl_PerVertex,
+		gl_Layer,gl_ClipVertex,gl_FragCoord,
+		gl_FrontFacing,gl_ClipDistance,gl_FragColor,
+		gl_FragData,gl_MaxDrawBuffers,gl_FragDepth,
+		gl_PointCoord,gl_PrimitiveID,
+		gl_MaxVertexAttribs,gl_MaxVertexUniformComponents,
+		gl_MaxVaryingFloats,gl_MaxVaryingComponents,
+		gl_MaxVertexOutputComponents,
+		gl_MaxGeometryInputComponents,
+		gl_MaxGeometryOutputComponents,
+		gl_MaxFragmentInputComponents,
+		gl_MaxVertexTextureImageUnits,
+		gl_MaxCombinedTextureImageUnits,
+		gl_MaxTextureImageUnits,
+		gl_MaxFragmentUniformComponents,
+		gl_MaxDrawBuffers,gl_MaxClipDistances,
+		gl_MaxGeometryTextureImageUnits,
+		gl_MaxGeometryOutputVertices,
+		gl_MaxGeometryOutputVertices,
+		gl_MaxGeometryTotalOutputComponents,
+		gl_MaxGeometryUniformComponents,
+		gl_MaxGeometryVaryingComponents,gl_DepthRange},
+	morecomment=[l]{//},
+	morecomment=[s]{/*}{*/},
+	morecomment=[l][keywordstyle4]{\#},
+}
+
+\renewcommand*{\lstlistlistingname}{Spis listing\'ow}
+
+\begin{document}
+\author{Marcin Wawrzonowski}
+\title{Optymalizacja algorytmów generowania kierunkowej okluzji otoczenia\linebreak w przestrzeni ekranu}
+\begin{titlepage}
+\thispagestyle{empty}
+\begin{textblock}{1}(-2.65,-1.65)
+\includegraphics{figures/tytulowa_pusta_mgrinz.pdf}
+\end{textblock}
+\vspace{7.3cm}
+\begin{center}
+\fontfamily{ptm}
+\selectfont
+\Huge
+Optymalizacja algorytmów generowania kierunkowej okluzji otoczenia\linebreak w przestrzeni ekranu
+\end{center}
+\begin{center}
+\fontfamily{ptm}
+\selectfont
+Praca dyplomowa magisterska
+\end{center}
+\vspace{5.0cm}
+\begin{center}
+\fontfamily{ptm}
+\selectfont
+\hspace{-1cm}
+\begin{tabular}{l}
+Wydział Fizyki Technicznej, Informatyki i Matematyki Stosowanej \\
+Promotor: dr inż. Dominik Szajerman \\
+Dyplomant: inż. Marcin Wawrzonowski \\
+Nr albumu: 207612 \\
+Kierunek: Informatyka \\
+Specjalność: Technologie Gier i Systemów Interaktywnych
+\end{tabular}
+\end{center}
+\vspace{-.5cm}
+\begin{center}
+\fontfamily{ptm}
+\selectfont
+\begin{textblock}{13}(0,0.4)
+Łódź, 2017
+\end{textblock}
+\end{center}
+\end{titlepage}
+
+\blankpage
+
+\tableofcontents
+
+\include{chap01}
+
+\include{chap02}
+
+\include{chap03}
+
+\include{chap04}
+
+\include{chap05}
+
+\include{chap06}
+
+\include{chap07}
+
+\include{chap08}
+
+\include{bib}
+
+\include{ang}
+
+\lstlistoflistings
+
+\listoffigures
+
+\listoftables
+
+\listofalgorithms
+
+\newpage
+\thispagestyle{empty}
+\begin{textblock}{1}(-2.65,-1.65)
+\includegraphics{figures/zal1.pdf}
+\end{textblock}
+\newpage
+\thispagestyle{empty}
+\begin{textblock}{1}(-2.65,-1.65)
+	\includegraphics{figures/zal2.pdf}
+\end{textblock}
+\newpage
+\thispagestyle{empty}
+\begin{textblock}{1}(-2.65,-1.65)
+	\includegraphics{figures/zal3.pdf}
+\end{textblock}
+
+\end{document}

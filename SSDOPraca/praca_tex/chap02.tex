@@ -1,0 +1,142 @@
+\chapter{Algorytmy generowania okluzji otoczenia}
+\label{t:teoria}
+
+Okluzja otoczenia (\textit{ambient occlusion}) od początku ściśle związana jest z pojęciem oświetlenia globalnego. Proces ten uwzględnia, oprócz bezpośredniego wpływu promieni światła padających na daną powierzchnię, także ich dalszą drogę, jako promieni odbitych i rozproszonych. Pozwala to na symulację niebezpośredniej iluminacji sceny, efektu ,,wylewania się'' kolorów i osiągnięcia dużo bardziej zbliżonego do rzeczywistości wyglądu świata wirtualnego \cite{global-illum}. Niestety, do uzyskania poprawnych efektów wymagane jest wzięcie pod uwagę bardzo dużej liczby promieni lub fotonów, co prowadzi do olbrzymiego narzutu obliczeniowego i~w~klasycznym ujęciu (\textit{ray tracing}, \textit{path tracing}, \textit{radiosity}) wyklucza możliwość zastosowania tej techniki w aplikacjach czasu rzeczywistego.
+
+Skutkiem takiego stanu rzeczy było powstanie wielu metod przybliżających efekty działania globalnego oświetlenia i cechujących się także akceptowalną wydajnością. Jedną z nich jest okluzja otoczenia. Celem tej techniki jest symulacja procesu oświetlenia sceny poprzez przyjęcie założenia, iż w miejsca, które otoczone są z wielu stron geometrią dociera mniej światła niż w obszary wyeksponowane, co doprowadza do powstania zaciemnień we wszystkich narożnikach, zagięciach, szczelinach i otworach \cite{ao}. Efekt możemy zobaczyć na poniższym rysunku \ref{fig_2_A} Poniżej zostaną omówione najważniejsze istniejące metody generowania okluzji oraz bazująca na nich kierunkowa okluzja otoczenia, będąca głównym zagadnieniem niniejszej pracy.
+
+\myownfigure{Efekt działania okluzji otoczenia.}{figures/fig_2_A.jpg}{0.5}{fig_2_A}
+
+	\section{Okluzja otoczenia bazująca na geometrii (AO)}
+	\label{t:teoria:geom}
+	
+	Bazowy i najprostszy algorytm okluzji otoczenia polega na wykorzystaniu jako danych wejściowych lokalnej geometrii danego obiektu. Na jej podstawie zostaje obliczone, w jakim stopniu okolica danego punktu jest przysłonięta przez otaczającą ją siatkę modelu. Sedno działania algorytmu zostało zaprezentowane na rysunku \ref{fig_2_B}.
+	
+	\myextcitefigure{Próbkowanie geometrycznej okluzji otoczenia.}{\cite{statvo}}{figures/fig_2_B.png}{0.4}{fig_2_B}
+	
+	Dla każdego wierzchołka obiektu lub umiejscowionego na niej punktu, odzwierciedlającego położenie teksela przypisanej mu tekstury, generowana jest pewna liczba losowych promieni. W zależności od tego, czy wzięty został pod uwagę wektor normalny, czy też nie, promienie należy rozłożyć równomiernie po otaczającej półkuli lub sferze. Następnie obliczane są kolizje promieni z sąsiadującą geometrią, zazwyczaj przyjmując jakąś odległość graniczną, poza którą nie mają one znaczenia. Okluzję w tym punkcie określa stosunek liczby promieni, które weszły w kolizję z otoczeniem do liczby wszystkich promieni. AO została formalnie zdefiniowana w \cite{sloan} i jest dana następującym wzorem:
+	
+	\begin{equation}
+	\mathit{AO}(\mathbf{x}, \vec{n}) = \frac{1}{\pi}\int_{\Omega}^{}\rho(\mathit{d}(\mathbf{x}, \vec{\omega},))\vec{n}\cdot \vec{\omega}d\vec{\omega}\ ,
+	\end{equation}
+	
+	gdzie \textbf{x} oznacza pozycję w scenie, a \(\vec{n}\) wektor normalny w tym miejscu. \(\Omega\) reprezentuje kierunki próbkowania, a \textit{d} jest odległością do pierwszego przecięcia promienia z geometrią obiektu. Funkcja \(\rho\) to zazwyczaj pewna funkcja wygaszania (\textit{falloff}), która różnicuje wpływ danej próbki na finalną okluzję w zależności od jej odległości od punktu początkowego. Dzięki temu znaczenie ma dystans do obiektu zasłaniającego i można uzyskać pożądany efekt gładkich przejść od jasnego do ciemnego koloru.
+	
+	Przedstawiona powyżej prosta ewaluacja nawet niewielkiej liczby promieni dla każdego punktu geometrii jest i tak zbyt kosztowna, by móc zastosować ją w czasie rzeczywistym. W~praktyce często dla każdego modelu generowane są oddzielnie, poza potokiem renderingu, specjalne tekstury, zwane mapami okluzji otoczenia. Przykład znajduje się na rysunku \ref{fig_2_C} poniżej. Taka technika często bywa wystarczająco skuteczna, lecz ma istotne ograniczenia. Nie uwzględnia wpływu jednego obiektu na drugi oraz nadaje się do symulowania okluzji na obiektach animowanych tylko w ograniczonym stopniu. Często nie ma także zastosowania w przypadku dużych, modularnych elementów sceny, jak budynki, których koordynaty teksturowania zazwyczaj nie leżą w przedziale (0, 1).
+	
+	\myownfigure{Przykładowa mapa okluzji otoczenia.}{figures/fig_2_C.png}{0.2}{fig_2_C}
+	
+	\section{Okluzja otoczenia w przestrzeni ekranu (SSAO)}
+	\label{t:teoria:ssao}
+	
+	Po raz pierwszy zastosowana w 2007 roku przez firmę Crytek na potrzeby gry Crysis \cite{crytek}. Pierwotna forma SSAO stanowi w praktyce przeniesienie opisanej powyżej metody AO z przestrzeni modelu do przestrzeni ekranu (G-Bufora) i jest aplikowana jako post-proces. Dane wejściowe to bufor głębokości i opcjonalny bufor wektorów normalnych. Dla każdego piksela w buforze obliczany jest stopień przesłonięcia, biorąc pod uwagę najbliższe otoczenie. Metoda próbkowania została przedstawiona na rysunku \ref{fig_2_D}.
+	
+	\myextcitefigure{Próbkowanie SSAO techniką punktową.}{\cite{statvo}}{figures/fig_2_D.png}{0.45}{fig_2_D}
+	
+	W pierwszej kolejności obliczane jest bezwzględne położenie kilkunastu losowych punktów, leżących w najbliższym sąsiedztwie punktu \textbf{x}. Następnie dla każdego z nich wyliczona zostaje pozycja w przestrzeni UV tekstury bufora. Samplując bufor głębokości w tych miejscach, otrzymuje się dla każdej próbki konkretną głębokość istniejącej tam geometrii. Można dzięki temu wyliczyć różnicę między nią a głębokością punktu próbkowania. Okluzja zostaje obliczona jako stosunek liczby punktów znajdujących się głębiej niż narysowana uprzednio geometria do liczby wszystkich punktów \cite{luna}. Podobnie jak w przypadku AO, warto zastosować w obliczeniach wektor normalny i ograniczyć rozkład punktów próbkowania do półkuli.
+	
+	\myextfigure{Błędy i szumy wynikajace z podpróbkowania SSAO}{figures/fig_2_E.jpg}{0.3}{fig_2_E}
+	
+	\footnotetext{\url{https://goo.gl/vDCeak}}
+	
+	Warto jednak wspomnieć, że próbkowanie i dokonywanie obliczeń na buforach o dużym rozmiarze także jest czasochłonne. Jako, że obliczana przy pomocy próbkowania okluzja jest efektem o niskiej częstotliwości i wymaga późniejszego rozmycia, nic nie stoi na przeszkodzie, by bufor okluzji występował w rozmiarze wynoszącym połowę lub jedną czwartą wielkości tylnego bufora. Wiążą się z tym faktem liczne błędy, artefakty i, przede wszystkim, szum, który możemy zaobserwować na rysunku \ref{fig_2_E}. Część algorytmu odpowiedzialna za rozmycie i redukcję niedociągnięć często potrafi być dużo bardziej kosztowna niż obliczenie samej okluzji \cite{statvo}.
+	
+	\section{Wolumetryczne przesłonięcie i model statystyczny (StatVO)}
+	\label{t:teoria:statvo}
+	
+	Omawiana w \cite{statvo} technika wolumetrycznego przesłonięcia (VO - \textit{Volumetric Obscurance}) podchodzi do teorii zagadnienia podobnie, jak metoda AO, tj. uzależnia stopień przesłonięcia od ilości geometrii znajdującej się w pewnym obszarze wokół punktu \textbf{x}. Jednak w~odróżnieniu od niej nie uzyskuje wyniku poprzez próbkowanie. Autorzy \cite{statvo} budują model statystyczny, oparty na \textit{średniej} wartości głębokości dookoła danego miejsca (\(\mu\) na rysunku \ref{fig_2_G}). Zakładają, że im większa różnica pomiędzy \(\mu\) a \textit{d}, tym więcej geometrii znajduje się w~przyjętym okolicznym obszarze i tym większe jest przesłonięcie. Zamiast sfery lub hemisfery zbudowany zostaje wokół punktu próbkowania skierowany w stronę kamery prostopadłościan.
+	
+	\myextcitefigure{Istota techniki VO.}{\cite{statvo}}{figures/fig_2_G.png}{0.45}{fig_2_G}
+	
+	Kluczową obserwacją jest tu fakt, iż można obliczyć \(\mu\) uśredniając cały bufor głębokości, czyli w efekcie rozmywając go. Zastosowana metoda rozmycia została opisana w podrozdziale \ref{t:teoria:statvo:sat}. Należy jednak poczynić założenie, iż głębia w obszarze całego bufora jest funkcją ciągłą, co w praktyce rzadko ma miejsce, i~może prowadzić do występowania błędów oraz przeszacowań przesłonięcia. Autorzy rozwiązują ten problem przy użyciu techniki omówionej w podrozdziale \ref{t:teoria:statvo:adaptive}.
+	
+	\myextcitefigure{Wykres funkcji StatVO.}{\cite{statvo}}{figures/fig_2_H.png}{0.45}{fig_2_H}
+	
+	Za obliczenie przesłonięcia odpowiada funkcja StatVO dana wzorem:
+	
+	\begin{equation}
+	\mathit{StatVO}(\mathbf{x}) = \psi(\frac{z_{B}(\mathbf{x}) - \mu(\mathbf{x})}{z_{B}(\mathbf{x}) - z_{T}(\mathbf{x})})\ .
+	\end{equation}
+	
+	\(z_{B}\) i \(z_{T}\) oznaczają odpowiednio tylną i przednią ściankę prostopadłościanu wyznaczającego obszar obliczeń. Funkcja \(\psi\) została skonstruowana tak, iż sprowadza do zera wszystkie wartości ujemne, dla przedziału (0, 1) zachowuje się liniowo, a powyżej argumentu o wartości 1 opada do zera z współczynnikiem kierunkowym zdefiniowanym przez użytkownika. Oddaje to efekt wypadania promieni poza obszar próbkowania w poprzednio omawianych technikach.
+	
+	Tak obliczona okluzja daje gładki, dokładny efekt zaciemnienia w przysłoniętych obszarach i nie wymaga dalszego rozmywania, co jest niewątpliwie dużą zaletą z punktu widzenia wydajności.
+	
+		\subsection{Tablica sum (SAT)}
+		\label{t:teoria:statvo:sat}
+		
+		Kluczowym dla omawianej techniki aspektem jest szybkie, a zarazem wolne od błędów wygenerowanie uśrednionego bufora głębokości. Autorzy \cite{statvo} w swojej pracy wybrali algorytm generowania tablic sum (\emph{Summed Area Table}). SAT to taka tablica, w której każdy element jest sumą wszystkich elementów znajdujących się po lewej i powyżej niego. Doskonale obrazuje to rysunek \ref{fig_2_H}. Tablice sum wymagają użycia typu danych o wysokiej precyzji, ponieważ potrafią się w nich znaleźć bardzo duże liczby. Mają szerokie zastosowania, począwszy od rozpoznawania obiektów, a skończywszy na generowaniu głębi pola \cite{sat}.
+		
+		\myextcitefigure{Tablica sum.}{\cite{sat}}{figures/fig_2_I.png}{0.5}{fig_2_I}
+		
+		Formalnie wartość określonej komórki SAT dana jest wzorem:
+		
+		\begin{equation}
+		\mathit{SAT}(x, y) = \sum_{x}^{i=1}\sum_{y}^{j=1}\mathit{Dane}(i, j)\ ,
+		\end{equation}
+		
+		gdzie maksymalne wartości \(x\) i \(y\) to odpowiednio szerokość i wysokość wejściowej tablicy danych.
+		
+		Najistotniejszą cechą tablic sum jest fakt, iż znalezienie średniej wartości z dowolnego prostokątnego obszaru tablicy danych wymaga pobrania z SAT tylko czterech próbek, a~następnie podstawienia ich do wzoru:
+		
+		\begin{equation}
+		\overline{x} = \frac{x_{A} - x_{B} - x_{C} + x_{D}}{P}\ ,
+		\end{equation}
+		
+		gdzie \(x_{N}\) jest wartością pola SAT w narożniku uśrednianego obszaru, idąc zgodnie z~ruchem wskazówek zegara począwszy od prawego dolnego rogu, a \(P\) -- jego polem powierzchni. Oznacza to, że niezależnie od rozmiaru filtra, złożoność obliczeniowa rozmycia wynosi zawsze \(O(1)\) \cite{sat}.
+		
+		Dużo bardziej złożonym zagadnieniem jest algorytm generowania SAT. Proste, sekwencyjne podejście bazujące na wzorze (2.3) posiada złożoność obliczeniową \(O(n^2)\), co jest niepożądane w aplikacji czasu rzeczywistego. W niniejszej pracy SAT jest tworzone przy użyciu GPU, korzystając z techniki równoległych sum prefiksów opisanej w \cite{prefix-sum}. Algorytm pracuje na jednowymiarowej tablicy danych, jednak proces można bardzo łatwo wykonywać równolegle, uruchamiając go jednocześnie najpierw dla wszystkich wierszy, a następnie dla kolumn. Autor traktuje kolejne kroki swojej metody jak węzły drzewa i dzieli ją na dwie fazy. W pierwszej drzewo przechodzone jest od liści do korzenia, w każdym kroku dodane zostają do siebie wartości znajdujące się w sąsiednich węzłach, co prowadzi do powstania sum cząstkowych. Na koniec węzeł-korzeń przechowuje sumę wszystkich komórek. Proces ten obrazuje poniższy rysunek \ref{fig_2_J}.
+		
+		\myextcitefigure{Pierwsza faza algorytmu równoległych sum prefiksów.}{\cite{prefix-sum}}{figures/fig_2_J.png}{0.55}{fig_2_J}
+		
+		Druga faza polega na przejściu drzewa z powrotem, od korzenia do liści. Na miejsce głównego węzła zostaje wstawione zero, a następnie w każdym kroku algorytmu dany węzeł przekazuje swoją wartość lewemu dziecku. W prawym natomiast zostaje umieszczona suma wartości aktualnie przetwarzanego węzła i poprzednia wartość lewego dziecka.
+		
+		\myextcitefigure{Druga faza algorytmu równoległych sum prefiksów.}{\cite{prefix-sum}}{figures/fig_2_K.png}{0.55}{fig_2_K}
+		
+		Algorytm wykonuje w sumie \(O(n)\) operacji, więc jest wydajny dla dużych tablic danych, takich jak bufor głębokości. W rozdziale \ref{t:impl:b} omówione zostało także poprawne zarządzanie wątkami tak, by uniknąć konfliktów przy dostępie do pamięci współdzielonej. Dodatkowo podnosi to wydajność algorytmu.
+		
+		\subsection{Adaptacyjne warstwy głębokości}
+		\label{t:teoria:statvo:adaptive}
+		
+		W głównej części rozdziału \ref{t:teoria:statvo} wspomniano o konieczności przyjęcia założenia ciągłości bufora głębi przy obliczaniu wartości \(\mu\). W praktyce rzadko kiedy występuje taka sytuacja. Odległości między obiektami mogą być znaczne, co owocuje skokowymi zmianami głębokości. W procesie generowania SAT zostaną one uśrednione. Jest to efekt niepożądany a jego skutkiem może być powstawanie zaciemnień w obszarach większych nieciągłości, gdzie nie powinno ich być. Autorzy \cite{statvo} próbują poradzić sobie z tym problemem stosując technikę generowania kilku różnych warstw bufora głębokości, których podział jest zależny od aktualnie rysowanej geometrii i skupia się wokół skokowych zmian głębi.
+		
+		\myextcitefigure{Istota techniki adaptacyjnych warstw głębokości.}{\cite{statvo}}{figures/fig_2_L.png}{0.3}{fig_2_L}
+		
+		Algorytm polega na początkowym obliczeniu SAT dla bazowego bufora głębokości. Następnie wartość każdego elementu zostaje porównana z wartością średnią. Jeżeli jest większa, trafia na podwarstwę A, w przeciwnym wypadku -- na B. Zamysł tej techniki opiera się na obserwacji, że wokół nieciągłości wszystkie piksele z fragmentu będącego bliżej ekranu trafią na jedną warstwę, gdyż ich wartości są wyższe od średniej. W efekcie granica warstw przebiega wzdłuż nieciągłości, co jest pożądanym wynikiem. Na koniec dla obu podwarstw algorytm oblicza SAT. Wykonywane są jego dwie rekurencje, co owocuje czterema warstwami głębokości. Kluczowe w późniejszym ich próbkowaniu jest utrzymywanie czterokanałowej tablicy indeksów, gdzie w każdym elemencie znajdują się wartości 0 lub 1, w zależności czy element należy do tej warstwy. Dla niej także trzeba wygenerować SAT lub zawrzeć indeksy w nieużywanych kanałach tekstur poszczególnych warstw.
+		
+		Algorytm próbkowania jest zgodny z następującym wzorem:
+		
+		\begin{equation}
+		\mathit{StatVO}_{W}(\mathbf{x}) = \frac{1}{\sum_{i \in V} n_{i}(\mathbf{x})} \sum_{i \in V}\mathit{StatVO}_{i}(\mathbf{x})n_{i}(\mathbf{x})\ ,
+		\end{equation} 
+		
+		gdzie \(\mathit{StatVO}_{i}\) to funkcja zdefiniowana we wzorze (2.2), obliczana dla warstwy o indeksie \(i\). \(n_{i}\), czyli liczba próbek na danej warstwie może zostać łatwo wyliczona dzięki pobraniu wartości z przetwarzanego obszaru SAT tablicy indeksów i obliczeniu sumy jedynek znajdujących się w nim. Dzięki funkcji \(\psi\) okluzja wynikająca z warstw o średniej głębokości dalekiej od głębokości \(\mathbf{x}\) nie będzie miała znaczenia w końcowym rezultacie.
+	
+	\section{Kierunkowa okluzja otoczenia (SSDO)}
+	\label{t:teoria:ssdo}
+	
+	Technika ta jest naturalnym rozwinięciem SSAO, dążącym do jeszcze bardziej realistycznego symulowania globalnego oświetlenia. Głównymi nowościami są: uwzględnienie kierunku i koloru padającego światła przy generowaniu zaciemnień oraz wprowadzenie obliczeń jednego kroku iluminacji niebezpośredniej. Dzięki użyciu tych samych próbek do tworzenia dwóch różnych efektów oraz braku konieczności korzystania z dużej ilości dodatkowych danych, osiągnięto wydajność zbliżoną do standardowych technik SSAO.
+	
+		\subsection{Oświetlenie bezpośrednie}
+		\label{t:teoria:ssdo:direct}
+		
+		SSDO, tak jak SSAO, opiera się na próbkowaniu, jednak Autorzy odchodzą od klasycznego podejścia, w którym światło i okluzja obliczane są w osobnych krokach renderingu, a~następnie łączone \cite{ssdo}. Zamiast tego wprowadza wzór:
+		
+		\begin{equation}
+		L_{dir}(\mathbf{P}) = \sum_{i=1}^{N}\frac{\rho}{\pi}L_{in}(\omega_{i})V(\omega_{i})\cos\theta_{i}\Delta\omega\ .
+		\end{equation}
+		
+		Dla każdego piksela mającego pozycję w scenie \(\mathbf{P}\) oświetlenie bezpośrednie obliczane jest z \(N\) kierunków próbkowania, równomiernie rozłożonych na półkuli. Każda z próbek oblicza iloczyn docierającego do niej światła \(L_{in}\), widoczności \(V\) i pewnej funkcji BRDF \(\frac{\rho}{\pi}\). Kluczową różnicą pomiędzy SSDO a SSAO jest inne traktowanie próbek, w zależności od tego, czy znajdują się pod geometrią, czy nad nią. W omawianej technice istnieje podział próbek na odpowiednio przesłaniające i widoczne. Oświetlenie bezpośrednie dla danego piksela obliczane jest tylko z kierunków od \(\mathbf{P}\) do próbek widocznych (niebieska strzałka i punkt C~na lewej części rysunku \ref{fig_2_M}). Oddaje to ideę mówiącą o tym, że im więcej geometrii wokół punktu, tym większe zaciemnienie, ale i bierze pod uwagę kierunek oraz kolor światła.
+		
+		\myextcitefigure{Istota techniki okluzji kierunkowej.}{\cite{ssdo}}{figures/fig_2_M.png}{0.55}{fig_2_M} 
+		
+		\subsection{Oświetlenie niebezpośrednie}
+		\label{t:teoria:ssdo:indirect}
+		
+		Drugim krokiem techniki SSDO jest obliczenie jednego kroku światła niebezpośredniego, które mogłoby odbić się od jasno oświetlonych obiektów. Wykorzystane w tym celu zostały próbki określone jako przesłaniające oraz bufor światła bezpośredniego obliczony w~poprzednim przebiegu. Zgodnie z prawą częścią rysunku \ref{fig_2_M}, dla każdej z próbek pobierany jest odpowiadający jej oświetlony kolor oraz wektor normalny. Następnie iluminacja pośrednia zostaje wyliczona z poniższego wzoru:
+		 
+		\begin{equation}
+		L_{ind}(\mathbf{P}) = \sum_{i=1}^{N}\frac{\rho}{\pi}L_{pixel}(1 - V(\omega_{i}))\frac{A_{s}\cos\theta_{s_{i}}\cos\theta_{r_{i}}}{d_{i}^2} \ ,
+		\end{equation}
+		
+		gdzie \(d_{i}\) oznacza odległość punktu przysłaniającego \(i\) od źródła \(\mathbf{P}\), a \(\cos\theta_{s_{i}}\) i \(\cos\theta_{r_{i}}\) to w efekcie iloczyny skalarne odpowiednio między wektorami normalnymi wysyłającego oraz odbierającego piksela a kierunkiem padania światła (czarne przerywane strzałki na rysunku \ref{fig_2_M}). Wartość \(A_{s}\) służy do kontrolowania wielkości plamy iluminacji. Czynnik \((1 - V(\omega_{i})\) gwarantuje, że oświetlenie niebezpośrednie nie pojawi się tam, gdzie i tak występuje niedobór światła.

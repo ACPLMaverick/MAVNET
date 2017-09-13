@@ -1,0 +1,68 @@
+\chapter{Wykorzystane technologie}
+\label{t:technologie}
+	
+	\section{Direct3D 11}
+	\label{t:technologie:directx}
+	
+	Direct3D w wersji 11 jest częścią pakietu firmy Microsoft zwanego DirectX. Biblioteka ta to zaawansowane API graficzne, udostępniające zestaw funkcji do komunikacji z GPU i rysowania grafiki 2D oraz 3D. Udostępniony został programowalny potok renderingu, umożliwiający m.in. modyfikację geometrii (Geometry Shader) oraz teselację (Hull Shader, Domain Shader) \cite{directx0}.
+	
+	Powodem wykorzystania Direct3D w niniejszej pracy jest przede wszystkim mnogość i~elastyczność oferowanych przez niego możliwości, dopracowanie techniczne, pokaźna dokumentacja i dobra integracja z systemem operacyjnym Windows oraz najnowszymi kartami graficznymi. Pozwala to uzyskać dużą wydajność na potrzeby testów. Wieloplatformowość będąca domeną OpenGL nie ma tu znaczenia, ponieważ aplikacja w założeniu pracować ma tylko na systemie operacyjnym Windows i platformie PC.
+	
+	Kluczowym elementem Direct3D jest język HLSL, w którym tworzone są programy cieniujące, tzw. \emph{shadery}. Składnią i semantyką przypomina on C++, jednak jest od niego dużo prostszy. Zapewnia także mnóstwo wbudowanych, przydatnych funkcji matematycznych wykonujących obliczenia wspierane sprzętowo przez GPU. W niniejszej pracy HLSL ma szczególne znaczenie, ponieważ za jego pomocą zaimplementowane zostały wszystkie omawiane algorytmy renderingu, głównie w formie shaderów pikseli oraz obliczeniowych.
+	
+	Wersja 11 wprowadza kilka istotnych nowości i udogodnień, wśród nich można wymienić dynamiczne linkowanie shaderów, wielowątkowość czy shadery obliczeniowe \cite{directx1}. To właśnie te ostatnie są jednym z najistotniejszych narzędzi wykorzystanych w niniejszej pracy i zasługują na szczegółowe omówienie w następnym podrozdziale.
+	
+	\section{DirectCompute}
+	\label{t:technologie:directcompute}
+	
+	% czym jest i na co pozwala
+	% jak został wykorzystany (rw buffers)
+	% przewaga nad innymi technologiami
+	
+	Jest to alternatywna nazwa dla shaderów obliczeniowych Direct3D 11\footnote{\url{https://blogs.msdn.microsoft.com/chuckw/2010/07/14/directcompute/}}. Technologia ta udostępnia możliwość wykonywania obliczeń GPGPU całkowicie lub częściowo w oderwaniu od potoku renderingu DirectX. Podobnie, jak w przypadku bliźniaczych API, takich jak CUDA czy OpenCL, programista otrzymuje dostęp do funkcji GPU niższego poziomu. Może on uruchomić określoną przez siebie liczbę wątków oraz ich grup i wykorzystać GPU do obliczeń niezwiązanych lub niebezpośrednio związanych z renderingiem.
+	
+	Olbrzymią zaletą DirectCompute jest całkowita integracja z API Direct3D 11, co umożliwia współdzielenie wszystkich zasobów np. pomiędzy pixel shaderem a compute shaderem. Zapewnia to znaczącą wygodę oraz wydajność. Użycie shadera DirectCompute wymaga po prostu ustawienia go w wirtualnym urządzeniu Direct3D, przypisanie mu zasobów wejściowych i wyjściowych, a następnie wywołania funkcji \texttt{Dispatch} uruchamiającej obliczenia.
+	
+	Wątki w compute shaderach podzielone są na wywołania (\textit{dispatch}) i grupy. Każde wywołanie to trójwymiarowa tablica grup, a jej rozmiary ustalane są przez parametry przesłane do wspomnianej wyżej funkcji uruchamiającej shader. Każda grupa jest trójwymiarową tablicą wątków, której wymiary zostają określone w kodzie HLSL i nie mogą być zmienione z poziomu aplikacji. Istotną cechą jest fakt, iż grupy posiadają wewnętrzną, szybką pamięć współdzieloną o ograniczonym rozmiarze. Została ona wykorzystana w~implementacji algorytmu generowania SAT. Maksymalny rozmiar grupy jest niewielki, dla Direct3D 11 i~technologii Pixel Shader 5 wynosi 1024 wątki. W obrębie grupy może także być wykonywana synchronizacja, działająca na zasadzie bariery. Wspólna pamięć ani koordynacja wątków nie istnieje pomiędzy grupami, jako, że ich liczba może być bardzo duża i nie ma gwarancji, iż wszystkie zostaną uruchomione równolegle \cite{directcompute}.
+	
+	Istotnym elementem compute shaderów wykorzystanym w niniejszej pracy są obiekty tekstur \texttt{RWTexture}, nadających się nie tylko do odczytu, ale i zapisu. Z tego względu zostały użyte do przechowywania SAT oraz rozmytych wersji buforów.
+	
+	\section{Biblioteki pomocnicze}
+	\label{t:technologie:helpers}
+	
+	Poniżej przedstawiono listę pomocniczych bibliotek, które (za wyjątkiem WINAPI) nie są kluczowe do działania aplikacji, ale znacznie ułatwiły jej implementację i ulepszyły działanie.
+	
+		\subsection{WINAPI}
+		\label{t:technologie:helpers:winapi}
+		
+		Zwane także Windows API, jest główną i najważniejszą biblioteką potrzebną do programowania aplikacji w systemie Windows. Udostępnia ona wszystkie niezbędne funkcje systemu operacyjnego. Zapewnia także kompatybilność z jego wcześniejszymi wersjami\footnote{\url{https://msdn.microsoft.com/en-us/library/windows/desktop/ff818516(v=vs.85).aspx}}.
+		
+		W przypadku omawianej aplikacji konieczne było skorzystanie z WINAPI w celu utworzenia okna programu i przekazanie jego uchwytu do Direct3D, wskazując mu miejsce, do którego ma renderować obraz.
+		
+		Niezbędnym elementem programu, stworzonym przy pomocy WINAPI, jest pętla komunikatów systemu operacyjnego. Dzięki niej aplikacja ,,wie'' m.in. kiedy należy narysować obraz, kiedy zostaje zamknięta lub kiedy kursor wkracza w obszar jej okna. Może także reagować na utratę kontekstu i na wszystkie istotne wydarzenia w systemie operacyjnym.
+		
+		\subsection{Raw Input}
+		\label{t:technologie:helpers:rawinput}
+		
+		Raw Input jest elementem Windows API, jednak na tyle istotnym dla aplikacji, iż wspomniano o nim oddzielnie. Służy on do pobierania stanu urządzeń wejścia, takich jak klawiatura, mysz lub gamepad. Jednak w odróżnieniu od tradycyjnego modelu, w którym takie informacje aplikacja otrzymywała przy pomocy pętli komunikatów, Raw Input niesie ze sobą szereg udogodnień. Przede wszystkim, program dostaje dane tylko tych urządzeń, które zarejestruje, nie musi także otwierać ani zamykać w żaden sposób urządzenia. Jeśli jest ono nieaktywne lub odłączone, po prostu nie przyjdą od niego żadne komunikaty. Dane otrzymywane są w surowej formie, nieprzetworzonej przez system operacyjny, co zapewnia programiście dużą elastyczność działania\footnote{\url{https://msdn.microsoft.com/en-us/library/windows/desktop/ms645543(v=vs.85).aspx}}.
+		
+		W omawianej aplikacji Raw Input służy do zasilania informacjami prostego systemu obsługi kontrolerów użytkownika. Za jego pomocą realizowane jest głównie poruszanie oraz obracanie kamerą przy użyciu myszy i klawiatury, a także kilka pomniejszych funkcji omówionych bliżej w rozdziale \ref{t:budowa:inne:input}.
+		
+		\subsection{TinyObjLoader}
+		\label{t:technologie:helpers:obj}
+		
+		Mała biblioteka służąca do ładowania plików OBJ zawierających siatki wielokątowe. Nie posiada żadnych zależności oprócz STL, co sprawia, że jest bardzo prosta w integracji z~własnym projektem. Znalazła zastosowanie w wielu popularnych technologiach, np. Bullet lub Cocos. Jest dostępna w Internecie na licencji FreeBSD\footnote{\url{https://syoyo.github.io/tinyobjloader/}}.
+		
+		Dzięki niej aplikacja jest w stanie sposób wczytać modele 3D, uniezależniając się od wyświetlania jedynie prostych brył. Warto w tym miejscu wspomnieć, że jednym z owych modeli jest katedra Sibenik autorstwa Marko Dabrovica\footnote{\url{http://hdri.cgtechniques.com/~sibenik2/download/}}.
+		
+		\subsection{FreeType}
+		\label{t:technologie:helpers:freetype}
+		
+		Główną funkcją tej biblioteki jest wczytywanie plików czcionek w formacie wektorowym i rastrowym, a następnie renderowanie ich do tekstury. Wygenerowana w ten sposób tablica glifów służy następnie w omawianej aplikacji jako baza do rysowania napisów na ekranie. Dzięki niej można było m.in. pokazać aktualne statystyki renderingu, takie jak liczba klatek na sekundę. API cechuje mały rozmiar, wydajność i obsługa wielu popularnych platform. Jest dostępne na licencjach FreeType License oraz GNU GPL\footnote{\url{https://www.freetype.org/} oraz podstrony.}.
+	
+	\section{Visual Studio 2017}
+	\label{t:technologie:vs}
+	
+	Jako środowisko programistyczne wykorzystano najnowszą wersję Microsoft Visual Studio. Wybór został dokonany zarówno ze względu na jego wszechstronność oraz możliwości, jak i~na dobrą znajomość. Warto wspomnieć o bardzo dobrej integracji IDE z pakietem DirectX. Pozwala ono m.in. na stworzenie gotowego projektu z zainicjalizowanym Direct3D (z czego nie skorzystano). Zawiera też w sobie obsługę formatu HLSL. Składa się na nią podświetlanie składni oraz, przede wszystkim, kompilator FXC. Dzięki niemu shadery są kompilowane oraz weryfikowane oddzielnie, przed uruchomieniem programu, do którego wczytany zostaje gotowy bajtkod.
+	
+	% czemu wybrano - wszechstronność i możliwości, łatwa integracja z API DirectX

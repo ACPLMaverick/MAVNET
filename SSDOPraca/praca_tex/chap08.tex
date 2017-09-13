@@ -1,0 +1,25 @@
+\chapter{Podsumowanie i wnioski}
+\label{t:wnioski}
+
+	\section{Porównanie implementowanych algorytmów}
+	\label{t:wnioski:porownanie}
+	
+	\section{Zastosowanie i ograniczenia implementowanych algorytmów}
+	\label{t:wnioski:zastosowanie}
+	
+	% brak próbkowania - dużo większa wydajność	
+	% użycie buforów rozmytych o bardzo zredukowanym rozmiarze - większa wydajność
+	% uproszczenie procesów fizycznych - większa wydajność
+	% rozmycie buforów zamiast SAT może dodatkowo bardzo poprawić wydajność
+	
+	% konieczność generowania SAT i warstw, chociaż mniejszych
+	% mniej zgodny z fizyką efekt, bardziej bazujący na podobieństwie wyglądu
+	% liczba warstw jest ograniczona i ma wpływ na wydajność
+	% konieczność przetwarzania większej ilości danych niz w StatVO
+	
+	Fakt rezygnacji z próbkowania eliminuje lub znacznie ogranicza większość wymienionych w rozdziale \ref{t:algorytm:wady-ssdo} problemów. Zamiast kilkunastu czy kilkudziesięciu próbek na piksel ma miejsce tylko osiem samplowań, dysponujemy bowiem dwoma SAT -- bufora głębi i wektorów normalnych oraz bufora koloru.
+	
+	Prowadzi on do rezygnacji z próbkowania na rzecz modelu statystycznego, a tym samym zastąpienia przebiegów rozmycia przebiegami generowania SAT dla poszczególnych warstw.
+	
+	\section{Obszar przyszłych badań}
+	\label{t:wnioski:przyszle}
