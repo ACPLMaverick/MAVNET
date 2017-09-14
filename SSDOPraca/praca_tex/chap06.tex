@@ -1,11 +1,585 @@
 \chapter{Implementacja algorytmów okluzji otoczenia}
 \label{t:impl}
 
+	% Dane wejściowe
+	% Użyte struktury, liczba przebiegów, etc.
+	% Przedstawienie i omówienie algorytmu
+	% Listingi istotnych elementów kodu
+	
+	W tym rozdziale została przedstawiona implementacja technik kierunkowej okluzji otoczenia w przestrzeni ekranu omawianych w rozdziałach \ref{t:teoria:ssdo} i \ref{t:algorytm}. Dla każdego algorytmu podano potrzebne dane wejściowe, tok procesu ich przygotowania, liczbę wymaganych przebiegów renderingu oraz samą metodę obliczaną w pixel shaderach. Do omówienia najistotniejszych jej elementów dołączono listingi kodu HLSL.
+	
+	Wszystkie wymienione techniki przyjmują na wejściu bazowe bufory koloru oraz wektorów normalnych i głębokości. W ostatnim przebiegu wśród nich jest także finalny bufor oświetlenia, dzięki czemu program cieniujący może w odpowiedni sposób połączyć go z~danymi wygenerowanymi przez daną metodę. Za pomocą bufora stałych (\emph{constant buffer}) zawsze zostaje przesłana macierz pozwalająca przy użyciu głębokości piksela obliczyć jego położenie w przestrzeni kamery.
+	
 	\section{Implementacja kierunkowej okluzji otoczenia (SSDO-A)}
 	\label{t:impl:a}
+	
+	% Generowanie losowych wektorów 
+	
+	% Obliczanie wektora losowego (Luna)
+	% Próbkowanie w pętli
+	% Przypisywanie wag na bazie odl. do głębokości
+	% Okluzja zgodnie ze wzorem z Luny
+	% Obliczanie oświetlenia
+	% Dodanie do globalnej sumy oświetlenia bp ze wszystkich próbek
+	% Niebezpośrednie zgodnie ze wzorem i dodane do oddzielnej
+	% Zadbaj o sytuację gdy przekroczony zostaje maksymalny dystans
+	% Dwuprzebiegowe rozmycie Gaussa z uwzględnieniem głębokości
+	% Mnożenie bezpośredniego i dodanie niebezposredniego
+	
+	Bazowa technika kierunkowej okluzji otoczenia jako jedyna wymaga utworzenia pewnych danych w trakcie jej inicjalizacji, jeszcze przed rozpoczęciem głównego toku renderingu. Wynika to z faktu, iż zachodzi próbkowanie w losowych kierunkach wokół piksela. Do wygenerowania stochastycznych, a mimo to równomiernie rozłożonych wektorów posłużono się techniką z \cite{luna}. Zakłada ona uprzednie utworzenie tekstury zawierającej losowe wektory. Warto wspomnieć, iż wszystkie ich komponenty powinny mieć dodatnie wartości. Przydaje się tu klasa \texttt{Random}, oparta o obiekty \texttt{random\_device}, \texttt{random\_engine} i~\texttt{uniform\_real\_distribution} biblioteki standardowej C++.
+	
+	Kolejnym krokiem jest wygenerowanie tablicy 14 równomiernie rozłożonych wektorów, zgodnie z poniższym listingiem \ref{lst_6_A}. Zostają one później wysłane do GPU przy użyciu bufora stałych.\pagebreak
+	
+	\begin{lstlisting}[language=HLSL,caption={Generowanie równomiernie rozłożonych wektorów.},label={lst_6_A}]
+	_offsets[0] = XMFLOAT4A(1.0f, 1.0f, 1.0f, 0.0f);
+	_offsets[1] = XMFLOAT4A(-1.0f, -1.0f, -1.0f, 0.0f);
+	_offsets[2] = XMFLOAT4A(-1.0f, 1.0f, 1.0f, 0.0f);
+	_offsets[3] = XMFLOAT4A(1.0f, -1.0f, -1.0f, 0.0f);
+	_offsets[4] = XMFLOAT4A(1.0f, 1.0f, -1.0f, 0.0f);
+	_offsets[5] = XMFLOAT4A(-1.0f, -1.0f, 1.0f, 0.0f);
+	_offsets[6] = XMFLOAT4A(-1.0f, 1.0f, -1.0f, 0.0f);
+	_offsets[7] = XMFLOAT4A(1.0f, -1.0f, 1.0f, 0.0f);
+	_offsets[8] = XMFLOAT4A(-1.0f, 0.0f, 0.0f, 0.0f);
+	_offsets[9] = XMFLOAT4A(1.0f, 0.0f, 0.0f, 0.0f);
+	_offsets[10] = XMFLOAT4A(0.0f, -1.0f, 0.0f, 0.0f);
+	_offsets[11] = XMFLOAT4A(0.0f, 1.0f, 0.0f, 0.0f);
+	_offsets[12] = XMFLOAT4A(0.0f, 0.0f, -1.0f, 0.0f);
+	_offsets[13] = XMFLOAT4A(0.0f, 0.0f, 1.0f, 0.0f);
+	\end{lstlisting}
+	\raggedbottom
+	Pozostałymi dodatkowymi danymi wejściowymi są parametry potrzebne podczas obliczania procesu okluzji: maksymalny zasięg promieni próbkujących oraz dwie minimalne: ich długość -- od której zacienienie zacznie być wygaszane -- oraz wartość progowa, poniżej jakiej nie jest ono w ogóle brane pod uwagę. Ma to szczególne znaczenie w eliminacji artefaktów występujących, kiedy na płaskich powierzchniach kierunek promieni jest prostopadły do kierunku wektora normalnego płaszczyzny, co w efekcie powoduje, że pobrana z bufora wartość głębokości może być minimalnie większa i generować okluzję. Ostatni istotny parametr to wykładnik funkcji potęgującej, której poddane zostaje finalne zacienienie -- służy do regulacji wielkości i siły okluzji. Do programu cieniującego zostają także przesłane kierunek i kolor światła, mające kluczowe znaczenie w omawianym algorytmie.
+	
+	Implementacja techniki posiada trzy przebiegi uruchamiane za pomocą dwóch różnych shaderów pikseli. Ich algorytmy zostały przedstawione poniżej.\pagebreak
+	
+	\subsection{Przebieg okluzji}
+	\label{t:impl:a:pass1}
+	
+		\begin{algorithm}[H]
+			\label{alg_6_A}
+			\caption{Pierwszy przebieg techniki SSDO-A.}	
+			Dla każdego piksela obrazu:
+			
+			\Indp
+			
+			Pobierz kolor, wektor normalny i głębokość z buforów bazowych, korzystając z koordynatów UV piksela.
+			
+			Oblicz położenie piksela w przestrzeni kamery.
+			
+			Stwórz zmienne finalnych oświetleń oraz licznika wag.
+			
+			\For{i = 0; i \(\langle\) liczba próbek; ++i}
+			{
+				Oblicz losowy wektor próbki \(i\) (listing \ref{lst_6_B}).
+				
+				Oblicz położenie próbki w przestrzeni kamery.
+				
+				Uzyskaj okluzję dla danej próbki (listing \ref{lst_6_C}).
+				
+				Uwzględnij współczynnik kierunkowy (listing \ref{lst_6_D}).
+				
+				Inkrementuj licznik wag.
+				
+				Oblicz oświetlenie bezpośrednie dla danej próbki (listing \ref{lst_6_E}).
+				
+				Dodaj je do zmiennej finalnej, jeżeli próbka znajduje się ponad powierzchnią.
+				
+				Oblicz oświetlenie pośrednie dla danej próbki (listing \ref{lst_6_F}).
+				
+				Dodaj je do zmiennej finalnej, jeżeli próbka znajduje się pod powierzchnią.
+			}
+		
+			Podziel zmienne finalne przez licznik wag.
+			
+			Zapisz je do oddzielnych celów rysowania.
+			
+			\Indm
+		\end{algorithm}
+		\flushbottom
+		Oświetlenia bezpośrednie i niebezpośrednie zostają zapisane do dwóch różnych celów renderowania, ponieważ w ostatnim kroku algorytmu są w różny sposób mieszane z buforem wyjściowym. Trudno jest także zmieścić je w jednej teksturze, gdyż w sumie posiadają aż sześć komponentów (dwa kolory RGB).
+		Należy zwrócić uwagę, że dla każdej z czternastu próbek dokonywane są dwa odczyty tekstur -- wektorów normalnych i głębokości oraz koloru oświetlonego. Ma to znaczący wpływ na wydajność.
+		
+		\begin{lstlisting}[language=HLSL,caption={Obliczenie losowego wektora próbki.},label={lst_6_B}]
+		
+		float3 offset = reflect(gOffsets[i].xyz, randomVec);
+		offset = normalize(offset);
+		float flip = sign(dot(offset, normal));
+		offset = offset * flip;
+		
+		\end{lstlisting}
+		
+		Zgodnie z metodą przedstawioną w \cite{luna}, wektor próbki zostaje obliczony poprzez odbicie równomiernego wektora względem wektora losowego. Aby ograniczyć rozkład do półkuli, zostaje on przemnożony przez wynik działania funkcji \texttt{sign}. Jej argument to iloczyn skalarny wektora próbki oraz normalnego. Dzięki temu wynik jest zawsze równy -1, jeżeli ten pierwszy wypada po nieprawidłowej stronie hemisfery. Mnożenie pozwala na zmianę jego zwrotu.
+		
+		\begin{lstlisting}[language=HLSL,caption={Obliczenie współczynnika okluzji (funkcja Occlusion).},label={lst_6_C}]
+		
+		float distZ = mapViewPos.z - viewSamplePos.z;
+		
+		if (distZ > EPSILON)
+		{
+			float fadeLength = FADE_END - FADE_START;
+			occlusion = saturate((FADE_END - distZ) / fadeLength);
+		}
+		
+		\end{lstlisting}
+		
+		Najistotniejszym argumentem funkcji obliczającej okluzję jest \texttt{distZ}, czyli odległość pomiędzy położeniem próbki a piksela, posiadającego takie same koordynaty UV bufora. Im większa różnica tej wartości, relatywnie do sparametryzowanego przedziału, tym większe w danym miejscu występuje zacienienie.
+		
+		\begin{lstlisting}[language=HLSL,caption={Uwzględnienie współczynnika kierunkowego.},label={lst_6_D}]
+		
+		float dp = max(dot(normal, offset), 0.0f);
+		float finalOcclusion = dp * Occlusion(-distZ);
+		
+		\end{lstlisting}
+		
+		Współczynnik kierunkowy próbki pozwala na uzależnienie jej położenia od wektora normalnego w danym miejscu. Dzięki niemu zacienienie obliczane z punktów leżących ,,na wprost'' od powierzchni ma większą wagę niż z~tych znajdujących się na bokach półkuli. Umożliwia to uzyskanie gładkich przejść między kolorami oraz uniknięcie efektu szumu, jaki zostanie wygenerowany w drugim przypadku.
+		
+		\begin{lstlisting}[language=HLSL,caption={Obliczenie oświetlenia bezpośredniego SSDO-A.},label={lst_6_E}]
+		
+		PhongBlinn(gLightColor,
+			1.0f,
+			normalize(viewSamplePos - viewPos),
+			gLightDirection,
+			-normalize(viewSamplePos),
+			pData,
+			smpColor);
+		
+		float4 lit = smpColor;
+		float litFactor = sign(max(distZ, 0.0f));
+		litFactor *= (dp);
+		lit *= litFactor;
+		output.direct += lit;
+		
+		\end{lstlisting}
+		
+		Proces obliczania oświetlenia bezpośredniego otwiera tę część algorytmu, która stanowi dodatek do standardowych technik SSAO. Dla każdej próbki znajdującej się powyżej wyrenderowanej geometrii (współczynnik \texttt{litFactor}) zostaje obliczona iluminacja zgodnie z~przyjętym równaniem oświetlenia. Następnie jest ona także mnożona przez współczynnik kierunkowy oraz akumulowana w zmiennej \texttt{output.direct}. Im bardziej powinno być zacienione miejsce, tym mniej próbek zostanie zakwalifikowanych jako ,,widoczne'', a co za tym idzie finalna suma w tym miejscu będzie mniejsza. Powoduje to powstanie okluzji ściśle uzależnionej od kierunku i koloru padającego światła (wpływ zastosowania równania oświetlenia).
+		
+		\begin{lstlisting}[language=HLSL,caption={Obliczenie oświetlenia pośredniego SSDO-B.},label={lst_6_F}]
+		
+		float indFactor = -sign(min(distZ, 0.0f));
+		float3 transmittanceDirection = -(viewPos - mapViewPos);
+		float tdLength = length(transmittanceDirection);
+		transmittanceDirection /= tdLength;
+		float dotSender = max(dot(-mapNormal, transmittanceDirection), 0.0f);
+		float dotReceiver = max(dot(normal, transmittanceDirection), 0.0f);
+		float dPowTwoRec = max(tdLength, 0.001f);
+		dPowTwoRec = 1.0f / (dPowTwoRec * dPowTwoRec);
+		float a = 5.0f;
+		
+		indFactor *= a * dotSender * dotReceiver * dPowTwoRec;
+		indFactor *= max(dot(mapNormal, gLightDirection), 0.0f);
+		output.indirectAdd += indFactor * smpBaseColor * gLightColor;
+		
+		\end{lstlisting}
+		
+		Ostatnim krokiem jest obliczenie oświetlenia niebezpośredniego. Listing \ref{lst_6_F} ściśle oddaje proces przedstawiony wzorem (2.7) w rozdziale \ref{t:teoria:ssdo:indirect}. Pod uwagę brane są tylko próbki występujące ,,pod'' geometrią, współczynnik \texttt{indFactor} to liczba przeciwna do \texttt{litFactor}. W omawianej implementacji aby uniknąć tworzenia drugiego przebiegu specjalnie dla tego rodzaju oświetlenia, wynik zostaje od razu przemnożony przez kolor piksela nieoświetlonego, a~jasność jest uzależniona od kierunku padającego światła.
+	
+	\subsection{Przebieg rozmycia}
+	\label{t:impl:a:pass2}
+	
+		W drugim i trzecim przebiegu pracy algorytmu, wobec poprzednio wygenerowanych buforów światła bezpośredniego i pośredniego zastosowano rozmycie gaussowskie z~uwzględnieniem głębokości piksela. Oprócz wymienionych tekstur, do danych wejściowych należą: rozmiar teksela oraz flaga \texttt{gHorizontalBlur} określająca kierunek rozmycia, a~także to, czy należy na koniec połączyć wynik z finalnym buforem. Jako stała HLSL zostaje określona tablica wag dla sąsiednich pikseli. Rozmiar jednowymiarowego obszaru rozmycia ustalono na 5 pikseli w obie strony. Shader jest uruchamiany dwukrotnie -- dla kierunku pionowego i~poziomego. W drugim wywołaniu następuje wspomniane połączenie. 
+		Zastosowanie instrukcji warunkowych w kodzie HLSL nie niesie ze sobą znaczącego spadku wydajności jeśli opierają się one o globalne stałe, mające taką samą wartość dla wszystkich wątków. Nie występują wtedy różnice w przebiegu obliczeń każdego piksela, a~można zastosować ten sam program cieniujący do wykonania czynności różniących się od siebie.\raggedbottom\pagebreak
+		
+		\begin{algorithm}[H]
+			\label{alg_6_B}
+			\caption{Rozmycie Gaussa z uwzględnieniem głębokości.}	
+			Dla każdego piksela obrazu:
+			
+			\Indp
+			
+			Zadeklaruj akumulatory wartości i akumulator wag.
+			
+			Ustal pionowe lub poziome przesunięcie względem piksela na base flagi \texttt{gHorizontalBlur}.
+			
+			\For{i = \(-\)ROZMIAR\_FILTRA; i \(\langle\) = ROZMIAR\_FILTRA; ++i}
+			{
+				Oblicz koordynaty UV elementu filtra o indeksie \(i\).
+				
+				Próbkuj bufor normalnych i głębokości w tym miejscu.
+				
+				\If{Próbka spełnia warunki przedstawione w listingu \ref{lst_6_G}}
+				{
+					Próbkuj wejściowe bufory danych.
+					
+					Pobierz wagę o indeksie \(i\) z tablicy wag.
+					
+					Dodaj wartości pomnożone przez wagę do zmiennych akumulacyjnych.
+					
+					Dodaj wagę do akumulatora wag.
+				}
+			}
+		
+			Podziel wartości w akumulatorach przez sumę wag.
+			
+			\If{\texttt{gHorizontalBlur}}
+			{
+				Próbkuj wartość z bufora koloru oświetlonego.
+				
+				Przemnóż ją przez kolor światła bezpośredniego.
+				
+				Dodaj kolor światła pośredniego.
+				
+				Wynik zapisz do pierwszego celu renderowania.
+			}
+			\Else
+			{
+				Zapisz wartości do dwóch oddzielnych celów renderowania.
+			}
+			
+			\Indm
+		\end{algorithm}
+		\flushbottom\pagebreak
+		Algorytm rozmycia polega na pobieraniu wartości sąsiednich pikseli i na ich bazie obliczania średniej ważonej. Im bliżej próbka znajduje się od centrum, tym większa jej waga. Warto wspomnieć o fakcie, że aby zwiększyć poziom rozmycia zastosowany został przeskok i w efekcie samplowany jest co drugi piksel. Wnosi to do obliczeń pewien nieznaczny błąd, lecz pozwala na zmniejszenie liczby przebiegów rozmycia, a co za tym idzie - poprawienie wydajności.
+	
+		\begin{lstlisting}[language=HLSL,caption={Warunek rozmycia Gaussa.},label={lst_6_G}]
+		
+		if (dot(neighNormal, normal) >= 0.8f && abs(neighDepth - depth) <= 0.2f)
+		{
+			(...)
+		}
+		
+		\end{lstlisting}
+		
+		Na listingu zawarto warunek, jaki próbka musi spełniać by mieć swój udział w średniej. Ograniczenie pełnią dwa czynniki. Kąt pomiędzy wektorami normalnymi nie może być większy od pewnej przyjętej wartości, limit odnosi się więc do stopnia krzywizny w danym miejscu. Drugim, znacznie istotniejszym elementem jest różnica głębokości, która musi być mniejsza niż zadany próg. Odrzucane są próbki znajdujące się daleko, w sensie głębi, od piksela źródłowego. Dzięki tej operacji można zachować ostre krawędzie w miejscach nieciągłości głębokości, co przede wszystkim zapobiega powstawaniu artefaktów w postaci ,,wylewania się'' okluzji.
 	
 	\section{Implementacja pierwszej wersji statystycznej kierunkowej okluzji otoczenia (SSDO-B)}
 	\label{t:impl:b}
 	
+	% Generowanie SAT dla bazowych buforów
+	
+	% Generowanie warstw adaptacyjnych
+	% Różnicowe obliczanie wartości SAT
+	% Próbkowanie SAT dla każdej warstwy oddzielnie
+	% Obliczenie okluzji przy pomocy StatVO dla każdej warstwy oddzielnie
+	% Wagowanie
+	% Współczynnik kierunkowy i kolor
+	% Niebezpośrednie zgodnie ze wzorem
+	% Łączenie z buforem
+	
+	Zastosowanie metody statystycznej wymaga znaczących zmian w omawianym wcześniej algorytmie SSDO-A. Przede wszystkim technika wzbogaciła się o proces generowania tablic sum, będący też jej pierwszym krokiem. Jest on na tyle istotny, że zasługuje na osobne omówienie.
+	
+	\subsection{Generowanie tablic sum (SAT)}
+	\label{t:impl:b:sat}
+	
+		Klasa-singleton \texttt{SATGenerator} służy w omawianej aplikacji do tworzenia SAT i z racji wygody oraz ograniczenia wywołań \texttt{Dispatch} potrafi obliczać dwie SAT naraz. Jako dane wejściowe przyjmuje dwa bufory danych -- tekstury. Do argumentów należą także dwa bufory tymczasowe oraz dwa wyjściowe, do których zostaną zapisane finalne wartości SAT. Implementacja techniki z rozdziału \ref{t:teoria:statvo:sat} została wykonana przy użyciu shadera obliczeniowego. Cały proces dzieli się na jego dwa wywołania, osobno dla wierszy i kolumn, z tego względu potrzebne są tymczasowe bufory. Każdy wiersz lub kolumna przez compute shader jest traktowana oddzielnie i jej wartości wylicza osobna grupa wątków. Warto w tym momencie przypomnieć, iż grupy nie mogą się między sobą komunikować, za to dysponują pewną ilością pamięci współdzielonej. Jest ona niezbędna do realizacji przedstawionego algorytmu. 
+		
+		W omawianym przypadku wyjściowe tekstury SAT mają stały rozmiar 320x180 pikseli, a każdy wątek oblicza wartości dwóch komórek danych. Oznacza to, że do poprawnego działania trzeba uruchomić przynajmniej 180 grup po 160 wątków każda. Wraz ze zwiększaniem rozmiaru buforów pojawia się tu pewne ograniczenie. Maksymalna liczba wątków w grupie dla Direct3D 11 wynosi 1024. Gdyby trzeba było przetwarzać tekstury o szerokości powyżej 2048 pikseli, zaszłaby konieczność podzielenia ich na mniejsze części, obliczania SAT dla nich osobno, po czym zapisywania maksymalnych wartości w osobnym buforze, z którego dane byłyby następnie dodawane do odpowiednich części tablicy \cite{sat}.
+		
+		Poza tym jako dane wejściowe shader obliczeniowy SAT przyjmuje rozmiar tekstur dany w~pikselach oraz wartość równą najbliższej mu potędze liczby 2, większej od niego (w~algorytmie \ref{alg_6_C} oznaczonej jako \(w\)). Dostarczony zostaje także numer mipmapy tekstury wejściowej, z~którego należy pobierać dane oraz flaga, warunkująca to, czy brane pod uwagę w algorytmie będą wiersze, czy kolumny buforów. Algorytm obliczeń jest następujący: 
+		
+		\begin{algorithm}[H]
+			\label{alg_6_C}
+			\caption{Generowanie tablicy sum.}	
+			Dla każdej tekstury wejściowej:
+			
+			\Indp
+			
+			Dla każdych dwóch indeksów \(i\) oraz \(i + \frac{w}{2}\):
+			
+			\Indp
+				
+				Pobierz dane wejściowe z odpowiedniej mipmapy tekstury wejściowej.
+				
+				Załaduj dane wejściowe do pamięci współdzielonej.
+				
+				Wykonaj fazę obliczania sum prefiksów (listing \ref{lst_6_H}).
+				
+				Jeżeli indeks odnosi się do pierwszego elementu tablicy, wstaw 0.
+				
+				Wykonaj fazę schodzenia w dół drzewa, obliczając sumy końcowe (listing \ref{lst_6_I}).
+				
+				Zapisz obliczone wartości do tekstury wyjściowej. 
+			
+			\Indm		
+			
+			\Indm
+		\end{algorithm}
+	
+		Wymienione powyżej poszczególne operacje dla dwóch różnych tekstur zostają wykonane jedna po drugiej. Dzięki temu zmniejsza się liczba pętli i skoków wykonywanych przez program. Dla każdej grupy wątków zostają zadeklarowane dwa bloki pamięci współdzielonej o rozmiarze równym podwojonej liczbie wątków w grupie, oznaczone jako \texttt{TempLocalA} oraz \texttt{TempLocalB}. Poniżej przedstawiono bliżej poszczególne fazy algorytmu -- wstępującą i zstępującą.\pagebreak
+		
+		\begin{lstlisting}[language=HLSL,caption={Obliczenie sum prefiksów w algorytmie tworzenia SAT (faza wstępująca).},label={lst_6_H}]
+	
+		for (uint d = texWidthPow >> 1; d > 0; d >>= 1)
+		{
+			GroupMemoryBarrierWithGroupSync();
+			if (thid < d)
+			{
+				uint ai = offset * (2 * thid + 1) - 1;
+				uint bi = offset * (2 * thid + 2) - 1;
+				ai += CONFLICT_FREE_OFFSET(ai);
+				bi += CONFLICT_FREE_OFFSET(bi);
+				
+				TempLocalA[bi] += TempLocalA[ai];
+				TempLocalB[bi] += TempLocalB[ai];
+			}
+			offset *= 2;
+		}
+		
+		\end{lstlisting}
+		
+		Omawiana technika wykorzystuje model zbalansowanego drzewa binarnego jako sposób określenia tego, co robią poszczególne wątki. Takie drzewo posiada \(d = \log_{2}n\) poziomów, gdzie \(n\) jest liczbą komórek tablicy. W listingu \ref{lst_6_H} każda iteracja pętli \texttt{for} odpowiada kolejnemu poziomowi. Instrukcja warunkowa służy do ,,uśpienia'' wątków, którym przydzielone komórki zostały już obliczone. Suma każdych dwóch węzłów jest zapisywana w węźle-rodzicu, aż do osiągnięcia korzenia drzewa. On przechowywać będzie sumę wartości wszystkich komórek \cite{sat}. Proces ten dobrze obrazuje rysunek \ref{fig_2_J}. Funkcja \texttt{GroupMemoryBarrierWithGroupSync} synchronizuje dostęp do pamięci oraz pracę wątków w~obrębie danej grupy i jest niezbędna do poprawnego działania algorytmu.
+		
+		\begin{lstlisting}[language=HLSL,caption={Obliczenie sum końcowych w algorytmie tworzenia SAT (faza zstępująca).},label={lst_6_I}]
+		
+		for (d = 1; d < texWidthPow; d *= 2)
+		{
+			offset >>= 1;
+			GroupMemoryBarrierWithGroupSync();
+			if (thid < d)
+			{
+				uint ai = offset * (2 * thid + 1) - 1;
+				uint bi = offset * (2 * thid + 2) - 1;
+				ai += CONFLICT_FREE_OFFSET(ai);
+				bi += CONFLICT_FREE_OFFSET(bi);
+				
+				float4 t = TempLocalA[ai];
+				TempLocalA[ai] = TempLocalA[bi];
+				TempLocalA[bi] += t;
+				
+				t = TempLocalB[ai];
+				TempLocalB[ai] = TempLocalB[bi];
+				TempLocalB[bi] += t;
+			}
+		}
+		
+		\end{lstlisting}
+		
+		Faza zstępująca polega na przejściu drzewa w drugą stronę -- od korzenia do liści. W~każdej iteracji pętli dany węzeł przekazuje swoją wartość lewemu dziecku. Do prawego trafia suma poprzedniej wartości dziecka lewego oraz węzła obecnego. Proces dzieje się zgodnie z rysunkiem \ref{fig_2_K}. Także i tutaj każdy krok jest synchronizowany, by utrzymać spójność danych na wszystkich poziomach. Po zakończeniu fazy zstępującej w pamięci współdzielonej znajduje się jednowymiarowa tablica sum wartości wiersza tekstury, któremu odpowiada indeks grupy wątków.
+	
+		W obu listingach pojawia się makro CONFLICT\_FREE\_OFFSET. Zdefiniowano je w~następujący sposób:
+		
+		\begin{lstlisting}[language=HLSL,caption={Makro CONFLICT\_FREE\_OFFSET.},label={lst_6_J}]
+		
+		#define NUM_BANKS 64
+		#define LOG_NUM_BANKS 6
+		#define CONFLICT_FREE_OFFSET(n) \
+		((n) >> NUM_BANKS + (n) >> (2 * LOG_NUM_BANKS))
+		
+		\end{lstlisting}
+		
+		Zgodnie z \cite{sat} i \cite{directcompute}, pamięć wspólna jest podzielona na banki. W niektórych przypadkach dostęp do niej może być przyczyną utraty wydajności. Dzieje się tak w sytuacji, gdy kilka wątków naraz stara się uzyskać dostęp do tego samego banku pamięci. Powstaje wtedy konflikt i taka operacja musi być dodatkowo synchronizowana. W przypadku omawianego algorytmu każda iteracja pętli powoduje podwojenie ,,odległości'' pomiędzy używanymi adresami pamięci, a co za tym idzie, duplikuje liczbę wątków chcących uzyskać dostęp do tego samego banku. Liczba ta zmniejsza się później wraz z ,,wygaszaniem'' wątków przy użyciu instrukcji warunkowej. Sytuacji tej zapobiega doliczenie pewnego wyrównania do niektórych indeksów tablicy pamięci współdzielonej. Dodana zostaje wartość danego indeksu podzielona przez liczbę banków, w przypadku GPU zgodnego z Direct3D 11 -- 64. Dzieje się to co 64 indeksy.
+		
+		Należy zauważyć, że implementację generowania SAT przy użyciu GPGPU oraz shaderów obliczeniowych cechuje wzrost wydajności w stosunku do wersji tworzonych w pixel shaderach. Powód to użycie pamięci współdzielonej, a tę cechują bardzo niskie czasy dostępu \cite{sat}. Wykorzystanie jej w taki sposób nie jest możliwe podczas tradycyjnego potoku renderingu.
+		
+	\subsection{Tworzenie warstw adaptacyjnych}
+	\label{t:impl:b:adaptive}
+	
+		Same SAT są niewystarczające w procesie generowania statystycznej okluzji otoczenia, z~racji tego, iż uśredniają nieciągłości bufora głębi. Aby temu zapobiec, w omawianej implementacji zastosowano cztery oddzielne warstwy bufora wektorów normalnych--głębokości. 
+		
+		Klasa \texttt{AdaptiveLayerGenerator} jest singletonem i działa w podobny sposób, co poprzednio omawiany komponent. Na wejściu przyjmuje bazowe bufory głębokości i koloru oraz ich SAT. Tak samo jak \texttt{SATGenerator} potrafi wykonywać obliczenia na dwóch różnych buforach naraz. Pozostałymi argumentami są dwa bufory tymczasowe, bufor indeksów warstw oraz jego przyszły SAT, a także dwa zestawy struktur \texttt{AdaptiveLayerData}, każda zawierająca zestaw tekstur dla wszystkich warstw oraz ich niektórych SAT. Z parametrów liczbowych istotny jest tylko rozmiar filtra rozmycia, stosowany podczas próbkowania SAT. Proces ten został bliżej przedstawiony w podrozdziale \ref{t:impl:b:occlusion}.
+		
+		Implementacji dokonano także za pomocą shaderów obliczeniowych, a całość można opisać poniższym algorytmem:
+		
+		\begin{algorithm}[H]
+			\label{alg_6_D}
+			\caption{Ogólny algorytm generowania warstw adaptacyjnych.}	
+			
+			Dla każdej tekstury wejściowej:
+			
+			\Indp
+			
+				Podziel teksturę na dwie warstwy -- A i B (listing \ref{lst_6_K}).
+				
+				Wygeneruj SAT dla pierwszej z warstw (A).
+				
+				Podziel pierwszą warstwę na dwie podwarstwy -- A0 i A1.
+				
+				Wygeneruj SAT dla pierwszej podwarstwy (A0).
+				
+				Podziel drugą warstwę na dwie podwarstwy -- B0 i B1.
+				
+				\Indp
+					
+					Zastosuj technikę różnicową do obliczenia wartości SAT B.
+				
+				\Indm
+				
+				Wygeneruj SAT dla pierwszej podwarstwy (B0).
+			
+			\Indm
+			
+			Wygeneruj SAT dla bufora indeksów.
+			
+		\end{algorithm}
+	
+		Można zauważyć, że SAT dla bufora indeksów jest generowany tylko raz. Wynika to z~faktu, że dla obu tekstur wejściowych granice pomiędzy warstwami są takie same, zmieniają się tylko dane.
+		
+		Proces podziału warstw jest prosty, lecz wymaga do działania SAT warstwy nadrzędnej. W shaderze obliczeniowym pobrana zostaje średnia wartość głębokości okolicznych pikseli w obszarze filtra o zadanym rozmiarze. Jeżeli wejściowa głębokość jest większa od średniej, jej wartość przypisuje się do podwarstwy A, w przeciwnym przypadku -- do B. Odpowiednio zaktualizowany zostaje także bufor indeksów. Całość przedstawia poniższy listing \ref{lst_6_K}:
+		
+		\begin{lstlisting}[language=HLSL,caption={Tworzenie warstw adaptacyjnych.},label={lst_6_K}]
+		
+		CalculateAverage(gSatDimensions, InASat, SatSampler, samplePoints, 
+			areaRec, avgSampleA);
+		
+		(...)
+		
+		const float layerAffilation = step(0.00001f, depth);	
+		
+		const float depthDiff = depth - avgDepth;	
+		
+		float indexA = step(0.0f, depthDiff);
+		float indexB = 1.0f - indexA;
+		indexA *= layerAffilation;
+		indexB *= layerAffilation;
+		
+		(...)
+		
+		outIndicesVal.x = indexA;
+		outIndicesVal.y = indexB;
+		
+		const float4 fillValue = 0.0f;
+		
+		OutIndices[coord] = outIndicesVal;
+		OutALayerA[coord] = lerp(fillValue, inSampleA, indexA);
+		OutBLayerA[coord] = lerp(fillValue, inSampleB, indexA);
+		OutALayerB[coord] = lerp(fillValue, inSampleA, indexB);
+		OutBLayerB[coord] = lerp(fillValue, inSampleB, indexB);
+		
+		\end{lstlisting}
+		
+		Do stworzenia indeksów (0 lub 1) została użyta wbudowana funkcja HLSL \texttt{step}. Zwraca ona 1 jeżeli drugi argument jest większy bądź równy pierwszemu i 0 w przeciwnym wypadku. Dzięki temu z powodzeniem udało się uniknąć wyrażeń warunkowych. Zmienna \texttt{layerAffilation} służy do oceny tego, czy do piksela danej warstwy w ogóle została przypisana jakakolwiek wartość. Należy o to dbać podczas przetwarzania podwarstw. Na koniec wyniki zostają zapisane do tekstur wyjściowych.
+	
+	\subsection{Przebieg okluzji}
+	\label{t:impl:b:occlusion}
+
+		W przeciwieństwie do SSDO-A, w aktualnie omawianej technice występuje tylko jeden przebieg renderingu, gdyż nie ma konieczności rozmywania efektu końcowego, ponieważ zastosowana została metoda statystyczna. Dane wejściowe to przede wszystkim wygenerowane wcześniej SAT dla niektórych warstw oraz buforów bazowych. Jako parametry program cieniujący przyjmuje także: kolor i kierunek światła, rozmiary tekstur SAT oraz odwrotności tych liczb, wielkość filtra uśredniającego, mnożnik i wykładnik okluzji, a także współczynnik wygaszania StatVO, wykorzystany w funkcji \(\psi\) wzoru (2.2). Algorytm działania został przedstawiony za pomocą poniższych listingów.
+
+		\begin{lstlisting}[language=HLSL,caption={Obliczanie wartości średniej za pomocą SAT.},label={lst_6_L}]
+		
+		float tSize = filterHalfWidth * min(satDimensions.x, satDimensions.y) *
+				 pow(depth, 0.8f);
+				 
+		// TL, TR, BR, BL
+		samplePoints[0] = float2(max(centerPoint.x - tSize - 1, -1.0f),
+		 max(centerPoint.y - tSize - 1, -1.0f));
+		samplePoints[1] = float2(min(centerPoint.x + tSize, satDimensions.x - 1),
+		 max(centerPoint.y - tSize - 1, -1.0f));
+		samplePoints[2] = float2(min(centerPoint.x + tSize, satDimensions.x - 1),
+		 min(centerPoint.y + tSize, satDimensions.y - 1));
+		samplePoints[3] = float2(max(centerPoint.x - tSize - 1, -1.0f),
+		 min(centerPoint.y + tSize, satDimensions.y - 1));
+		
+		areaRec = 1.0f / float(
+		(samplePoints[2].x - samplePoints[3].x) *
+		(samplePoints[2].y - samplePoints[1].y));
+		
+		// SAT: (BR - BL - TR + TL) / area
+		float4 values[4] =
+		{
+			sat.SampleLevel(smp, samplePoints[0] * satDimensions.zw, 0),
+			sat.SampleLevel(smp, samplePoints[1] * satDimensions.zw, 0),
+			sat.SampleLevel(smp, samplePoints[2] * satDimensions.zw, 0),
+			sat.SampleLevel(smp, samplePoints[3] * satDimensions.zw, 0),
+		};
+		average = (values[2] - values[3] - values[1] + values[0]) * areaRec;
+		
+		\end{lstlisting}
+		
+		Po pobraniu aktualnych wartości wektora normalnego, głębokości oraz koloru dla aktualnego piksela kolejnym krokiem jest uzyskanie średnich wartości tych parametrów. Aby to zrobić, należy próbkować tablice SAT. Listing \ref{lst_6_L} przedstawia ten proces. Rozmiar filtra zostaje uzależniony od aktualnej głębokości, dzięki temu im dalej wgłąb ekranu, tym efekt okluzji będzie mniej zauważalny. Obraz jest dzięki temu wyraźniejszy. Położenia czterech próbek zostają wyznaczone zgodnie z techniką zaprezentowaną w \cite{sat}. Algorytm dba o to, by prawa dolna próbka zawsze leżała w obrębie tablicy a trzy pozostałe były przesunięte o~rozmiar jednego piksela na zewnątrz obszaru filtra. Następnie obliczane jest pole powierzchni, próbkowana tekstura i przy użyciu wzoru (2.4) wyznaczona finalna wartość średnia.
+
+		\begin{lstlisting}[language=HLSL,caption={Różnicowe obliczanie wartości SAT.},label={lst_6_M}]
+
+		const uint sampleCount = 4;
+		
+		for(uint i = 0; i < sampleCount; ++i)
+			valuesSibling[i] = satSibling.SampleLevel(smpSibling, 
+				samplePoints[i] * satDimensions.zw, 0);
+		
+		for(uint i = 0; i < sampleCount; ++i)
+			valuesParent[i] = satParent.SampleLevel(smpParent, 
+				samplePoints[i] * satDimensions.zw, 0);
+			
+		for(uint i = 0; i < sampleCount; ++i)
+			values[i] = valuesParent[i] - valuesSibling[i];
+
+		\end{lstlisting}
+		
+		Autorzy \cite{statvo} zaobserwowali, że w przypadku podwarstwy, wartość danej komórki SAT można obliczyć poprzez różnicę komórek o tym samym indeksie z warstwy nadrzędnej oraz rówieśniczej. Pozwala to zaoszczędzić cenne milisekundy na generowaniu kolejnych SAT oraz znacząco odciążyć pamięć. Dokładną implementację tej techniki przedstawiono na listingu \ref{lst_6_M}. W przypadku podwarstwy B1 (algorytm \ref{alg_6_D}) SAT rodzica także nie istnieje. Należy wykorzystać technikę różnicowego obliczania wartości dwa razy -- najpierw dla nadrzędnego SAT, a następnie dla SAT B1. Omawiana metoda zwiększa liczbę operacji arytmetycznych oraz próbkowań, lecz w ogólnym rozrachunku okazuje się szybsza w działaniu niż generowanie dodatkowych SAT dla warstw. \pagebreak
+		
+		\begin{lstlisting}[language=HLSL,caption={Obliczenie oświetlenia bezpośredniego SSDO-B.},label={lst_6_N}]
+		
+		const float diffZ = max(avgDepth - pixelDepth, 0.0f);
+		
+		float zb = pixelDepth;
+		float zt = pixelDepth * (1.0f + gSampleBoxHalfSize);
+		float occlusion = (zb - avgDepth) / (zb - zt);
+		
+		occlusion = max(occlusion, 0.0f);
+		occlusion *= 1.0f - smoothstep(1.0f, 1.0f + gOcclusionFalloff, occlusion);
+		occlusion *= 1.0f - smoothstep(0.0f, gOcclusionFalloff, diffZ);
+		
+		(...)
+		
+		for (uint i = 0; i < layerCount; ++i)
+		{
+			occlusions[i] = GetOcclusion(...);
+			occlusions[i] *= indexWeights[i];
+		}
+		float occlusion = (occlusions[0] + occlusions[1] + 
+						occlusions[2] + occlusions[3]);
+		
+		(...)
+		
+		const float visibility = 1.0f - occlusion;
+		float dFactor = saturate(pow((1.0f - 
+			max(dot(avgNormal, gLightDirection), 0.0f)), 5.5f));
+		float finalLerpValue = occlusion * dFactor * gOcclusionPower;
+		float4 smpColor = visibility * float4(normalize(gLightColor.xyz), 1.0f);
+		
+		\end{lstlisting}
+		
+		Proces obliczania oświetlenia bezpośredniego, przedstawiony na listingu \ref{lst_6_N}, rozpoczyna się od wyznaczenia okluzji StatVO. Uzyskana poprzez próbkowanie SAT różnica pomiędzy średnią a aktualną wartością głębokości podzielona przez rozmiar okna filtra stanowi bazę dla tej metody. Następnie odcinane są liczby ujemne, po czym zaaplikowany zostaje proces wygaszania, zrealizowany przy użyciu funkcji \texttt{smoothstep}, zwracającej wartość od 0 do 1, zależnie od położenia argumentu w przedziale rozpiętym pomiędzy dwiema ustalonymi wartościami. W tym przypadku powyżej wartości 1, okluzja ma dążyć do 0.
+		
+		Tym algorytmem zacienienie obliczane jest cztery razy, osobno dla każdej warstwy, a~następnie każde z nich zostaje przemnożone przez odpowiednią wagę, uzyskaną z SAT bufora indeksów. Na koniec wartości okluzji są dodawane do siebie.
+		
+		Kierunkowość zacienienia osiągana jest poprzez przemnożenie przez zmienną \texttt{dFactor}, czyli współczynnik proporcjonalny do kąta pomiędzy \emph{średnim} wektorem normalnym a~kierunkiem światła. To uśrednienie danych wejściowych ma kluczowe znaczenie w kwestii osiągnięcia gładkich przejść zacienienia i pozwala na wierne oddanie efektu generowanego przez SSDO-A. Finalna widoczność (\texttt{1.0f - occlusion}) przemnożona zostaje przez kolor padającego światła, co symuluje technikę obliczania oświetlenia dla każdej z próbek w~SSDO-A.
+		
+		\begin{lstlisting}[language=HLSL,caption={Obliczenie oświetlenia pośredniego SSDO-B.},label={lst_6_O}]
+		
+		indirect = avgColor;
+		indirect = color.xyz - avgColor;
+		indirect = saturate(indirect);
+		
+		float layerFactor = saturate(10.0f * pow(occlusion, 0.1f));
+		
+		indirect = RGBtoHSV(indirect);
+		indirect.r = 0.785398f - indirect.r;
+		indirect = HSVtoRGB(indirect);
+		indirect *= avgColor * gLightColor.xyz * 
+			pow(1.0f - directionalFactor, 3.0f) * 
+			(1.0f - 2.0f * occlusion) * layerFactor;
+		
+		\end{lstlisting}
+		
+		Oświetlenie pośrednie w omawianej technice ma za zadanie symulować efekt pojawiania się plamy koloru przy silnie iluminowanych obiektach. Problemem jest brak próbkowania, przez co nie można zastosować wzoru (2.7). Zamiast tego użyto równania (3.3), które bardzo upraszcza wynik i sprawia, iż różni się on w pewnym stopniu od ,,oryginału'', co zostało zaprezentowane w rozdziale \ref{t:wyniki:artefakty}. 
+		
+		Kolor uśredniony cechuje to, że, podobnie jak oświetlenie pośrednie SSDO-A, ,,wylewa'' się on poza ramy obiektu. Zostaje odjęty od koloru aktualnie przetwarzanego piksela. Jeżeli ten znajduje się na przedmiocie, który emituje kolor średni, wynik będzie równy zero. Natomiast w przeciwnym przypadku przyjmie wartość różną od zera. Nastąpi to w~miejscach, w których światło mogłoby się ,,wylać''. Aby uzyskać właściwy kolor, mogący być dodany do wartości końcowej omawianej techniki, następuje przekształcenie do przestrzeni HSV. Komponent barwy zostaje ponownie odwrócony, gdyż wcześniej stało się to podczas odejmowania. Następnie ma miejsce powrót do formatu RGB. Na koniec wartość koloru zostaje przemnożona przez barwę światła i liczbę przeciwną do współczynnika kierunkowego, obliczonego w listingu \ref{lst_6_N} oraz współczynnik widoczności. Dzięki temu ,,wylewanie się'' koloru nastąpi tylko w miejscach, gdzie jednocześnie nie zachodzi okluzja i~wektor normalny jest zwrócony w~stronę światła kierunkowego.
+		
+		Finalnie, oba rodzaje oświetlenia mieszane są metodą podobną do tej stosowanej w technice SSDO-A. Bezpośrednie jest interpolowane liniowo z buforem koloru oświetlonego, jako współczynnik przyjmując wynikową okluzję z uwzględnieniem kierunkowości. Oświetlenie pośrednie zostaje po prostu dodane.
+
 	\section{Implementacja drugiej wersji statystycznej kierunkowej okluzji otoczenia (SSDO-C)}
 	\label{t:impl:c}
+	
+	% Dwuprzebiegowe rozmycie Gaussa z uwzględnieniem głębokości na buforach bazowych
+	
+	% Zastosowanie algorytmu z B, tyle że bez próbkowania SAT
+	% Naprawianie krawędzi 
+	
+	Metoda SSDO-C powstała z chęci jeszcze większego uproszczenia techniki SSDO-B i pozbawienia jej kosztownego elementu generowania warstw oraz obliczania ich SAT. Zaobserwowano, że niezbędne dane wejściowe funkcji StatVO to rozmyty bufor głębokości, a ten można uzyskać także za pomocą innych, mniej wymagających algorytmów. Głównym problemem SAT, jak i innych metod, są nieciągłości głębi, które należy wykryć i zachować tak, by nie dopuścić do powstania efektu ,,wylania się'' okluzji. 
+	
+	W przypadku SAT rozwiązanie tego problemu, zaproponowane przez \cite{statvo} jest najbardziej kosztownym elementem tego algorytmu. Postanowiono zaproponować alternatywną technikę, polegającą na uprzednim rozmyciu buforów głębokości, wektorów normalnych oraz koloru. Użyto w tym celu omówionej już w podrozdziale \ref{t:impl:a:pass2} techniki rozmycia gaussowskiego z~zachowaniem krawędzi. Algorytmy obliczania oświetlenia bezpośredniego oraz pośredniego pozostały takie same, jak w SSDO-B, zmienił się głównie proces uzyskiwania wartości średnich.
+	
+	Użycie techniki uśrednienia uwzględniającej głębokość niestety nie eliminuje do końca błędów renderingu. Wynika to z faktu stosowania drugiego poziomu mipmap buforów (czterokrotnie mniejsze wymiary). Rozmycie tekstur w pełnym rozmiarze okazuje się zbyt kosztowne, by można było je brać pod uwagę. W związku z tym, krawędzie obiektów nie są dokładnie takie jak w oryginalnym buforze, co doprowadza do występowania artefaktów w~ich okolicach. Listing \ref{lst_6_P} przedstawia technikę częściowo rozwiązującą ten problem.\pagebreak
+	
+	\begin{lstlisting}[language=HLSL,caption={Naprawa artefaktu występującego w okolicach krawędzi w technice SSDO-C.},label={lst_6_P}]
+	
+	float4 avgNormalDepthLowerMip = 
+		AverageNormalDepth.SampleLevel(SmpAverageNormalDepth, uv, 2);
+	
+	float diffZ = max(avgNormalDepthLowerMip.w - depth, 0.0f);
+	float thres = pow(max(depth, 0.0f), 0.8f) * 0.5f;
+	float fixEdge = smoothstep(thres - 0.001f, thres, diffZ);
+	
+	fixEdge = 1.0f - fixEdge;
+	
+	\end{lstlisting}
+	
+	Idea algorytmu poprawiającego błąd na krawędziach wynika z faktu, że występuje on głównie w miejscach, gdzie różnica pomiędzy głębokościami jest bardzo duża. Poza tym zaobserwowano, iż im mniejszy rozmiar próbkowanego bufora wartości średnich, tym większy artefakt. Dlatego do obliczenia zmiennej \texttt{diffZ} użyto mipmapy drugiego poziomu tekstury wejściowej. Przemnożenie i potęgowanie przez wartości stałe pozwala odpowiednio dostosować rozmiar zaznaczonego obszaru krawędzi. Finalnie otrzymano kolor czarny w~miejscach występowania nieciągłości, a jego zakres jest odrobinę większy niż obszar, w~którym mają miejsce błędy. Mnożąc finalną okluzję przez współczynnik \texttt{fixEdge} można z~powodzeniem pozbyć się w wielu miejscach rażącego błędu. Skuteczność poprawki niestety wykazuje dużą zależność od odległości pomiędzy pikselem a kamerą, co zostało uwidocznione w rozdziale \ref{t:wyniki:artefakty}.

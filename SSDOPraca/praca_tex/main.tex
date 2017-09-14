@@ -138,7 +138,7 @@
 	
 \newcommand{\beginnumbered}{\begin{enumerate}[label*=\arabic*.]}
 
-\lstdefinelanguage{GLSL}
+\lstdefinelanguage{HLSL}
 {
 	sensitive=true,
 	morekeywords=[1]{
@@ -148,12 +148,12 @@
 		for, while, switch, case, default, if,
 		else, in, out, inout, float, int, void,
 		bool, true, false, invariant, discard,
-		return, mat2, mat3, mat4, mat2x2, mat2x3,
-		mat2x4, mat3x2, mat3x3, mat3x4, mat4x2,
-		mat4x3, mat4x4, vec2, vec3, vec4, ivec2,
-		ivec3, ivec4, bvec2, bvec3, bvec4, uint,
-		uvec2, uvec3, uvec4, lowp, mediump, highp,
-		precision, sampler1D, sampler2D, sampler3D,
+		return, float2, float3, float4, float2x2, float2x3,
+		float2x4, float3x2, float3x3, float3x4, float4x2,
+		float4x3, float4x4, int2,
+		int3, int4, bvec2, uint,
+		uint2, uint3, uint4, lowp, mediump, highp,
+		precision, SamplerState, sampler2D, sampler3D,
 		samplerCube, sampler1DShadow,
 		sampler2DShadow, samplerCubeShadow,
 		sampler1DArray, sampler2DArray,
@@ -183,15 +183,15 @@
 		greaterThan,greaterThanEqual,equal,notEqual,
 		any,all,not,textureSize,texture,textureProj,
 		textureLod,textureOffset,texelFetch,
-		texelFetchOffset,textureProjOffset,
-		textureLodOffset,textureProjLod,
-		textureProjLodOffset,textureGrad,
-		textureGradOffset,textureProjGrad,
-		textureProjGradOffset,texture1D,texture1DProj,
-		texture1DProjLod,texture2D,texture2DProj,
-		texture2DLod,texture2DProjLod,texture3D,
-		texture3DProj,texture3DLod,texture3DProjLod,
-		textureCube,textureCubeLod,shadow1D,shadow2D,
+		texelFetchOffset,TextureProjOffset,
+		TextureLodOffset,TextureProjLod,
+		TextureProjLodOffset,TextureGrad,
+		TextureGradOffset,TextureProjGrad,
+		TextureProjGradOffset,Texture1D,Texture1DProj,
+		Texture1DProjLod,Texture2D,Texture2DProj,
+		Texture2DLod,Texture2DProjLod,Texture3D,
+		Texture3DProj,Texture3DLod,Texture3DProjLod,
+		TextureCube,TextureCubeLod,shadow1D,shadow2D,
 		shadow1DProj,shadow2DProj,shadow1DLod,
 		shadow2DLod,shadow1DProjLod,shadow2DProjLod,
 		dFdx,dFdy,fwidth,noise1,noise2,noise3,noise4,
