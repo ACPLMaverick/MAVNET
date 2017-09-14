@@ -188,17 +188,16 @@ void Controller::Update()
 	// Light rotation
 	if (_bRotateLight && _scene->GetLightsDirectional().size() > 0)
 	{
-		Lights::LightDirectional* lDir(_scene->GetLightsDirectional()[0]);
-		const float rotationSpeed(15.0f);
-		XMFLOAT3A rotationTemp(XMFLOAT3A(1.0f, 0.0f, 0.0f));
-		const XMVECTOR rotationAxeVec(XMLoadFloat3A(&rotationTemp));
+		PerformOneLightRotation();
+	}
 
-		const float lightRotationAngle = rotationSpeed * Timer::GetInstance()->GetDeltaTime();
-		
-		XMVECTOR direction(-XMLoadFloat3A(&lDir->GetDirection()));
-		direction = XMVector3Rotate(direction, XMQuaternionRotationAxis(rotationAxeVec, XMConvertToRadians(lightRotationAngle)));
-		XMStoreFloat3A(&rotationTemp, direction);
-		lDir->SetDirection(rotationTemp);
+	if (Input::GetInstance()->GetKeyDown('P'))
+	{
+		_bRotateLight = !_bRotateLight;
+	}
+	if (Input::GetInstance()->GetKey('O') && !_bRotateLight)
+	{
+		PerformOneLightRotation();
 	}
 }
 
@@ -225,4 +224,19 @@ inline void Controller::SwitchDirectionalLight()
 	{
 		_scene->GetLightsDirectional()[0]->SetEnabled(true);
 	}
+}
+
+inline void Controller::PerformOneLightRotation()
+{
+	Lights::LightDirectional* lDir(_scene->GetLightsDirectional()[0]);
+	const float rotationSpeed(15.0f);
+	XMFLOAT3A rotationTemp(XMFLOAT3A(1.0f, 0.0f, 0.0f));
+	const XMVECTOR rotationAxeVec(XMLoadFloat3A(&rotationTemp));
+
+	const float lightRotationAngle = rotationSpeed * Timer::GetInstance()->GetDeltaTime();
+
+	XMVECTOR direction(-XMLoadFloat3A(&lDir->GetDirection()));
+	direction = XMVector3Rotate(direction, XMQuaternionRotationAxis(rotationAxeVec, XMConvertToRadians(lightRotationAngle)));
+	XMStoreFloat3A(&rotationTemp, direction);
+	lDir->SetDirection(rotationTemp);
 }

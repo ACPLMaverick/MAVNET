@@ -70,7 +70,7 @@ PixelOutput main(DPixelInput input)
 		if (i == 0)
 			continue;
 
-		float2 neighUv = input.Uv + 2.0f * i * texOffset;
+		float2 neighUv = input.Uv + i * texOffset;
 		float4 neighNormalDepthSample = TexNormalDepth.Sample(SmpNormalDepth, input.Uv);
 		float3 neighNormal = neighNormalDepthSample.xyz;
 		float neighDepth = neighNormalDepthSample.w;

@@ -14,7 +14,7 @@ namespace Postprocesses
 	SSDOBase::SSDOBase() :
 		_dataBuffer(nullptr),
 		_randomVectorTexture(nullptr),
-		_maxDistance(0.6f),
+		_maxDistance(0.2f),
 		_fadeStart(0.02f),
 		_epsilon(0.01f),
 		_powFactor(1.0f)

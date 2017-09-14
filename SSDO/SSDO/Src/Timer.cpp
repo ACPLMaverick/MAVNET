@@ -13,11 +13,9 @@ Timer::~Timer()
 
 void Timer::Initialize()
 {
-	int64_t counts;
-	QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&counts));
 	QueryPerformanceFrequency(reinterpret_cast<LARGE_INTEGER*>(&_frequency));
 
-	_startTime = static_cast<float>(counts) / static_cast<float>(_frequency);
+	_startTime = GetNowTime();
 	_totalTime = 0.0f;
 	_prevTotalTime = 0.0f;
 	_deltaTime = 0.0f;

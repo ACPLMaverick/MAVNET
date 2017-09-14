@@ -75,9 +75,37 @@ void Profiler::Update()
 	// ssdo time is updated externally
 
 	float fps(1.0f / _baseTime.GetAveragedValue());
-	_tValFPS->SetText(to_string(fps));
+	float p(Timer::GetInstance()->GetTotalTime());
+
 	_tValMsGlobal->SetText(to_string(_baseTime.GetAveragedValue()));
 	_tValMsPostprocess->SetText(to_string(_postprocessTime.GetAveragedValue()));
+
+
+	if (_baseTime.GetAveragedValue() != 0.0f && p > 10.0f)
+	{
+		if (p > 40.0f && !_bHasAveragedFPS)
+		{
+			_bHasAveragedFPS = true;
+
+			fps = _totalAverageAccumulator / _totalAverageDivisor;
+
+			_tValFPS->SetColor(XMFLOAT4A(0.1f, 0.7f, 0.9f, 1.0f));
+			_tValFPS->SetText(to_string(fps));
+		}
+		else if (!_bHasAveragedFPS)
+		{
+			_tValFPS->SetText(to_string(fps));
+
+			_totalAverageAccumulator += fps;
+			++_totalAverageDivisor;
+
+			//if (_totalAverageAccumulator > 1000000.0f)
+			//{
+			//	_totalAverageAccumulator = (_totalAverageAccumulator / _totalAverageDivisor);
+			//	_totalAverageDivisor = 1.0f;
+			//}
+		}
+	}
 }
 
 void Profiler::UpdatePostprocessBegin()

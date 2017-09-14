@@ -50,6 +50,11 @@ protected:
 	AveragedTime _baseTime;
 	AveragedTime _postprocessTime;
 
+	float _totalAverageAccumulator = 0.0f;
+	float _totalAverageDivisor = 0.0f;
+
+	bool _bHasAveragedFPS = false;
+
 	std::vector<std::string> _postprocessNames;
 
 	Scenes::Scene* _scene;

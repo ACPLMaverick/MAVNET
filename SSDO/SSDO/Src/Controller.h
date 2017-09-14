@@ -31,6 +31,7 @@ protected:
 	bool _bRotateLight;
 
 	inline void SwitchDirectionalLight();
+	inline void PerformOneLightRotation();
 
 public:
 	Controller(Scenes::Scene* scene);
