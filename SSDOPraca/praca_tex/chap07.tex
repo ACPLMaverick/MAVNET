@@ -8,6 +8,12 @@
 	% Porównanie liczby FPS z liczbą FPS bez postprocesu pozwala ocenić wydajność
 	% Screeny oceniane organoleptycznie, wzorem jest technika A.
 	
+	Przyjęta w niniejszej pracy metoda badawcza składa się z dwóch oddzielnych procesów. Jako pierwsza została zmierzona wydajność każdego z algorytmów (podrozdział \ref{t:wyniki:wydajnosc}). Uzyskane wartości pozwalają na ocenę przydatności danej techniki w zastosowaniach praktycznych, np. w silniku gry. Im szybciej działa metoda, tym więcej zaimplementować można podobnych jej technik wykonujących obliczenia podczas pracy programu i w ten sposób uzyskać bardziej przyjemny dla oka efekt graficzny.
+	
+	Druga część metody badawczej (podrozdział \ref{t:wyniki:artefakty}) polega na wykonaniu osobnych zrzutów ekranu w newralgicznych miejscach sceny aplikacji i wizualnej ocenie algorytmów. Uwagę zwrócono przede wszystkim na odstępstwa technik SSDO-B i SSDO-C od ,,oryginalnej'' techniki SSDO-A oraz na częstość i rozmiary występujących artefaktów graficznych. Na koniec porównano efekty działania wszystkich trzech metod z obrazem wygenerowanym bez użycia którejkolwiek z nich.
+	
+	Na koniec, w rozdziale \ref{t:wnioski} następuje porównanie wszystkich trzech technik pod względem obu omówionych czynników, dyskusja na temat ich zastosowania w praktyce oraz ograniczeń, a także określenie tego, co można poprawić w przyszłości.
+	
 	\section{Wydajność}
 	\label{t:wyniki:wydajnosc}
 	
@@ -20,21 +26,82 @@
 	
 	% Wykres słupkowy
 	
+	Wydajność określono jako wielkość odwrotnie proporcjonalną do czasu wykonania danej techniki. Im szybciej pracuje algorytm, tym większa jego wydajność. Główna jednostka przyjęta podczas wykonywania pomiarów to liczba FPS (\emph{Frames Per Second}) określająca, ile ramek obrazu może zostać wygenerowanych w czasie jednej sekundy. Wartość ta jest wprost proporcjonalna do wydajności algorytmu. Drugorzędna jednostka zawarta w tabeli \ref{tab_7_A} to czas w milisekundach potrzebny na obliczenia i narysowanie sceny. Jest to więc wartość odwrotna do FPS.
+	
+	Metoda pomiarowa polega na obliczaniu w każdym kroku głównej pętli programu czasów, jakie potrzebne są na jej wykonanie. Dzieje się to od 10 do 40 sekundy pracy aplikacji, czyli trwa w sumie 30 sekund. Następnie przy użyciu wyliczonych wartości zostaje uzyskany średni czas przetwarzania jednego kroku programu w przyjętym interwale. Na koniec wartość ta jest przekształcana do FPS i zapisywana w tabeli. Dzieje się tak dla każdej omawianej techniki. Wykonano także pomiary wydajności programu bez włączonej jakiejkolwiek metody SSDO. Pozwala to uzyskać punkt odniesienia przy ich porównaniu i zobaczyć, jak bardzo po użyciu każdej spada liczba FPS.
+	
+	Podczas pomiarów przyjęto stałą rozdzielczość tylnego bufora równą 1280x720 pikseli. Kamera zawsze znajduje się w tym samym miejscu i rysuje te same obiekty. Aplikację uruchamiano na komputerze z procesorem Core i7-6700K 4 GHz, 16 GB RAM i kartą graficzną GeForce GTX 970 z 4 GB pamięci. Ponieważ wszystkie algorytmy pracują w~przestrzeni ekranu, liczba renderowanych trójkątów nie ma wpływu na ich wydajność.
+	
+	W tabeli \ref{tab_7_A} oraz na wykresie \ref{wykr_7_A} przedstawiono uzyskane wyniki pomiarów. Poprzez \(ms_{r}\) rozumie się liczbę milisekund potrzebnych na wszystkie obliczenia związane z daną techniką bez uwzględnienia pozostałej części aplikacji.
+	
+	% rozdzielczość, kamera, sprzęt.
+	
 	\pgfplotstabletypeset
 	[
+	columns/$$/.style={string type},
 	every head row/.append style={before row={%
 			\caption{Wydajność poszczególnych technik SSDO.}%
 			\label{tab_7_A}\\\toprule}}
 	]
 	{chart_7_A.dat}
+	\($$\)
 	
+	\pgfplotstableread
+	{
+		method fps
+		SSDO-A 793
+		SSDO-B 362
+		SSDO-C 2130
+		Brak 2880
+	}\loadedtable
+
+	\pgfplotstableread[header=false]{
+		793 SSDO-A
+		362 SSDO-B
+		2130 SSDO-C
+		2880 Brak
+	}\datatable
+	
+	\begin{figure}[H]
+		\begin{tikzpicture}
+		\begin{axis}[
+			xbar, bar shift=0pt,
+			enlarge y limits=0.2,
+			xmin=0,
+			xtick={0, 400, 800, 1200, 1600, 2000, 2400, 2800, 3200, 3600},
+			ytick={0,...,4},
+			yticklabels from table={\datatable}{1},
+			xmajorgrids = true,
+			bar width=8mm, 
+			width=14cm, height=6.5cm, 
+			xlabel={FPS},
+			ylabel={Technika SSDO},
+			nodes near coords, nodes near coords align={horizontal},
+			]
+			
+			\pgfplotsinvokeforeach{0,...,4}{
+				\addplot table [select row=#1, y expr=#1] {\datatable};
+			}
+		\end{axis}
+		\end{tikzpicture}
+		\caption{Wykres przedstawiający liczbę osiąganych FPS przez każdy z algorytmów. Źródło: opracowanie własne.}
+		\label{wykr_7_A}
+	\end{figure}
+
+	\pagebreak
 	
 	\section{Wygląd i występowanie artefaktów}
 	\label{t:wyniki:artefakty}
 	
 	% Screeny dla każdej techniki: dwa rodzaje zacienienia (schody i okna), rozjaśnienia (boksy) oraz screen ukazujący błędy
+	\raggedbottom
+	Kryterium wyglądu jest subiektywne, jednak wyróżnić można kilka cech wygenerowanych obrazów, które da się w pewnym stopniu ocenić, a nawet porównać ze sobą. Wśród nich należy wymienić skłonność do występowania artefaktów, czyli zacienień w miejscach, gdzie zgodnie z zasadą rozchodzenia się światła nie powinno ich być. Kolejnymi czynnikami są: stopień zaszumienia okluzji, gładkość jej gradientu podczas przechodzenia z ciemnych do jasnych miejsc oraz stopień zacienienia przy tych samych parametrach wejściowych. Ocenie podlega także kształt i siła generowanego oświetlenia pośredniego.
 	
-	\pagebreak
+	W celu ukazania efektu pracy poszczególnych technik oraz porównania osiągniętych przez nich efektów wizualnych, dla każdego algorytmu sporządzono cztery zrzuty ekranu, oznaczone kolejno literami A, B, C i D. Trzy z nich wykonane zostały zawsze w tym samym położeniu kamery oraz światła. Dwa pierwsze służą ocenie wyglądu okluzji kierunkowej, trzeci -- oświetlenia pośredniego. Czwarty zrzut ekranu jest różny dla każdej z technik a jego zadanie to prezentacja błędów, jakie mogą powstać podczas renderingu. Kolorowe okręgi oraz prostokąty naniesiono na przedstawione obrazy w programie graficznym. Umożliwia to łatwe odniesienie do interesujących elementów w~rozdziale \ref{t:wnioski:porownanie:wyglad}.
+	
+	Na koniec przedstawiono cztery zrzuty ekranu z tego samego miejsca w scenie. Trzy pierwsze odpowiadają kolejnym technikom, czwarty został wyrenderowany bez użycia żadnej. Służy to porównaniu siły okluzji i uwidocznieniu, jak algorytmy wpływają na finalny wygląd sceny oraz podkreślenie kształtów geometrii.
+
+	\pagebreak	\flushbottom
 	
 	\myownfigure{Efekty działania techniki SSDO-A.}{figures/fig_7_A.png}{0.35}{fig_7_A}
 	

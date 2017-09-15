@@ -120,6 +120,33 @@
 	every even row/.style={
 		before row={\rowcolor[gray]{0.92}}},
 }
+
+\pgfplotsset{compat=newest} 
+
+\pgfplotsset{
+	select row/.style={
+		x filter/.code={\ifnum\coordindex=#1\else\def\pgfmathresult{}\fi}
+	},
+	discard if/.style 2 args={
+		x filter/.code={
+			\edef\tempa{\thisrow{#1}}
+			\edef\tempb{#2}
+			\ifx\tempa\tempb
+			\def\pgfmathresult{inf}
+			\fi
+		}
+	},
+	discard if not/.style 2 args={
+		x filter/.code={
+			\edef\tempa{\thisrow{#1}}
+			\edef\tempb{#2}
+			\ifx\tempa\tempb
+			\else
+			\def\pgfmathresult{inf}
+			\fi
+		}
+	}
+}
 	
 \lstset{frame=tb,
 	aboveskip=3mm,
