@@ -47,7 +47,7 @@ namespace Postprocesses
 			const AdaptiveLayerData * dataA, const AdaptiveLayerData * dataB,
 			uint32_t inputWidth, uint32_t inputHeight, float boxHalfSize) const
 		{
-			const float boxHalfSizeEnlarged(boxHalfSize * 5.0f);
+			const float boxHalfSizeEnlarged(boxHalfSize * 4.0f);
 			uint32_t inputLevel(Helper::GetTextureLevel(inputWidth, baseSATA->GetWidth()));
 			inputWidth >>= inputLevel;
 			inputHeight >>= inputLevel;

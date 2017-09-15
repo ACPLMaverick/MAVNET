@@ -18,7 +18,7 @@ namespace Postprocesses
 
 	SSDOImproved::SSDOImproved() :
 		_dataBuffer(nullptr),
-		_sampleBoxHalfSize(0.15f),
+		_sampleBoxHalfSize(0.3f),
 		_occlusionPower(1.0f),
 		_occlusionFaloff(1.0f),
 		_powFactor(1.0f),

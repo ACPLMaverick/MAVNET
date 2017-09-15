@@ -4,10 +4,50 @@
 	\section{Metoda badawcza}
 	\label{t:wyniki:metoda}
 	
+	% Pomiar FPS 30 sekund dla tego samego ujęcia
+	% Porównanie liczby FPS z liczbą FPS bez postprocesu pozwala ocenić wydajność
+	% Screeny oceniane organoleptycznie, wzorem jest technika A.
+	
 	\section{Wydajność}
 	\label{t:wyniki:wydajnosc}
+	
+	% C - 2130
+	% B - 362
+	% A - 793
+	% NONE - 2880
+	
+	% Tabela
+	
+	% Wykres słupkowy
+	
+	\pgfplotstabletypeset
+	[
+	every head row/.append style={before row={%
+			\caption{Wydajność poszczególnych technik SSDO.}%
+			\label{tab_7_A}\\\toprule}}
+	]
+	{chart_7_A.dat}
+	
 	
 	\section{Wygląd i występowanie artefaktów}
 	\label{t:wyniki:artefakty}
 	
-	% Technika subtrakcji kolorów może generować artefakty po użyciu tekstur.
+	% Screeny dla każdej techniki: dwa rodzaje zacienienia (schody i okna), rozjaśnienia (boksy) oraz screen ukazujący błędy
+	
+	\pagebreak
+	
+	\myownfigure{Efekty działania techniki SSDO-A.}{figures/fig_7_A.png}{0.35}{fig_7_A}
+	
+	\pagebreak
+	
+	\myownfigure{Efekty działania techniki SSDO-B.}{figures/fig_7_B.png}{0.35}{fig_7_B}
+	
+	\pagebreak
+	
+	\myownfigure{Efekty działania techniki SSDO-C.}{figures/fig_7_C.png}{0.35}{fig_7_C}
+	
+	\pagebreak
+	
+	\myownfigure{Porównanie technik z obrazem bez okluzji.}{figures/fig_7_D.png}{0.35}{fig_7_D}
+	
+	\pagebreak

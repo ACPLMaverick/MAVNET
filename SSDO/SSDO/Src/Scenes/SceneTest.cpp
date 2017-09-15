@@ -109,7 +109,7 @@ namespace Scenes
 		_postprocesses.push_back(new SSDOImprovedB());
 		_postprocesses.push_back(new SSDOImproved());
 		_postprocesses.push_back(new SSDOBase());
-		_postprocesses.push_back(new SimpleSSAO());
+		//_postprocesses.push_back(new SimpleSSAO());
 
 		Text* helpTxt = new Text("Press V to cycle through post processes. Use WSAD to move camera. Use mouse with RMB pressed to rotate camera.");
 		helpTxt->SetScale(0.2f);

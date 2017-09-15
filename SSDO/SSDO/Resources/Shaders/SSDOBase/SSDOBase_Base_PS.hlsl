@@ -111,7 +111,7 @@ PixelOutput main(DPixelInput input)
 
 		// Lit from this sample
 		float4 smpColor = 0.0f;
-		float4 smpBaseColor = TexColor.SampleLevel(SmpColor, mapUv, 0.0f);
+		float4 smpBaseColor = TexInput.SampleLevel(SmpInput, mapUv, 0.0f);
 		//pData.colBase = smpBaseColor;
 
 		PhongBlinn(gLightColor,
@@ -164,10 +164,10 @@ PixelOutput main(DPixelInput input)
 	//final.y = final.z = final.x = occlusion;
 	output.direct += occlusion;
 
-	output.direct = pow(output.direct, powFactor);
+	output.direct = pow(max(output.direct, 0.0f), powFactor);
 	output.direct = saturate(output.direct);
 
-	output.indirectAdd *= occlusion;
+	output.indirectAdd *= occlusion * 0.3f;
 	output.indirectAdd = (output.indirectAdd / SAMPLE_COUNT);
 
 	return output;
