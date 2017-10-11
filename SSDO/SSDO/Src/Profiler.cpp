@@ -80,7 +80,9 @@ void Profiler::Update()
 	_tValMsGlobal->SetText(to_string(_baseTime.GetAveragedValue()));
 	_tValMsPostprocess->SetText(to_string(_postprocessTime.GetAveragedValue()));
 
+	_tValFPS->SetText(to_string(fps));
 
+	/*
 	if (_baseTime.GetAveragedValue() != 0.0f && p > 10.0f)
 	{
 		if (p > 40.0f && !_bHasAveragedFPS)
@@ -106,6 +108,7 @@ void Profiler::Update()
 			//}
 		}
 	}
+	*/
 }
 
 void Profiler::UpdatePostprocessBegin()

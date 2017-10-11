@@ -12,7 +12,7 @@
 	
 	Druga część metody badawczej (podrozdział \ref{t:wyniki:artefakty}) polega na wykonaniu osobnych zrzutów ekranu w newralgicznych miejscach sceny aplikacji i wizualnej ocenie algorytmów. Uwagę zwrócono przede wszystkim na odstępstwa technik SSDO-B i SSDO-C od ,,oryginalnej'' techniki SSDO-A oraz na częstość i rozmiary występujących artefaktów graficznych. Na koniec porównano efekty działania wszystkich trzech metod z obrazem wygenerowanym bez użycia którejkolwiek z nich.
 	
-	Na koniec, w rozdziale \ref{t:wnioski} następuje porównanie wszystkich trzech technik pod względem obu omówionych czynników, dyskusja na temat ich zastosowania w praktyce oraz ograniczeń, a także określenie tego, co można poprawić w przyszłości.
+	W rozdziale \ref{t:wnioski} następuje porównanie wszystkich trzech technik pod względem obu omówionych czynników, dyskusja na temat ich zastosowania w praktyce oraz ograniczeń, a także określenie tego, co można poprawić w przyszłości.
 	
 	\section{Wydajność}
 	\label{t:wyniki:wydajnosc}
@@ -28,7 +28,7 @@
 	
 	Wydajność określono jako wielkość odwrotnie proporcjonalną do czasu wykonania danej techniki. Im szybciej pracuje algorytm, tym większa jego wydajność. Główna jednostka przyjęta podczas wykonywania pomiarów to liczba FPS (\emph{Frames Per Second}) określająca, ile ramek obrazu może zostać wygenerowanych w czasie jednej sekundy. Wartość ta jest wprost proporcjonalna do wydajności algorytmu. Drugorzędna jednostka zawarta w tabeli \ref{tab_7_A} to czas w milisekundach potrzebny na obliczenia i narysowanie sceny. Jest to więc wartość odwrotna do FPS.
 	
-	Metoda pomiarowa polega na obliczaniu w każdym kroku głównej pętli programu czasów, jakie potrzebne są na jej wykonanie. Dzieje się to od 10 do 40 sekundy pracy aplikacji, czyli trwa w sumie 30 sekund. Następnie przy użyciu wyliczonych wartości zostaje uzyskany średni czas przetwarzania jednego kroku programu w przyjętym interwale. Na koniec wartość ta jest przekształcana do FPS i zapisywana w tabeli. Dzieje się tak dla każdej omawianej techniki. Wykonano także pomiary wydajności programu bez włączonej jakiejkolwiek metody SSDO. Pozwala to uzyskać punkt odniesienia przy ich porównaniu i zobaczyć, jak bardzo po użyciu każdej spada liczba FPS.
+	Metoda pomiarowa polega na obliczaniu w każdym kroku głównej pętli programu czasów, jakie potrzebne są na jej wykonanie. Dzieje się to od 10 do 40 sekundy pracy aplikacji, czyli trwa w sumie 30 sekund. Następnie przy użyciu obliczonych wartości zostaje uzyskany średni czas przetwarzania jednego kroku programu w przyjętym interwale. Na koniec wartość ta jest przekształcana do FPS i zapisywana w tabeli. Dzieje się tak dla każdej omawianej techniki. Wykonano także pomiary wydajności programu bez włączonej jakiejkolwiek metody SSDO. Pozwala to uzyskać punkt odniesienia przy ich porównaniu i zobaczyć, jak bardzo po użyciu każdej spada liczba FPS.
 	
 	Podczas pomiarów przyjęto stałą rozdzielczość tylnego bufora równą 1280x720 pikseli. Kamera zawsze znajduje się w tym samym miejscu i rysuje te same obiekty. Aplikację uruchamiano na komputerze z procesorem Core i7-6700K 4 GHz, 16 GB RAM i kartą graficzną GeForce GTX 970 z 4 GB pamięci. Ponieważ wszystkie algorytmy pracują w~przestrzeni ekranu, liczba renderowanych trójkątów nie ma wpływu na ich wydajność.
 	
