@@ -20,7 +20,7 @@ Skutkiem takiego stanu rzeczy było powstanie wielu metod przybliżających efek
 	\mathit{AO}(\mathbf{x}, \vec{n}) = \frac{1}{\pi}\int_{\Omega}^{}\rho(\mathit{d}(\mathbf{x}, \vec{\omega},))\vec{n}\cdot \vec{\omega}d\vec{\omega}\ ,
 	\end{equation}
 	
-	gdzie \textbf{x} oznacza pozycję w scenie, a \(\vec{n}\) wektor normalny w tym miejscu. \(\vec{\omega}\) reprezentuje kierunek próbkowania, a \textit{d} jest odległością do pierwszego przecięcia promienia z geometrią obiektu. Funkcja \(\rho\) to zazwyczaj pewna funkcja wygaszania (\textit{falloff}), która różnicuje wpływ danej próbki na finalną okluzję w zależności od jej odległości od punktu początkowego. Dzięki temu znaczenie ma dystans do obiektu zasłaniającego i można uzyskać pożądany efekt gładkich przejść od jasnego do ciemnego koloru.
+	gdzie \textbf{x} oznacza pozycję w scenie, a \(\vec{n}\) wektor normalny w tym miejscu. \(\vec{\omega}\) reprezentuje kierunek próbkowania, \(\Omega\) -- zbiór wszystkich kierunków, a \textit{d} jest odległością do pierwszego przecięcia promienia z geometrią obiektu. Funkcja \(\rho\) to zazwyczaj pewna funkcja wygaszania (\textit{falloff}), która różnicuje wpływ danej próbki na finalną okluzję w zależności od jej odległości od punktu początkowego. Dzięki temu znaczenie ma dystans do obiektu zasłaniającego i~można uzyskać pożądany efekt gładkich przejść od jasnego do ciemnego koloru.
 	
 	Przedstawiona powyżej prosta ewaluacja nawet niewielkiej liczby promieni dla każdego punktu geometrii jest i tak zbyt kosztowna, by móc zastosować ją w czasie rzeczywistym. W~praktyce często dla każdego modelu generowane są oddzielnie, poza potokiem renderingu, specjalne tekstury, zwane mapami okluzji otoczenia. Przykład znajduje się na rysunku \ref{fig_2_C}. Taka technika często bywa wystarczająco skuteczna, lecz ma istotne ograniczenia. Nie uwzględnia wpływu jednego obiektu na drugi oraz nadaje się do symulowania okluzji na obiektach animowanych tylko w ograniczonym stopniu. Często nie ma także zastosowania w przypadku dużych, modularnych elementów sceny, jak budynki, których koordynaty teksturowania zazwyczaj nie leżą w przedziale (0, 1).
 	
@@ -37,7 +37,7 @@ Skutkiem takiego stanu rzeczy było powstanie wielu metod przybliżających efek
 	
 	\myextfigure{Błędy i szumy wynikajace z podpróbkowania SSAO}{figures/fig_2_E.jpg}{0.3}{fig_2_E}
 	
-	\footnotetext{\url{http://goo.gl/kTSQju}}
+	\footnotetext{\url{https://www.gamasutra.com/blogs/PeterWester/20140116/208742/Generating_smooth_and_cheap_SSAO_using_Temporal_Blur.php}}
 	
 	Warto jednak wspomnieć, że próbkowanie i dokonywanie obliczeń na buforach o dużym rozmiarze także jest czasochłonne. Jako, że obliczana przy pomocy próbkowania okluzja jest efektem o niskiej częstotliwości i wymaga późniejszego rozmycia, nic nie stoi na przeszkodzie, by bufor okluzji występował w rozmiarach wynoszących połowę lub jedną czwartą rozmiarów tylnego bufora. Wiążą się z tym faktem liczne błędy, artefakty i, przede wszystkim, szum, który można zaobserwować na rysunku \ref{fig_2_E}. Część algorytmu odpowiedzialna za rozmycie i~redukcję niedociągnięć często potrafi być dużo bardziej kosztowna niż obliczenie samej okluzji \cite{statvo}.
 	

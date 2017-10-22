@@ -1,6 +1,9 @@
 $SSDO-A$&$SSDO-B$&$SSDO-C$
-Bufor okluzji&SAT normalnych i głębokości&Bufor normalnych i głębokości
-Bufor rozmycia&SAT koloru&Bufor koloru
-Bufor wektorów losowych&Bufory generowania SAT (2)&Bufory rozmycia (2)
-&Bufory warstw adaptacyjnych (8)&
-&Bufor indeksów warstw&
+Bufor normalnych i głębokości&SAT normalnych i głębokości&Bufor normalnych i głębokości
+Bufor koloru&SAT koloru&Bufor koloru
+Bufor okluzji&--&--
+Bufor rozmycia&--&Bufory rozmycia (2)
+Bufor wektorów losowych&--&--
+--&Bufory generowania SAT (2)&--
+--&Bufory warstw adaptacyjnych (8)&--
+--&Bufor indeksów warstw&--
